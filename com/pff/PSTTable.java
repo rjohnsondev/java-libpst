@@ -101,12 +101,12 @@ class PSTTable {
 			"Table Entries Reference: "+tableEntriesReference+" - 0x"+Long.toHexString(tableEntriesReference)+"\n";
 		
 		tableEntriesReferenceAsOffset = (tableEntriesReference >> 4)+tableIndexOffset;
+		description += "tableEntriesReferenceAsOffset: "+tableEntriesReferenceAsOffset+"\n";
 		
 		if (tableTypeByte == 0xffffffbc)
 		{
 			tableEntriesReferenceAsOffset += 2; // why is this not for 7c????!!!
 		}
-		
 		tableEntriesStart = (int)PSTObject.convertLittleEndianBytesToLong(data, tableEntriesReferenceAsOffset, tableEntriesReferenceAsOffset+2);
 		description += ("tableEntriesStart: "+tableEntriesStart+"\n");
 		tableEntriesEnd = tableEntriesStart;
@@ -116,7 +116,6 @@ class PSTTable {
 				break;
 			}
 		}
-		description += "tableEntriesReferenceAsOffset: "+tableEntriesReferenceAsOffset+"\n";
 		
 		
 	}

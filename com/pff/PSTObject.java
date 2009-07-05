@@ -124,6 +124,11 @@ public class PSTObject {
 		return this.getStringItem(0x001a);
 	}
 	
+	public String toString() {
+		return this.localDescriptorItems + "\n" +
+				(this.items);
+	}
+	
 	/**
 	 * Static stuff below
 	 * ------------------
@@ -554,7 +559,12 @@ public class PSTObject {
 		if (type.equals("Folder and address book")) {
 			return new PSTFolder(theFile, folderIndexNode, table, localDescriptorItems);
 		} else if (type.equals("Message envelope")) {
-			return new PSTEmail(theFile, folderIndexNode, table, localDescriptorItems);
+			PSTMessage message = new PSTMessage(theFile, folderIndexNode, table, localDescriptorItems);
+			if (message.getMessageClass().equals("IPM.Appointment")) {
+				return new PSTAppointment(theFile, folderIndexNode, table, localDescriptorItems);
+			}
+			return message;
+					
 		}
 		else
 		{

@@ -70,6 +70,23 @@ public class PSTFile {
 			// process the descriptor tree and create our children
 			buildDescriptorTree(in);
 			
+			// process the name to id map
+			DescriptorIndexNode nameToIdMapDescriptorNode = (PSTObject.getDescriptorIndexNode(in, 97));
+			OffsetIndexItem nameToIdMapOffset = PSTObject.getOffsetIndexNode(in, nameToIdMapDescriptorNode.dataOffsetIndexIdentifier);
+			byte[] nameToIdByte = new byte[nameToIdMapOffset.size];
+			in.seek(nameToIdMapOffset.fileOffset);
+			in.read(nameToIdByte);
+			if (PSTObject.isPSTArray(nameToIdByte)) {
+				nameToIdByte = PSTObject.processArray(in, nameToIdByte);
+			}
+			if (this.encryptionType == PSTFile.ENCRYPTION_TYPE_COMPRESSIBLE) {
+				nameToIdByte = PSTObject.decode(nameToIdByte);
+			}
+			
+			PSTTableBC bcTable = new PSTTableBC(nameToIdByte);
+			System.out.println(bcTable);
+//			PSTObject.printHexFormatted(nameToIdByte, true);
+			
 		}  catch (IOException err) {
 			throw new PSTException("Unable to read PST Sig", err);
 		}

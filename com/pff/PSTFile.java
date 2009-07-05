@@ -23,6 +23,8 @@ public class PSTFile {
 	// our all important tree.
 	private LinkedHashMap<Integer, HashMap<Integer, DescriptorIndexNode>> childrenDescriptorTree = new LinkedHashMap<Integer, HashMap<Integer, DescriptorIndexNode>>();
 	
+	private HashMap<Integer, Integer> nameToId = new HashMap<Integer, Integer>();
+	
 	private int itemCount = 0;
 	
 	private RandomAccessFile in;
@@ -70,27 +72,76 @@ public class PSTFile {
 			// process the descriptor tree and create our children
 			buildDescriptorTree(in);
 			
-			// process the name to id map
-			DescriptorIndexNode nameToIdMapDescriptorNode = (PSTObject.getDescriptorIndexNode(in, 97));
-			OffsetIndexItem nameToIdMapOffset = PSTObject.getOffsetIndexNode(in, nameToIdMapDescriptorNode.dataOffsetIndexIdentifier);
-			byte[] nameToIdByte = new byte[nameToIdMapOffset.size];
-			in.seek(nameToIdMapOffset.fileOffset);
-			in.read(nameToIdByte);
-			if (PSTObject.isPSTArray(nameToIdByte)) {
-				nameToIdByte = PSTObject.processArray(in, nameToIdByte);
-			}
-			if (this.encryptionType == PSTFile.ENCRYPTION_TYPE_COMPRESSIBLE) {
-				nameToIdByte = PSTObject.decode(nameToIdByte);
-			}
-			
-			PSTTableBC bcTable = new PSTTableBC(nameToIdByte);
-			System.out.println(bcTable);
-//			PSTObject.printHexFormatted(nameToIdByte, true);
+			// build out name to id map.
+			processNameToIdMap(in);
 			
 		}  catch (IOException err) {
 			throw new PSTException("Unable to read PST Sig", err);
 		}
 
+	}
+	
+	/**
+	 * read the name-to-id map from the file and load it in
+	 * @param in
+	 * @throws IOException
+	 * @throws PSTException
+	 */
+	private void processNameToIdMap(RandomAccessFile in)
+		throws IOException, PSTException
+	{
+		// process the name to id map
+		DescriptorIndexNode nameToIdMapDescriptorNode = (PSTObject.getDescriptorIndexNode(in, 97));
+
+		// get the data for the map
+		OffsetIndexItem nameToIdMapOffset = PSTObject.getOffsetIndexNode(in, nameToIdMapDescriptorNode.dataOffsetIndexIdentifier);
+		byte[] nameToIdByte = new byte[nameToIdMapOffset.size];
+		in.seek(nameToIdMapOffset.fileOffset);
+		in.read(nameToIdByte);
+		if (PSTObject.isPSTArray(nameToIdByte)) {
+			nameToIdByte = PSTObject.processArray(in, nameToIdByte);
+		}
+		if (this.encryptionType == PSTFile.ENCRYPTION_TYPE_COMPRESSIBLE) {
+			nameToIdByte = PSTObject.decode(nameToIdByte);
+		}
+
+		// get the descriptors if we have them
+		HashMap<Integer, PSTDescriptorItem> localDescriptorItems = null;
+		if (nameToIdMapDescriptorNode.localDescriptorsOffsetIndexIdentifier != 0) {
+			PSTDescriptor descriptor = new PSTDescriptor(this, nameToIdMapDescriptorNode.localDescriptorsOffsetIndexIdentifier);
+			localDescriptorItems = descriptor.getChildren();
+		}
+		
+		// process the map
+		PSTTableBC bcTable = new PSTTableBC(nameToIdByte);
+		HashMap<Integer, PSTTableBCItem> tableItems = (bcTable.getItems());
+		
+		// if we have a reference to an internal descriptor
+		PSTTableBCItem mapEntries = tableItems.get(3);
+		nameToIdByte = mapEntries.data;
+		if (nameToIdByte.length == 0) {
+			PSTDescriptorItem mapDescriptorItem = localDescriptorItems.get(mapEntries.entryValueReference);
+			OffsetIndexItem tempoffset = PSTObject.getOffsetIndexNode(in, mapDescriptorItem.offsetIndexIdentifier);
+			nameToIdByte = new byte[tempoffset.size];
+			in.seek(tempoffset.fileOffset);
+			in.read(nameToIdByte);
+		}
+		if (this.encryptionType == PSTFile.ENCRYPTION_TYPE_COMPRESSIBLE) {
+			nameToIdByte = PSTObject.decode(nameToIdByte);
+		}
+		
+		// process the entries
+		for (int x = 0; x+8 < nameToIdByte.length; x += 8) {
+			int mapEntryValue = (int)PSTObject.convertLittleEndianBytesToLong(nameToIdByte, x, x+4);
+//			int mapEntryType = (int)PSTObject.convertLittleEndianBytesToLong(nameToIdByte, x+4, x+6);
+			int mapEntryNumber = (int)PSTObject.convertLittleEndianBytesToLong(nameToIdByte, x+6, x+8);
+			this.nameToId.put(mapEntryValue, mapEntryNumber+ 0x8000);
+		}
+//		System.out.println(this.nameToId);
+	}
+	
+	int getNameToIdMapItem(int key) {
+		return this.nameToId.get(key);
 	}
 	
 	/**

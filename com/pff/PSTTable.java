@@ -82,10 +82,13 @@ class PSTTable {
 			}
 			description += "\n";
 		}
+
+//		PSTObject.printHexFormatted(data, true, indexes);
+//		System.exit(0);
 		
 		int offset = 12;
 		// all tables should have a b5 header to start with...
-		if ((int)data[offset] != 0xffffffb5) {
+		if ((int)(data[offset] & 0xff) != 0xb5) {
 			throw new PSTException("Unable to parse table, does not appear to contain b5 header information: "+Long.toHexString(data[offset]));
 		}
 		
@@ -99,11 +102,15 @@ class PSTTable {
 			"Size Of Item Record: "+sizeOfItemRecord+" - 0x"+Long.toHexString(sizeOfItemRecord)+"\n"+
 			"Size Of Item Value: "+sizeOfItemValue+" - 0x"+Long.toHexString(sizeOfItemValue)+"\n"+
 			"Table Entries Reference: "+tableEntriesReference+" - 0x"+Long.toHexString(tableEntriesReference)+"\n";
-		
-		tableEntriesReferenceAsOffset = (tableEntriesReference >> 4)+tableIndexOffset;
+
+		tableEntriesReferenceAsOffset = (tableEntriesReference >> 4);
+		description += "tableEntriesReferenceAsOffset: "+tableEntriesReferenceAsOffset+"\n";
+		tableEntriesReferenceAsOffset += tableIndexOffset;
 		description += "tableEntriesReferenceAsOffset: "+tableEntriesReferenceAsOffset+"\n";
 		
-		if (tableTypeByte == 0xffffffbc)
+//		System.out.println(description);
+		
+		if ((tableTypeByte & 0xff) == 0xbc)
 		{
 			tableEntriesReferenceAsOffset += 2; // why is this not for 7c????!!!
 		}

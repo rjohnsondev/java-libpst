@@ -133,14 +133,33 @@ public class PSTFile {
 		// process the entries
 		for (int x = 0; x+8 < nameToIdByte.length; x += 8) {
 			int mapEntryValue = (int)PSTObject.convertLittleEndianBytesToLong(nameToIdByte, x, x+4);
-//			int mapEntryType = (int)PSTObject.convertLittleEndianBytesToLong(nameToIdByte, x+4, x+6);
+			int mapEntryType = (int)PSTObject.convertLittleEndianBytesToLong(nameToIdByte, x+4, x+6);
 			int mapEntryNumber = (int)PSTObject.convertLittleEndianBytesToLong(nameToIdByte, x+6, x+8);
-			this.nameToId.put(mapEntryValue, mapEntryNumber+ 0x8000);
+//			this.nameToId.put(mapEntryValue, mapEntryNumber);
+			if ((mapEntryType & 0x1) == 1) {
+				// contains offset
+//				System.out.println("here: "+mapEntryNumber+" - "+mapEntryValue);
+				System.out.println(tableItems.get(4));
+				System.out.println(localDescriptorItems.get(34463));
+				OffsetIndexItem item = PSTObject.getOffsetIndexNode(this.in, 17600);
+				in.seek(item.fileOffset);
+				byte[] test = new byte[item.size];
+				in.read(test);
+				test = PSTObject.decode(test);
+				PSTObject.printHexFormatted(test, true);
+				
+				System.exit(0);
+			} else {
+				//
+				this.nameToId.put(mapEntryValue, mapEntryNumber+ 0x8000);
+			}
+			
 		}
 //		System.out.println(this.nameToId);
 	}
 	
 	int getNameToIdMapItem(int key) {
+		System.out.println(this.nameToId);
 		return this.nameToId.get(key);
 	}
 	

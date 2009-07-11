@@ -34,7 +34,7 @@ public class PSTMessage extends PSTObject {
 	 * @return IMPORTANCE_NORMAL if unknown
 	 */
 	public int getImportance() {
-		return getIntItem(0x0017);
+		return getIntItem(0x0017, IMPORTANCE_NORMAL);
 	}
 	
 	/**

@@ -125,6 +125,8 @@ public class PSTFile {
 		
 		// if we have a reference to an internal descriptor
 		PSTTableBCItem mapEntries = tableItems.get(3);
+		System.out.println(mapEntries);
+		System.out.println(localDescriptorItems);
 		nameToIdByte = mapEntries.data;
 		if (nameToIdByte.length == 0) {
 			PSTDescriptorItem mapDescriptorItem = localDescriptorItems.get(mapEntries.entryValueReference);

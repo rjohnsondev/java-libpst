@@ -165,7 +165,6 @@ class PSTTable {
 					break;
 				}
 			}
-			tableEntriesEnd = data.length;
 		}
 	}
 

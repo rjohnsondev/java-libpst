@@ -458,6 +458,7 @@ public class PSTObject {
 			tableOffsetIdentifierIndex = (tableOffsetIdentifierIndex & 0xfffffffe);
 			
 			OffsetIndexItem tableOffsetIdentifier = PSTObject.getOffsetIndexNode(in, tableOffsetIdentifierIndex);
+//			System.out.println(tableOffsetIdentifier);
 			byte[] tempTableOutput = new byte[tableOffsetIdentifier.size];
 			in.seek(tableOffsetIdentifier.fileOffset);
 			in.read(tempTableOutput);
@@ -467,7 +468,32 @@ public class PSTObject {
 		}
 		// replace the item data with the stuff from the array...
 		return tableOutput;
-		
+	}
+	
+	public static int[] getBlockOffsets(RandomAccessFile in, byte[] data)
+		throws IOException, PSTException
+	{
+		// is the data an array?
+		if (!PSTObject.isPSTArray(data))
+		{
+			throw new PSTException("Unable to process array, does not appear to be one!");
+		}
+		// we are an array!
+		// get the array items and merge them together
+		int numberOfEntries = (int)PSTObject.convertLittleEndianBytesToLong(data, 2, 4);
+		int[] output = new int[numberOfEntries];
+		int tableOffset = 8;
+		for (int y = 0; y < numberOfEntries; y++) {
+			// get the offset identifier
+			long tableOffsetIdentifierIndex = PSTObject.convertLittleEndianBytesToLong(data, tableOffset, tableOffset+8);
+			// clear the last bit of the identifier.  Why so hard?
+			tableOffsetIdentifierIndex = (tableOffsetIdentifierIndex & 0xfffffffe);
+			OffsetIndexItem tableOffsetIdentifier = PSTObject.getOffsetIndexNode(in, tableOffsetIdentifierIndex);
+			output[y] = tableOffsetIdentifier.size;
+			tableOffset += 8;
+		}
+		// replace the item data with the stuff from the array...
+		return output;
 	}
 	
 	public static PSTObject detectAndLoadPSTObject(PSTFile theFile, DescriptorIndexNode folderIndexNode)
@@ -568,10 +594,12 @@ public class PSTObject {
 		}
 		else
 		{
-			System.out.println(table);
+//			System.out.println(table);
+//			return message;
+			
 			throw new PSTException("Unknown child type: "+type+" - "+folderIndexNode.localDescriptorsOffsetIndexIdentifier);
 			//System.out.println("Unknown child type: "+type);
-			//return null;
+//			return null;
 		}
 		
 	}

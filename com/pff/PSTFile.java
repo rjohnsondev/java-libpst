@@ -95,15 +95,20 @@ public class PSTFile {
 
 		// get the data for the map
 		OffsetIndexItem nameToIdMapOffset = PSTObject.getOffsetIndexNode(in, nameToIdMapDescriptorNode.dataOffsetIndexIdentifier);
+		int[] blockOffsets = new int[0];
 		byte[] nameToIdByte = new byte[nameToIdMapOffset.size];
 		in.seek(nameToIdMapOffset.fileOffset);
 		in.read(nameToIdByte);
 		if (PSTObject.isPSTArray(nameToIdByte)) {
+			blockOffsets = PSTObject.getBlockOffsets(in, nameToIdByte);
 			nameToIdByte = PSTObject.processArray(in, nameToIdByte);
 		}
 		if (this.encryptionType == PSTFile.ENCRYPTION_TYPE_COMPRESSIBLE) {
 			nameToIdByte = PSTObject.decode(nameToIdByte);
 		}
+//		System.out.println(bcTable);
+//		PSTObject.printHexFormatted(nameToIdByte, true);
+//		System.exit(0);
 
 		// get the descriptors if we have them
 		HashMap<Integer, PSTDescriptorItem> localDescriptorItems = null;
@@ -111,10 +116,12 @@ public class PSTFile {
 			PSTDescriptor descriptor = new PSTDescriptor(this, nameToIdMapDescriptorNode.localDescriptorsOffsetIndexIdentifier);
 			localDescriptorItems = descriptor.getChildren();
 		}
+//		System.out.println(localDescriptorItems);
 		
 		// process the map
-		PSTTableBC bcTable = new PSTTableBC(nameToIdByte);
+		PSTTableBC bcTable = new PSTTableBC(nameToIdByte, blockOffsets);
 		HashMap<Integer, PSTTableBCItem> tableItems = (bcTable.getItems());
+//		System.out.println(tableItems);
 		
 		// if we have a reference to an internal descriptor
 		PSTTableBCItem mapEntries = tableItems.get(3);

@@ -31,7 +31,13 @@ class PSTTable {
 	protected PSTTable(byte[] data)
 		throws PSTException
 	{
-
+		this(data, new int[0]);
+	}
+	
+	protected PSTTable(byte[] data, int[] arrayBlocks)
+		throws PSTException
+	{
+		
 		tableIndexOffset = (int)PSTObject.convertLittleEndianBytesToLong(data, 0, 2);
 		
 		// the next two bytes should be the table type.
@@ -69,6 +75,7 @@ class PSTTable {
 		
 		tableValueReference = (int)PSTObject.convertLittleEndianBytesToLong(data, 4, 8);
 		
+		
 		// process the table index.
 		int numberOfIndexItems = (int)PSTObject.convertLittleEndianBytesToLong(data, tableIndexOffset, tableIndexOffset+2);
 		description += "Number of items: \n"+numberOfIndexItems;
@@ -82,9 +89,8 @@ class PSTTable {
 			}
 			description += "\n";
 		}
+		
 
-//		PSTObject.printHexFormatted(data, true, indexes);
-//		System.exit(0);
 		
 		int offset = 12;
 		// all tables should have a b5 header to start with...
@@ -103,10 +109,16 @@ class PSTTable {
 			"Size Of Item Value: "+sizeOfItemValue+" - 0x"+Long.toHexString(sizeOfItemValue)+"\n"+
 			"Table Entries Reference: "+tableEntriesReference+" - 0x"+Long.toHexString(tableEntriesReference)+"\n";
 
+		
 		tableEntriesReferenceAsOffset = (tableEntriesReference >> 4);
 		description += "tableEntriesReferenceAsOffset: "+tableEntriesReferenceAsOffset+"\n";
 		tableEntriesReferenceAsOffset += tableIndexOffset;
 		description += "tableEntriesReferenceAsOffset: "+tableEntriesReferenceAsOffset+"\n";
+
+//		System.out.println(description);
+//		PSTObject.printHexFormatted(data, true, indexes);
+//		System.exit(0);
+
 		
 //		System.out.println(description);
 		
@@ -114,17 +126,47 @@ class PSTTable {
 		{
 			tableEntriesReferenceAsOffset += 2; // why is this not for 7c????!!!
 		}
-		tableEntriesStart = (int)PSTObject.convertLittleEndianBytesToLong(data, tableEntriesReferenceAsOffset, tableEntriesReferenceAsOffset+2);
-		description += ("tableEntriesStart: "+tableEntriesStart+"\n");
-		tableEntriesEnd = tableEntriesStart;
-		for (int x = 0; x < indexes.length; x++) {
-			if (indexes[x] > tableEntriesStart) {
-				tableEntriesEnd = indexes[x];
-				break;
-			}
+		if (tableEntriesReference > 0x10000 && arrayBlocks.length > 0) {
+			// just kinda feeling my way around here....
+			int tableEntriesReferenceAsOffset2 = ((tableEntriesReference & 65535)>>4)+2; // ahh, +2 shouldn't be here for 7c tables...
+			int whichBlock = (tableEntriesReference >> 16);
+			int blockStart = arrayBlocks[whichBlock-1];
+			
+			// get the index offset of the applicable block
+			int tableIndexOffset2 = (int)PSTObject.convertLittleEndianBytesToLong(data, blockStart+0, blockStart+2)+blockStart;
+			
+			// get the location of the values block.
+			tableEntriesStart =
+				(int)
+				PSTObject.convertLittleEndianBytesToLong(
+					data,
+					tableIndexOffset2+tableEntriesReferenceAsOffset2,
+					tableIndexOffset2+tableEntriesReferenceAsOffset2+2
+				)+blockStart;
+			tableEntriesEnd =
+				(int)
+				PSTObject.convertLittleEndianBytesToLong(
+						data,
+						tableIndexOffset2+tableEntriesReferenceAsOffset2+2,
+						tableIndexOffset2+tableEntriesReferenceAsOffset2+4
+				)+blockStart;
+			// confused yet?
+//			System.out.println("start: "+tableEntriesStart+" - end: "+tableEntriesEnd);
 		}
-		
-		
+		else
+		{
+			tableEntriesStart = (int)PSTObject.convertLittleEndianBytesToLong(data, tableEntriesReferenceAsOffset, tableEntriesReferenceAsOffset+2);
+
+			description += ("tableEntriesStart: "+tableEntriesStart+"\n");
+			tableEntriesEnd = tableEntriesStart;
+			for (int x = 0; x < indexes.length; x++) {
+				if (indexes[x] > tableEntriesStart) {
+					tableEntriesEnd = indexes[x];
+					break;
+				}
+			}
+			tableEntriesEnd = data.length;
+		}
 	}
 
 

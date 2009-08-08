@@ -17,7 +17,13 @@ class PSTTableBC extends PSTTable {
 	PSTTableBC(byte[] data)
 		throws PSTException
 	{
-		super(data);
+		this(data, new int[0]);
+	}
+	
+	PSTTableBC(byte[] data, int[] offsets)
+		throws PSTException
+	{
+		super(data, offsets);
 		
 
 		// go through each of the entries.

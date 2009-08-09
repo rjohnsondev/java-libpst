@@ -12,6 +12,8 @@ import java.util.*;
  */
 public class PSTFolder extends PSTObject {
 	
+	private int folderCount = 0;
+	private int emailCount = 0;
 	
 	PSTFolder(PSTFile theFile, DescriptorIndexNode descriptorIndexNode)
 		throws PSTException, IOException
@@ -57,15 +59,17 @@ public class PSTFolder extends PSTObject {
 		Iterator<DescriptorIndexNode> iterator = childDescriptors.values().iterator();
 		while (iterator.hasNext()) {
 			DescriptorIndexNode childDescriptor = (DescriptorIndexNode)iterator.next();
-			
-			PSTObject child = PSTObject.detectAndLoadPSTObject(pstFile, childDescriptor);
-			//if (child instanceof PSTFolder) {
-				folders.put(childDescriptor, child);
-			//}
-			//else if (child instanceof PSTEmail) {
-			//	System.out.println("email: "+childDescriptor.descriptorIdentifier);
-			//}
-			
+
+			// just kinda assuming that all folders are less than this magic number.
+			if (childDescriptor.descriptorIdentifier < 0x200000) {
+				PSTObject child = PSTObject.detectAndLoadPSTObject(pstFile, childDescriptor);
+				if (child instanceof PSTFolder) {
+					folders.put(childDescriptor, child);
+				}
+				folderCount++;
+			} else {
+				emailCount++;
+			}
 		}
 
 		this.children.put("PSTFolder", folders);
@@ -73,7 +77,7 @@ public class PSTFolder extends PSTObject {
 	
 	Iterator<DescriptorIndexNode> someChildrenIterator = null;
 	
-	public LinkedHashMap<DescriptorIndexNode, PSTObject> getSomeChildren(int numberToReturn)
+	public LinkedHashMap<DescriptorIndexNode, PSTObject> getChildren(int numberToReturn)
 		throws PSTException, IOException
 	{
 		if (someChildrenIterator == null) {
@@ -90,12 +94,32 @@ public class PSTFolder extends PSTObject {
 				break;
 			}
 			DescriptorIndexNode childDescriptor = (DescriptorIndexNode)someChildrenIterator.next();
-			PSTObject child = PSTObject.detectAndLoadPSTObject(pstFile, childDescriptor);
-			output.put(childDescriptor, child);
+			// only non-folders plz!!
+			if (childDescriptor.descriptorIdentifier >= 0x200000) {
+				PSTObject child = PSTObject.detectAndLoadPSTObject(pstFile, childDescriptor);
+				output.put(childDescriptor, child);
+			} else {
+				x--;
+			}
 		}
 
 		return output;
 	}
+	
+	public int getFolderCount()
+		throws IOException, PSTException
+	{
+		processChildren();
+		return this.folderCount;
+	}
+	
+	public int getEmailCount()
+		throws IOException, PSTException
+	{
+		processChildren();
+		return this.emailCount;
+	}
+
 
 	/**
 	 * get the message store display name

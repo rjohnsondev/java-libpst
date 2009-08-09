@@ -106,9 +106,6 @@ public class PSTFile {
 		if (this.encryptionType == PSTFile.ENCRYPTION_TYPE_COMPRESSIBLE) {
 			nameToIdByte = PSTObject.decode(nameToIdByte);
 		}
-//		System.out.println(bcTable);
-//		PSTObject.printHexFormatted(nameToIdByte, true);
-//		System.exit(0);
 
 		// get the descriptors if we have them
 		HashMap<Integer, PSTDescriptorItem> localDescriptorItems = null;
@@ -116,17 +113,13 @@ public class PSTFile {
 			PSTDescriptor descriptor = new PSTDescriptor(this, nameToIdMapDescriptorNode.localDescriptorsOffsetIndexIdentifier);
 			localDescriptorItems = descriptor.getChildren();
 		}
-//		System.out.println(localDescriptorItems);
 		
 		// process the map
 		PSTTableBC bcTable = new PSTTableBC(nameToIdByte, blockOffsets);
 		HashMap<Integer, PSTTableBCItem> tableItems = (bcTable.getItems());
-//		System.out.println(tableItems);
 		
 		// if we have a reference to an internal descriptor
 		PSTTableBCItem mapEntries = tableItems.get(3);
-		System.out.println(mapEntries);
-		System.out.println(localDescriptorItems);
 		nameToIdByte = mapEntries.data;
 		if (nameToIdByte.length == 0) {
 			PSTDescriptorItem mapDescriptorItem = localDescriptorItems.get(mapEntries.entryValueReference);
@@ -146,7 +139,6 @@ public class PSTFile {
 			int mapEntryNumber = (int)PSTObject.convertLittleEndianBytesToLong(nameToIdByte, x+6, x+8);
 			this.nameToId.put(mapEntryValue, mapEntryNumber+ 0x8000);
 		}
-//		System.out.println(this.nameToId);
 	}
 	
 	int getNameToIdMapItem(int key) {
@@ -267,7 +259,7 @@ public class PSTFile {
 	 * get the child item descriptors for a specific descriptor
 	 * @return
 	 */
-	public LinkedHashMap<Integer, DescriptorIndexNode> getChildrenDescriptors(int descriptorIdentifier)
+	LinkedHashMap<Integer, DescriptorIndexNode> getChildrenDescriptors(int descriptorIdentifier)
 	{
 		if (!this.childrenDescriptorTree.containsKey(descriptorIdentifier)) {
 			return new LinkedHashMap<Integer, DescriptorIndexNode>();

@@ -37,12 +37,12 @@ class PSTTableItem {
 			}
 		} else if (stringType == VALUE_TYPE_PT_STRING8) {
 			// we are a dirty asci character
-//			char theChar;
-//			for (int x = 0; x < data.length; x++) {
-//				theChar = (char)data[x];
-//				outputBuffer.append(theChar);
-//			}
-			outputBuffer.append(data);
+			char theChar;
+			for (int x = 0; x < data.length; x++) {
+				theChar = (char)data[x];
+				outputBuffer.append(theChar);
+			}
+//			outputBuffer.append(data);
 			
 		} else {
 			// we are not a normal string, give a hexish sort of output

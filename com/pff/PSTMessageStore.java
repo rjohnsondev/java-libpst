@@ -10,7 +10,7 @@ import java.io.*;
  * @author toweruser
  *
  */
-class PSTMessageStore extends PSTObject {
+public class PSTMessageStore extends PSTObject {
 	
 	PSTMessageStore(PSTFile theFile, DescriptorIndexNode descriptorIndexNode)
 		throws PSTException, IOException

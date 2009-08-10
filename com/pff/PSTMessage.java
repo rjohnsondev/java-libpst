@@ -138,6 +138,10 @@ public class PSTMessage extends PSTObject {
 		return this.getStringItem(0x1013, PSTTableItem.VALUE_TYPE_PT_STRING8);
 	}
 	
+	public String getPlainText() {
+		return this.getStringItem(0x6619, PSTTableItem.VALUE_TYPE_PT_STRING8);
+	}
+	
 	public String getRTFBody()
 		throws PSTException, IOException
 	{

@@ -94,7 +94,7 @@ public class PSTObject {
 				// we have a hit!
 				PSTDescriptorItem descItem = (PSTDescriptorItem)this.localDescriptorItems.get(item.entryValueReference);
 				
-				//PSTObject.printHexFormatted(descItem.data, true);
+//				PSTObject.printHexFormatted(descItem.data, true);
 				
 				// and we want a string.
 				if (stringType == 0) {

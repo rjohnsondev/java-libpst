@@ -76,6 +76,7 @@ public class PSTFolder extends PSTObject {
 	}
 	
 	Iterator<DescriptorIndexNode> someChildrenIterator = null;
+	int childrenIteratorCursor = 0;
 	
 	public LinkedHashMap<DescriptorIndexNode, PSTObject> getChildren(int numberToReturn)
 		throws PSTException, IOException
@@ -83,6 +84,7 @@ public class PSTFolder extends PSTObject {
 		if (someChildrenIterator == null) {
 			LinkedHashMap<Integer, DescriptorIndexNode> childDescriptors = pstFile.getChildrenDescriptors(this.descriptorIndexNode.descriptorIdentifier);
 			someChildrenIterator = childDescriptors.values().iterator();
+			childrenIteratorCursor = 0;
 		}
 
 		LinkedHashMap<DescriptorIndexNode, PSTObject> output = new LinkedHashMap<DescriptorIndexNode, PSTObject>();
@@ -94,9 +96,11 @@ public class PSTFolder extends PSTObject {
 				break;
 			}
 			DescriptorIndexNode childDescriptor = (DescriptorIndexNode)someChildrenIterator.next();
+			
 			// only non-folders plz!!
 			if (childDescriptor.descriptorIdentifier >= 0x200000) {
 				PSTObject child = PSTObject.detectAndLoadPSTObject(pstFile, childDescriptor);
+				childrenIteratorCursor++;
 				output.put(childDescriptor, child);
 			} else {
 				x--;
@@ -105,6 +109,51 @@ public class PSTFolder extends PSTObject {
 
 		return output;
 	}
+	
+	public PSTObject getNextChild()
+		throws PSTException, IOException
+	{
+		if (someChildrenIterator == null) {
+			LinkedHashMap<Integer, DescriptorIndexNode> childDescriptors = pstFile.getChildrenDescriptors(this.descriptorIndexNode.descriptorIdentifier);
+			someChildrenIterator = childDescriptors.values().iterator();
+			childrenIteratorCursor = 0;
+		}
+		
+		while (someChildrenIterator.hasNext()) {
+			DescriptorIndexNode childDescriptor = (DescriptorIndexNode)someChildrenIterator.next();
+			if (childDescriptor.descriptorIdentifier >= 0x200000) {
+				PSTObject child = PSTObject.detectAndLoadPSTObject(pstFile, childDescriptor);
+				childrenIteratorCursor++;
+				return child;
+			}
+		}
+		
+		return null;
+	}
+	
+	/**
+	 * this really needs to be made more efficient...
+	 * @param numberToReturn
+	 */
+	public void moveChildCursorTo(int newIndex) {
+		if (newIndex < childrenIteratorCursor || someChildrenIterator == null) {
+			// bah! we need to go backwards :(
+			LinkedHashMap<Integer, DescriptorIndexNode> childDescriptors = pstFile.getChildrenDescriptors(this.descriptorIndexNode.descriptorIdentifier);
+			someChildrenIterator = childDescriptors.values().iterator();
+			childrenIteratorCursor = 0;
+		}
+		
+		// move the iterator along until we get to the record.
+		// this really sucks
+		for (int x = childrenIteratorCursor; x < newIndex && someChildrenIterator.hasNext(); x++) {
+			DescriptorIndexNode childDescriptor = (DescriptorIndexNode)someChildrenIterator.next();
+			if (childDescriptor.descriptorIdentifier < 0x200000) {
+				x--;
+			}
+		}
+		childrenIteratorCursor = newIndex;
+	}
+	
 	
 	public int getFolderCount()
 		throws IOException, PSTException

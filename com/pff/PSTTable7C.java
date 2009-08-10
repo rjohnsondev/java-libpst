@@ -55,7 +55,7 @@ class PSTTable7C extends PSTTable {
 			valuesArraySize = 8;
 			
 		} else {
-			valuesArrayIndexRefAsOffset = tableIndexOffset + ((valuesArrayIndexRef)>>4)+2;
+			valuesArrayIndexRefAsOffset = tableIndexOffset + ((valuesArrayIndexRef)>>>4)+2;
 			valueArrayStart = (int)PSTObject.convertLittleEndianBytesToLong(data, valuesArrayIndexRefAsOffset, valuesArrayIndexRefAsOffset+2);
 			valueArrayEnd = (int)PSTObject.convertLittleEndianBytesToLong(data, valuesArrayIndexRefAsOffset+2, valuesArrayIndexRefAsOffset+4);
 			// find out how many attachments we have
@@ -123,7 +123,7 @@ class PSTTable7C extends PSTTable {
 				
 				int end = 0;
 				int start = 0;				
-				int entryValueReferenceAsOffset = tableIndexOffset + (dataAsLong>>4) +2;
+				int entryValueReferenceAsOffset = tableIndexOffset + (dataAsLong>>>4) +2;
 				if (item.valuesArrayEntrySize > 0 &&
 					dataAsLong > 0 &&
 					entryValueReferenceAsOffset+2 < data.length &&

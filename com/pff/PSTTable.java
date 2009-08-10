@@ -110,7 +110,7 @@ class PSTTable {
 			"Table Entries Reference: "+tableEntriesReference+" - 0x"+Long.toHexString(tableEntriesReference)+"\n";
 
 		
-		tableEntriesReferenceAsOffset = (tableEntriesReference >> 4);
+		tableEntriesReferenceAsOffset = (tableEntriesReference >>> 4);
 		description += "tableEntriesReferenceAsOffset: "+tableEntriesReferenceAsOffset+"\n";
 		tableEntriesReferenceAsOffset += tableIndexOffset;
 		description += "tableEntriesReferenceAsOffset: "+tableEntriesReferenceAsOffset+"\n";
@@ -128,8 +128,8 @@ class PSTTable {
 		}
 		if (tableEntriesReference > 0x10000 && arrayBlocks.length > 0) {
 			// just kinda feeling my way around here....
-			int tableEntriesReferenceAsOffset2 = ((tableEntriesReference & 65535)>>4)+2; // ahh, +2 shouldn't be here for 7c tables...
-			int whichBlock = (tableEntriesReference >> 16);
+			int tableEntriesReferenceAsOffset2 = ((tableEntriesReference & 65535)>>>4)+2; // ahh, +2 shouldn't be here for 7c tables...
+			int whichBlock = (tableEntriesReference >>> 16);
 			int blockStart = arrayBlocks[whichBlock-1];
 			
 			// get the index offset of the applicable block

@@ -53,7 +53,7 @@ class PSTTableBC extends PSTTable {
 			// we need to have no higher order bits set and no lower 4 bits set.  This doesn't seem to work to well....
 			if ((item.entryValueReference & 0xf) == 0)
 			{
-				item.entryValueReferenceAsOffset = tableIndexOffset + (item.entryValueReference>>4) +2;
+				item.entryValueReferenceAsOffset = tableIndexOffset + (item.entryValueReference >>> 4) +2;
 				if (item.entryValueReferenceAsOffset+2 <= data.length) {
 					int entryInternalValueRef = 0;
 					entryInternalValueRef = (int)PSTObject.convertLittleEndianBytesToLong(data, item.entryValueReferenceAsOffset, item.entryValueReferenceAsOffset+2);

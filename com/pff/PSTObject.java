@@ -561,12 +561,12 @@ public class PSTObject {
 				type = "Address book";
 				break;
 			}
-			else if (key.intValue() >= 0x3a00 &&
+			/*else if (key.intValue() >= 0x3a00 &&
 					key.intValue() <= 0x3bff)
 			{
 				type = "Messaging user";
 				break;
-			}
+			}*/
 			else if (key.intValue() >= 0x3c00 &&
 					key.intValue() <= 0x3cff)
 			{
@@ -589,11 +589,14 @@ public class PSTObject {
 			return new PSTFolder(theFile, folderIndexNode, table, localDescriptorItems);
 		} else if (type.equals("Message envelope")) {
 			PSTMessage message = new PSTMessage(theFile, folderIndexNode, table, localDescriptorItems);
-			if (message.getMessageClass().equals("IPM.Appointment")) {
+			if (message.getMessageClass().equals("IPM.Note")) {
+				return new PSTEmail(theFile, folderIndexNode, table, localDescriptorItems);
+			} else if (message.getMessageClass().equals("IPM.Appointment")) {
 				return new PSTAppointment(theFile, folderIndexNode, table, localDescriptorItems);
+			} else if (message.getMessageClass().equals("IPM.Contact")) {
+				return new PSTContact(theFile, folderIndexNode, table, localDescriptorItems);
 			}
 			return message;
-					
 		}
 		else
 		{

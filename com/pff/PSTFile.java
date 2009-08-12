@@ -281,11 +281,20 @@ public class PSTFile {
 		return new PSTMessageStore(this, messageStoreDescriptor);
 	}
 
+	/**
+	 * get the root folder for the PST file.
+	 * You should find all of your data under here...
+	 * @return
+	 * @throws PSTException
+	 * @throws IOException
+	 */
 	public PSTFolder getRootFolder()
 		throws PSTException, IOException
 	{
 		DescriptorIndexNode rootFolderDescriptor = PSTObject.getDescriptorIndexNode(in, ROOT_FOLDER_DESCRIPTOR_IDENTIFIER);
 		return new PSTFolder(this, rootFolderDescriptor);
 	}
+	
+	
 	
 }

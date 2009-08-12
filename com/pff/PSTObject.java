@@ -112,6 +112,9 @@ public class PSTObject {
 	protected Date getDateItem(int identifier) {
 		if (this.items.containsKey(identifier)) {
 			PSTTableBCItem item = (PSTTableBCItem)this.items.get(identifier);
+			if (item.data.length == 0 ) {
+				return new Date(0);
+			}
 			int high = (int)PSTObject.convertLittleEndianBytesToLong(item.data, 4, 8);
 			int low = (int)PSTObject.convertLittleEndianBytesToLong(item.data, 0, 4);
 			 

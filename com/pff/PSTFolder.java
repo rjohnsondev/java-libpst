@@ -61,13 +61,16 @@ public class PSTFolder extends PSTObject {
 			DescriptorIndexNode childDescriptor = (DescriptorIndexNode)iterator.next();
 
 			// just kinda assuming that all folders are less than this magic number.
-			if (childDescriptor.descriptorIdentifier < 0x200000) {
+			if (childDescriptor.descriptorIdentifier < 0x100000) {
 				PSTObject child = PSTObject.detectAndLoadPSTObject(pstFile, childDescriptor);
 				if (child instanceof PSTFolder) {
 					folders.put(childDescriptor, child);
 				}
 				folderCount++;
-			} else {
+			} else if (childDescriptor.descriptorIdentifier < 0x200000) {
+				// we are something else...
+				// like a wunderBar or FolderDesign, or named view or whatever
+			} else if (childDescriptor.descriptorIdentifier > 0x200000) {
 				emailCount++;
 			}
 		}
@@ -136,6 +139,10 @@ public class PSTFolder extends PSTObject {
 	 * @param numberToReturn
 	 */
 	public void moveChildCursorTo(int newIndex) {
+		if (newIndex < 1) {
+			childrenIteratorCursor = 0;
+			return;
+		}
 		if (newIndex < childrenIteratorCursor || someChildrenIterator == null) {
 			// bah! we need to go backwards :(
 			LinkedHashMap<Integer, DescriptorIndexNode> childDescriptors = pstFile.getChildrenDescriptors(this.descriptorIndexNode.descriptorIdentifier);

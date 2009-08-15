@@ -11,7 +11,7 @@ import java.util.HashMap;
  * @author lappyuser
  *
  */
-public class PSTAppointment extends PSTMessage {
+public class PSTAppointment extends PSTEmail {
 
 	PSTAppointment(PSTFile theFile, DescriptorIndexNode descriptorIndexNode)
 		throws PSTException, IOException

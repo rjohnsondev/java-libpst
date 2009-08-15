@@ -292,9 +292,8 @@ public class PSTFile {
 		throws PSTException, IOException
 	{
 		DescriptorIndexNode rootFolderDescriptor = PSTObject.getDescriptorIndexNode(in, ROOT_FOLDER_DESCRIPTOR_IDENTIFIER);
-		return new PSTFolder(this, rootFolderDescriptor);
+		PSTFolder output = new PSTFolder(this, rootFolderDescriptor);
+		return output;
 	}
-	
-	
 	
 }

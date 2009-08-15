@@ -68,6 +68,4 @@ public class PSTMessageStore extends PSTObject {
 		}
 		return "";
 	}
-	
-	
 }

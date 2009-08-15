@@ -224,6 +224,7 @@ public class PSTContact extends PSTMessage {
 	 public String getHomeFaxNumber() {
 		 return this.getStringItem(0x3a25);
 	 }
+	 
 	/**
 	 * Business Address Country 
 	 */
@@ -458,10 +459,23 @@ public class PSTContact extends PSTMessage {
 	 public String getOtherAddressPostOfficeBox() {
 		 return this.getStringItem(0x3a64);
 	 }
+	 
+	 /**
+	  * Business address
+	  */
+	 public String getBusinessAddress() {
+		 return this.getStringItem(pstFile.getNameToIdMapItem(0x0000801b));
+	 }
+	 
+	 public String getEmail() {
+		 int emailKey = this.pstFile.getNameToIdMapItem(0x8083);
+		 return this.getStringItem(emailKey);
+	 }
 	
 	public String toString() {
 		return 
 			"Contact's Account name: "+getAccount()+"\n"+
+			"Email Address: "+getEmail()+"\n"+
 			"Callback telephone number: "+getCallbackTelephoneNumber()+"\n"+
 			"Contact's generational abbreviation (name suffix): "+getGeneration()+"\n"+
 			"Contacts given name: "+getGivenName()+"\n"+
@@ -492,6 +506,7 @@ public class PSTContact extends PSTMessage {
 			"Primary Fax Number: "+getPrimaryFaxNumber()+"\n"+
 			"Contact's office (business) fax numbe: "+getBusinessFaxNumber()+"\n"+
 			"Contact's home fax number: "+getHomeFaxNumber()+"\n"+
+			"Business Address Full: " + getBusinessAddress()+"\n"+
 			"Business Address Country: "+getBusinessAddressCountry()+"\n"+
 			"Business Address City: "+getBusinessAddressCity()+"\n"+
 			"Business Address State: "+getBusinessAddressStateOrProvince ()+"\n"+

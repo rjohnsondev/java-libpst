@@ -120,6 +120,7 @@ public class PSTFile {
 		
 		// if we have a reference to an internal descriptor
 		PSTTableBCItem mapEntries = tableItems.get(3);
+
 		nameToIdByte = mapEntries.data;
 		if (nameToIdByte.length == 0) {
 			PSTDescriptorItem mapDescriptorItem = localDescriptorItems.get(mapEntries.entryValueReference);
@@ -127,6 +128,10 @@ public class PSTFile {
 			nameToIdByte = new byte[tempoffset.size];
 			in.seek(tempoffset.fileOffset);
 			in.read(nameToIdByte);
+			// could be an array...
+			if (PSTObject.isPSTArray(nameToIdByte)) {
+				nameToIdByte = PSTObject.processArray(in, nameToIdByte);
+			}
 		}
 		if (this.encryptionType == PSTFile.ENCRYPTION_TYPE_COMPRESSIBLE) {
 			nameToIdByte = PSTObject.decode(nameToIdByte);
@@ -139,6 +144,8 @@ public class PSTFile {
 			int mapEntryNumber = (int)PSTObject.convertLittleEndianBytesToLong(nameToIdByte, x+6, x+8);
 			this.nameToId.put(mapEntryValue, mapEntryNumber+ 0x8000);
 		}
+		
+		
 	}
 	
 	int getNameToIdMapItem(int key) {

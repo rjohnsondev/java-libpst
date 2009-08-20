@@ -545,6 +545,8 @@ public class PSTContact extends PSTMessage {
 			"Other Address Postal Code: "+getOtherAddressPostalCode()+"\n"+
 			"Other Address State: "+getOtherAddressStateOrProvince ()+"\n"+
 			"Other Address Street: "+getOtherAddressStreet()+"\n"+
-			"Other Address Post Office box: "+getOtherAddressPostOfficeBox()+"\n";
+			"Other Address Post Office box: "+getOtherAddressPostOfficeBox()+"\n" +
+			"\n"+
+			this.getPlainText();
 	}
 }

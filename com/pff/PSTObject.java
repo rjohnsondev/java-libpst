@@ -590,7 +590,7 @@ public class PSTObject {
 		} else if (type.equals("Message envelope")) {
 			PSTMessage message = new PSTMessage(theFile, folderIndexNode, table, localDescriptorItems);
 			if (message.getMessageClass().equals("IPM.Note")) {
-				return new PSTEmail(theFile, folderIndexNode, table, localDescriptorItems);
+				return message;
 			} else if (message.getMessageClass().equals("IPM.Appointment")) {
 				return new PSTAppointment(theFile, folderIndexNode, table, localDescriptorItems);
 			} else if (message.getMessageClass().equals("IPM.Contact")) {

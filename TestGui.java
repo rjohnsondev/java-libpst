@@ -95,11 +95,9 @@ public class TestGui {
 					if (selectedMessage instanceof PSTContact) {
 						PSTContact contact = (PSTContact)selectedMessage;
 						emailText.setText(contact.toString());
-					} else if (selectedMessage instanceof PSTEmail) {
-						PSTEmail email = (PSTEmail)selectedMessage;
-						emailText.setText(email.getPlainText());
-					} else {
+					} else if (selectedMessage != null) {
 //						System.out.println(selectedMessage.getMessageClass());
+						emailText.setText(selectedMessage.getPlainText());
 					}
 					
 //					treePane.getViewport().setViewPosition(new Point(0,0));
@@ -194,7 +192,8 @@ class EmailTableModel extends AbstractTableModel {
     		"Subject",
     		"From",
     		"To",
-    		"Date"
+    		"Date",
+    		"Has Attachments"
 	};
 	String[][] rowData = {{"","","","",""}};
 	int rowCount = 0;
@@ -243,9 +242,12 @@ class EmailTableModel extends AbstractTableModel {
 				case 2:
 					return next.getSentRepresentingName() + " <"+ next.getSentRepresentingEmailAddress() +">";
 				case 3:
-					return next.getReceivedByName() + " <" + next.getReceivedByAddress()+">";
+					return next.getReceivedByName() + " <"+next.getReceivedByAddress()+">" + 
+						next.displayTo();
 				case 4:
 					return next.getClientSubmitTime();
+				case 5:
+					return (next.hasAttachments() ? "Yes" : "No");
 			}
 		} catch (Exception e) {
 			e.printStackTrace();

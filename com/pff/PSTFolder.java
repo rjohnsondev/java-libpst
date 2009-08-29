@@ -81,7 +81,6 @@ public class PSTFolder extends PSTObject {
 		otherItems = new LinkedHashSet<DescriptorIndexNode>();
 		
 		LinkedHashMap<Integer, DescriptorIndexNode> childDescriptors = pstFile.getChildrenDescriptors(this.descriptorIndexNode.descriptorIdentifier);
-		
 		Iterator<DescriptorIndexNode> iterator = childDescriptors.values().iterator();
 		while (iterator.hasNext()) {
 			DescriptorIndexNode childDescriptor = (DescriptorIndexNode)iterator.next();
@@ -93,6 +92,7 @@ public class PSTFolder extends PSTObject {
 				// we are something else...
 				// like a wunderBar or FolderDesign, or named view or whatever
 				otherItems.add(childDescriptor);
+//				System.out.println("unknown child type: " + childDescriptor.descriptorIdentifier);
 			} else if (childDescriptor.descriptorIdentifier > 0x200000) {
 				emails.add(childDescriptor);
 			}

@@ -27,7 +27,7 @@ public class TestGui {
 		
 		// attempt to open the pst file
 		try {
-			pstFile = new PSTFile("Outlook.pst");
+			pstFile = new PSTFile("Outlook-new.pst");
 		} catch (Exception err) {
 			err.printStackTrace();
 			System.exit(1);
@@ -94,6 +94,9 @@ public class TestGui {
 					PSTMessage selectedMessage = emailTableModel.getMessageAtRow(source.getSelectedRow());
 					if (selectedMessage instanceof PSTContact) {
 						PSTContact contact = (PSTContact)selectedMessage;
+						emailText.setText(contact.toString());
+					} else if (selectedMessage instanceof PSTTask) {
+						PSTTask contact = (PSTTask)selectedMessage;
 						emailText.setText(contact.toString());
 					} else if (selectedMessage != null) {
 //						System.out.println(selectedMessage.getMessageClass());

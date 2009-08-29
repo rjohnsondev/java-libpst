@@ -79,6 +79,20 @@ public class PSTObject {
 		return defaultValue;
 	}
 	
+
+	protected double getDoubleItem(int identifier) {
+		return getDoubleItem(identifier, 0);
+	}
+	protected double getDoubleItem(int identifier, double defaultValue) {
+		if (this.items.containsKey(identifier)) {
+			PSTTableBCItem item = (PSTTableBCItem)this.items.get(identifier);
+			long longVersion = PSTObject.convertLittleEndianBytesToLong(item.data);
+			return Double.longBitsToDouble(longVersion);
+		}
+		return defaultValue;
+	}
+	
+	
 	protected long getLongItem(int identifier) {
 		return getLongItem(0);
 	}
@@ -91,9 +105,7 @@ public class PSTObject {
 			} else {
 				// we are a long
 				// don't really know what to do with this yet
-				PSTObject.printHexFormatted(item.data, true);
-				System.out.println("this is a long! finish this code!");
-				System.exit(0);
+				PSTObject.convertLittleEndianBytesToLong(item.data);
 			}
 		}
 		return defaultValue;
@@ -659,7 +671,12 @@ public class PSTObject {
 				return new PSTAppointment(theFile, folderIndexNode, table, localDescriptorItems);
 			} else if (message.getMessageClass().equals("IPM.Contact")) {
 				return new PSTContact(theFile, folderIndexNode, table, localDescriptorItems);
+			} else if (message.getMessageClass().equals("IPM.Task")) {
+				return new PSTTask(theFile, folderIndexNode, table, localDescriptorItems);
+			} else {
+				System.out.println("some kind of message: "+message.getMessageClass());
 			}
+			
 			return message;
 		}
 		else

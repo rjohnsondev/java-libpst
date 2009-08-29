@@ -97,7 +97,7 @@ public class TestGui {
 						emailText.setText(contact.toString());
 					} else if (selectedMessage != null) {
 //						System.out.println(selectedMessage.getMessageClass());
-						emailText.setText(selectedMessage.getPlainText());
+						emailText.setText(selectedMessage.getBody());
 					}
 					
 //					treePane.getViewport().setViewPosition(new Point(0,0));

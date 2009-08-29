@@ -87,16 +87,58 @@ public class PSTAttachment extends PSTObject {
 		}
 	}
 
-	public String getFilename() {
+	
+	// attachment properties
+	
+	/**
+	 * Attachment (short) filename ASCII or Unicode string
+	 */
+	public String getAttachFilename() {
 		return this.getStringItem(0x3704);
 	}
-
-	public String getLongFilename() {
+	/**
+	 * Attachment method Integer 32-bit signed 0 => None (No attachment) 1 => By value 2 => By reference 3 => By reference resolve 4 => By reference only 5 => Embedded message 6 => OLE
+	 */
+	public int getAttachMethod() {
+		return this.getIntItem(0x3705);
+	}
+	/**
+	 * Attachment long filename ASCII or Unicode string
+	 */
+	public String getAttachLongFilename() {
 		return this.getStringItem(0x3707);
 	}
-	
-	public String getMimeType() {
+	/**
+	 * Attachment (short) pathname ASCII or Unicode string
+	 */
+	public String getAttachPathname() {
+		return this.getStringItem(0x3708);
+	}
+	/**
+	 * Attachment Position Integer 32-bit signed
+	 */
+	public int getRenderingPosition() {
+		return this.getIntItem(0x370b);
+	}
+	/**
+	 * Attachment long pathname ASCII or Unicode string
+	 */
+	public String getAttachLongPathname() {
+		return this.getStringItem(0x370d);
+	}
+	/**
+	 * Attachment mime type ASCII or Unicode string
+	 */
+	public String getAttachMimeTag() {
 		return this.getStringItem(0x370e);
 	}
+	/**
+	 * Attachment mime sequence
+	 */
+	public int getAttachMimeSequence() {
+		return this.getIntItem(0x3710);
+	}
+
+
 	
 }

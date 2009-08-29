@@ -70,7 +70,6 @@ public class PSTAppointment extends PSTMessage {
 		return this.getStringItem(this.pstFile.getNameToIdMapItem(0x8233));
 	}
 	public String getAllAttendees() {
-		System.out.println(this.items);
 		return this.getStringItem(this.pstFile.getNameToIdMapItem(0x8238));
 	}
 	public String getToAttendees() {

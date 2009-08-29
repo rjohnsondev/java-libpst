@@ -208,19 +208,6 @@ public class PSTFolder extends PSTObject {
 		return this.emails.size();
 	}
 
-	/**
-	 * get the folder display name
-	 * @return
-	 */
-	public String getDisplayName() {
-		// attempt to find in the table.
-		int displayNameEntryType = 0x3001;
-		if (this.items.containsKey(displayNameEntryType)) {
-			PSTTableBCItem item = (PSTTableBCItem)this.items.get(displayNameEntryType);
-			return new String(item.getStringValue());
-		}
-		return "";
-	}
 	
 	public int getFolderType() {
 		return this.getIntItem(0x3601);
@@ -234,7 +221,10 @@ public class PSTFolder extends PSTObject {
 	public int getContentCount() {
 		return this.getIntItem(0x3602);
 	}
-	
+
+	/**
+	 * Amount of unread content items Integer 32-bit signed
+	 */
 	public int getUnreadCount() {
 		return this.getIntItem(0x3603);
 	}
@@ -255,4 +245,12 @@ public class PSTFolder extends PSTObject {
 	public int getAssociateContentCount() {
 		return this.getIntItem(0x3617);
 	}
+	
+	/**
+	 * Container flags Integer 32-bit signed
+	 */
+	public int getContainerFlags() {
+		return this.getIntItem(0x3600);
+	}
+	
 }

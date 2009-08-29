@@ -29,11 +29,6 @@ public class PSTMessage extends PSTObject {
 		super(theFile, folderIndexNode, table, localDescriptorItems);
 	}
 	
-
-	public String getPlainText() {
-		return this.getStringItem(0x1000);
-	}
-
 	public String getRTFBody()
 		throws PSTException, IOException
 	{
@@ -58,11 +53,6 @@ public class PSTMessage extends PSTObject {
 		}
 		
 		return "";
-	}
-
-	
-	public String getBodyHTML() {
-		return this.getStringItem(0x1013, PSTTableItem.VALUE_TYPE_PT_STRING8);
 	}
 	
 	
@@ -317,21 +307,277 @@ public class PSTMessage extends PSTObject {
 		return this.getStringItem(0x0074);
 	}
 	/**
-	 * Received representing address type ASCII or Unicode string Known values are SMTP, EX (Exchange) and UNKNOWN
+	 * Received representing address type.
+	 * Known values are SMTP, EX (Exchange) and UNKNOWN
 	 */
 	public String getRcvdRepresentingAddrtype () {
 		return this.getStringItem(0x0077);
 	}
 	/**
-	 * Received representing e-mail address ASCII or Unicode string
+	 * Received representing e-mail address
 	 */
 	public String getRcvdRepresentingEmailAddress() {
 		return this.getStringItem(0x0078);
 	}
 
+	/**
+	 * Recipient details
+	 */
 	
+	/**
+	 * Non receipt notification requested
+	 */
+	public boolean isNonReceiptNotificationRequested() {
+		return (this.getIntItem(0x0c06) != 0);
+	}
+
+	/**
+	 * Originator non delivery report requested
+	 * @return
+	 */
+	public boolean isOriginatorNonDeliveryReportRequested() {
+		return (this.getIntItem(0x0c08) != 0);
+	}
+
+	public static final int RECIPIENT_TYPE_TO = 1;
+	public static final int RECIPIENT_TYPE_CC = 2;
 	
+	/**
+	 * Recipient type Integer 32-bit signed 0x01 => To 0x02 =>CC
+	 * @return
+	 */
+	public int getRecipientType() {
+		return this.getIntItem(0x0c15);
+	}
 	
+	/**
+	 * Reply requested
+	 * @return
+	 */
+	public boolean isReplyRequested() {
+		return (this.getIntItem(0x0c17) != 0);
+	}
+	
+	/**
+	 * Sender name
+	 * @return
+	 */
+	public String getSenderName() {
+		return this.getStringItem(0x0c1a);
+	}
+	
+	/**
+	 * Sender address type.
+	 * Known values are SMTP, EX (Exchange) and UNKNOWN
+	 * @return
+	 */
+	public String getSenderAddrtype() {
+		return this.getStringItem(0x0c1e);
+	}
+
+	/**
+	 * Sender e-mail address
+	 * @return
+	 */
+	public String getSenderEmailAddress() {
+		return this.getStringItem(0x0c1f);
+	}
+	
+	/**
+	 * Non-transmittable message properties
+	 */
+
+	/**
+	 * Message size
+	 */
+	public long getMessageSize() {
+		return this.getLongItem(0x0e08);
+	}
+	/**
+	 * Attachment size
+	 */
+	public int getAttachSize() {
+		return this.getIntItem(0x0e20);
+	}
+	/**
+	 * Attachment number
+	 */
+	public int getAttachNum() {
+		return this.getIntItem(0x0e21);
+	}
+	/**
+	 * Internet article number
+	 */
+	public int getInternetArticleNumber() {
+		return this.getIntItem(0x0e23);
+	}
+	/**
+	 * URL computer name postfix
+	 */
+	public int getURLCompNamePostfix() {
+		return this.getIntItem(0x0e61);
+	}
+	/**
+	 * Object type
+	 */
+	public int getObjectType() {
+		return this.getIntItem(0x0ffe);
+	}
+	/**
+	 * Delete after submit
+	 */
+	public boolean getDeleteAfterSubmit() {
+		return ((this.getIntItem(0x0e01)) != 0);
+	}
+	/**
+	 * Responsibility
+	 */
+	public boolean getResponsibility() {
+		return ((this.getIntItem(0x0e0f)) != 0);
+	}
+	/**
+	 * Compressed RTF in Sync Boolean
+	 */
+	public boolean isRTFInSync() {
+		return ((this.getIntItem(0x0e1f)) != 0);
+	}
+	/**
+	 * URL computer name set
+	 */
+	public boolean isURLCompNameSet() {
+		return ((this.getIntItem(0x0e62)) != 0);
+	}
+	/**
+	 * Display BCC
+	 * @return
+	 */
+	public String getDisplayBCC() {
+		return this.getStringItem(0x0e02);
+	}
+	/**
+	 * Display CC
+	 * @return
+	 */
+	public String getDisplayCC() {
+		return this.getStringItem(0x0e03);
+	}
+	/**
+	 * Display To
+	 * @return
+	 */
+	public String getDisplayTo() {
+		return this.getStringItem(0x0e04);
+	}
+	/**
+	 * Message delivery time
+	 * @return
+	 */
+	public Date getMessageDeliveryTime() {
+		return this.getDateItem(0x0e06);
+	}
+	
+	/**
+	 * Message content properties
+	 */
+	
+	/**
+	 * Plain text e-mail body
+	 */
+	public String getBody() {
+		return this.getStringItem(0x1000);
+	}
+	/**
+	 * RTF Sync Body CRC
+	 */
+	public int getRTFSyncBodyCRC() {
+		return this.getIntItem(0x1006);
+	}
+	/**
+	 * RTF Sync Body character count
+	 */
+	public int getRTFSyncBodyCount() {
+		return this.getIntItem(0x1007);
+	}
+	/**
+	 * RTF Sync body tag
+	 */
+	public String getRTFSyncBodyTag() {
+		return this.getStringItem(0x1008);
+	}
+	/**
+	 * RTF whitespace prefix count
+	 */
+	public int getRTFSyncPrefixCount() {
+		return this.getIntItem(0x1010);
+	}
+	/**
+	 * RTF whitespace tailing count
+	 */
+	public int getRTFSyncTrailingCount() {
+		return this.getIntItem(0x1011);
+	}
+	/**
+	 * HTML e-mail body
+	 */
+	public String getBodyHTML() {
+		return this.getStringItem(0x1013, PSTTableItem.VALUE_TYPE_PT_STRING8);
+	}
+	/**
+	 * Message identifier
+	 */
+	public String getInternetMessageId() {
+		return this.getStringItem(0x1035);
+	}
+	/**
+	 * In-Reply-To
+	 */
+	public String getInReplyToId() {
+		return this.getStringItem(0x1042);
+	}
+	/**
+	 * Return Path
+	 */
+	public String getReturnPath() {
+		return this.getStringItem(0x1046);
+	}
+	/**
+	 * Icon index
+	 */
+	public int getIconIndex() {
+		return this.getIntItem(0x1080);
+	}
+	/**
+	 * Disable full fidelity
+	 */
+	public boolean getDisableFullFidelity() {
+		return (this.getIntItem(0x10f2) != 0);
+	}
+	/**
+	 * URL computer name
+	 * Contains the .eml file name
+	 */
+	public String getURLCompName() {
+		return this.getStringItem(0x10f3);
+	}
+	/**
+	 * Attribute hidden
+	 */
+	public boolean getAttrHidden() {
+		return (this.getIntItem(0x10f4) != 0);
+	}
+	/**
+	 * Attribute system
+	 */
+	public boolean getAttrSystem() {
+		return (this.getIntItem(0x10f5) != 0);
+	}
+	/**
+	 * Attribute read only
+	 */
+	public boolean getAttrReadonly() {
+		return (this.getIntItem(0x10f6) != 0);
+	}
+
 	
 	
 	/**

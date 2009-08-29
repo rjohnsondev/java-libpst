@@ -79,6 +79,26 @@ public class PSTObject {
 		return defaultValue;
 	}
 	
+	protected long getLongItem(int identifier) {
+		return getLongItem(0);
+	}
+	protected long getLongItem(int identifier, long defaultValue) {
+		if (this.items.containsKey(identifier)) {
+			PSTTableBCItem item = (PSTTableBCItem)this.items.get(identifier);
+			if (item.entryType == 0x0003) {
+				// we are really just an int
+				return item.entryValueReference;
+			} else {
+				// we are a long
+				// don't really know what to do with this yet
+				PSTObject.printHexFormatted(item.data, true);
+				System.out.println("this is a long! finish this code!");
+				System.exit(0);
+			}
+		}
+		return defaultValue;
+	}
+	
 	protected String getStringItem(int identifier) {
 		return getStringItem(identifier, 0);
 	}
@@ -131,6 +151,50 @@ public class PSTObject {
 		return this.localDescriptorItems + "\n" +
 				(this.items);
 	}
+	
+	/**
+	 * These are the common properties, some don't really appear to be common across folders and emails, but hey
+	 */
+	
+	/**
+	 * get the display name
+	 * @return
+	 */
+	public String getDisplayName() {
+		return this.getStringItem(0x3001);
+	}
+	/**
+	 * Address type
+	 * Known values are SMTP, EX (Exchange) and UNKNOWN
+	 */
+	public String getAddrType() {
+		return this.getStringItem(0x3002);
+	}
+	/**
+	 * E-mail address
+	 */
+	public String getEmailAddress() {
+		return this.getStringItem(0x3003);
+	}
+	/**
+	 * Comment
+	 */
+	public String getComment() {
+		return this.getStringItem(0x3004);
+	}
+	/**
+	 * Creation time
+	 */
+	public Date getCreationTime() {
+		return this.getDateItem(0x3007);
+	}
+	/**
+	 * Modification time
+	 */
+	public Date getLastModificationTime() {
+		return this.getDateItem(0x3008);
+	}
+
 	
 	/**
 	 * Static stuff below

@@ -27,7 +27,7 @@ public class TestGui {
 		
 		// attempt to open the pst file
 		try {
-			pstFile = new PSTFile("Outlook-new.pst");
+			pstFile = new PSTFile("Outlook.pst");
 		} catch (Exception err) {
 			err.printStackTrace();
 			System.exit(1);
@@ -96,11 +96,18 @@ public class TestGui {
 						PSTContact contact = (PSTContact)selectedMessage;
 						emailText.setText(contact.toString());
 					} else if (selectedMessage instanceof PSTTask) {
-						PSTTask contact = (PSTTask)selectedMessage;
-						emailText.setText(contact.toString());
+						PSTTask task = (PSTTask)selectedMessage;
+						emailText.setText(task.toString());
+					} else if (selectedMessage instanceof PSTActivity) {
+						PSTActivity journalEntry = (PSTActivity)selectedMessage;
+						emailText.setText(journalEntry.toString());
+					} else if (selectedMessage instanceof PSTRss) {
+						PSTRss rss = (PSTRss)selectedMessage;
+						emailText.setText(rss.toString());
 					} else if (selectedMessage != null) {
 //						System.out.println(selectedMessage.getMessageClass());
-						emailText.setText(selectedMessage.getBody());
+//						emailText.setText(selectedMessage.getBody());
+						emailText.setText(selectedMessage.toString());
 					}
 					
 //					treePane.getViewport().setViewPosition(new Point(0,0));

@@ -162,7 +162,7 @@ public class PSTMessage extends PSTObject {
 	 * Transport message headers ASCII or Unicode string These contain the SMTP e-mail headers.
 	 */
 	public String getTransportMessageHeaders() {
-		return this.getStringItem(0x007d, PSTTableItem.VALUE_TYPE_PT_STRING8);
+		return this.getStringItem(0x007d);
 	}
 	
 
@@ -699,7 +699,8 @@ public class PSTMessage extends PSTObject {
 		return
 			"PSTEmail: "+this.getSubject()+"\n"+
 			"Importance: "+this.getImportance()+"\n"+
-			"Message Class: "+this.getMessageClass();
+			"Message Class: "+this.getMessageClass() + "\n\n" +
+			this.getTransportMessageHeaders();
 	}
 	
 }

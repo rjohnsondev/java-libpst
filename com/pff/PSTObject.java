@@ -673,6 +673,10 @@ public class PSTObject {
 				return new PSTContact(theFile, folderIndexNode, table, localDescriptorItems);
 			} else if (message.getMessageClass().equals("IPM.Task")) {
 				return new PSTTask(theFile, folderIndexNode, table, localDescriptorItems);
+			} else if (message.getMessageClass().equals("IPM.Activity")) {
+				return new PSTActivity(theFile, folderIndexNode, table, localDescriptorItems);
+			} else if (message.getMessageClass().equals("IPM.Post.Rss")) {
+				return new PSTRss(theFile, folderIndexNode, table, localDescriptorItems);
 			} else {
 				System.out.println("some kind of message: "+message.getMessageClass());
 			}

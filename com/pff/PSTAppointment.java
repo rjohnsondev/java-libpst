@@ -1,5 +1,5 @@
 /**
- * 
+ * PSTAppointment is for Calendar items
  */
 package com.pff;
 

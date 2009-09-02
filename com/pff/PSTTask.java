@@ -91,18 +91,6 @@ public class PSTTask extends PSTMessage {
 		return this.getIntItem(pstFile.getNameToIdMapItem(0x00008112));
 	}
 	/**
-	 * Unknown Integer 32-bit signed
-	 */
-	public int getTaskState() {
-		return this.getIntItem(pstFile.getNameToIdMapItem(0x00008113));
-	}
-	/**
-	 * Unknown Filetime
-	 */
-	public Date getTaskLastUpdate() {
-		return this.getDateItem(pstFile.getNameToIdMapItem(0x00008115));
-	}
-	/**
 	 * Complete Boolean
 	 */
 	public boolean isTaskComplete() {
@@ -168,8 +156,6 @@ public class PSTTask extends PSTMessage {
 		 "Actual effort in minutes Integer 32-bit signed: "+getTaskActualEffort()+"\n"+
 		 "Total effort in minutes Integer 32-bit signed: "+getTaskEstimatedEffort()+"\n"+
 		 "Task version Integer 32-bit signed FTK: Access count: "+getTaskVersion()+"\n"+
-		 "Unknown Integer 32-bit signed: "+getTaskState()+"\n"+
-		 "Unknown Filetime: "+getTaskLastUpdate()+"\n"+
 		 "Complete Boolean: "+isTaskComplete()+"\n"+
 		 "Owner ASCII or Unicode string: "+getTaskOwner()+"\n"+
 		 "Delegator ASCII or Unicode string: "+getTaskAssigner()+"\n"+

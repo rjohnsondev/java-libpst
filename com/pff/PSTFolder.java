@@ -7,8 +7,10 @@ import java.util.*;
 
 
 /**
- * @author toweruser
- *
+ * Represents a folder in the PST File
+ * Allows you to access child folders or items.  Items are accessed through a sort of cursor arrangement.
+ * This allows for incremental reading of a folder which may have _lots_ of emails.
+ * @author Richard Johnson
  */
 public class PSTFolder extends PSTObject {
 	
@@ -39,7 +41,7 @@ public class PSTFolder extends PSTObject {
 	/**
 	 * get all of the sub folders...
 	 * there are not usually thousands, so we just do it in one big operation.
-	 * @return
+	 * @return all of the subfolders
 	 * @throws PSTException
 	 * @throws IOException
 	 */
@@ -105,7 +107,7 @@ public class PSTFolder extends PSTObject {
 	 * This is implemented as a cursor of sorts, as there could be thousands
 	 * and that is just too many to process at once.
 	 * @param numberToReturn
-	 * @return
+	 * @return bunch of children in this folder
 	 * @throws PSTException
 	 * @throws IOException
 	 */
@@ -183,7 +185,7 @@ public class PSTFolder extends PSTObject {
 	
 	/**
 	 * the number of child folders in this folder
-	 * @return
+	 * @return number of subfolders as counted
 	 * @throws IOException
 	 * @throws PSTException
 	 */
@@ -197,7 +199,7 @@ public class PSTFolder extends PSTObject {
 	/**
 	 * the number of emails in this folder
 	 * this is the count of emails made by the library and will therefore should be more accurate than getContentCount
-	 * @return
+	 * @return number of emails in this folder (as counted)
 	 * @throws IOException
 	 * @throws PSTException
 	 */
@@ -216,7 +218,7 @@ public class PSTFolder extends PSTObject {
 	/**
 	 * the number of emails in this folder
 	 * this is as reported by the PST file, for a number calculated by the library use getEmailCount
-	 * @return
+	 * @return number of items as reported by PST File
 	 */
 	public int getContentCount() {
 		return this.getIntItem(0x3602);
@@ -232,7 +234,7 @@ public class PSTFolder extends PSTObject {
 	/**
 	 * does this folder have subfolders
 	 * once again, read from the PST, use getSubFolderCount if you want to know what the library makes of it all
-	 * @return
+	 * @return has subfolders as reported by the PST File
 	 */
 	public boolean hasSubfolders() {
 		return (this.getIntItem(0x360a) != 0);

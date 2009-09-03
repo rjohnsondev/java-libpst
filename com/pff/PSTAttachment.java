@@ -8,8 +8,8 @@ import java.util.*;
 
 
 /**
- * @author toweruser
- *
+ * Class containing attachment information
+ * @author Richard Johnson
  */
 public class PSTAttachment extends PSTObject {
 	

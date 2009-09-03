@@ -7,8 +7,8 @@ import java.io.IOException;
 import java.util.HashMap;
 
 /**
- * @author toweruser
- *
+ * Class for Contacts
+ * @author Richard Johnson
  */
 public class PSTContact extends PSTMessage {
 

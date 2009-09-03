@@ -1,5 +1,5 @@
 /**
- * PSTAppointment is for Calendar items
+ * 
  */
 package com.pff;
 
@@ -8,8 +8,8 @@ import java.util.Date;
 import java.util.HashMap;
 
 /**
- * @author lappyuser
- *
+ * PSTAppointment is for Calendar items
+ * @author Richard Johnson
  */
 public class PSTAppointment extends PSTMessage {
 

@@ -4,7 +4,12 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.*;
 
-
+/**
+ * PST Object is the root class of all PST Items.
+ * It also provides a number of static utility functions.  The most important of which is the
+ * detectAndLoadPSTObject call which allows extraction of a PST Item from the file.
+ * @author Richard Johnson
+ */
 public class PSTObject {
 	
 	protected PSTFile pstFile;
@@ -170,7 +175,6 @@ public class PSTObject {
 	
 	/**
 	 * get the display name
-	 * @return
 	 */
 	public String getDisplayName() {
 		return this.getStringItem(0x3001);
@@ -426,7 +430,7 @@ public class PSTObject {
 	/**
 	 * decode a lump of data that has been encrypted with the compressible encryption
 	 * @param data
-	 * @return
+	 * @return decoded data
 	 */
 	public static byte[] decode(byte[] data) {
 		int temp;
@@ -484,7 +488,7 @@ public class PSTObject {
 	
 	/**
 	 * Utility function for converting little endian bytes into a usable java long
-	 * @param temp
+	 * @param data
 	 * @return long version of the data
 	 */
 	public static long convertLittleEndianBytesToLong(byte[] data) {
@@ -492,7 +496,7 @@ public class PSTObject {
 	}
 	/**
 	 * Utility function for converting little endian bytes into a usable java long
-	 * @param temp
+	 * @param data
 	 * @param start
 	 * @param end
 	 * @return long version of the data

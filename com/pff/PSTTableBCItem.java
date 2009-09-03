@@ -4,8 +4,8 @@
 package com.pff;
 
 /**
- * @author toweruser
- *
+ * Items within the BC Table
+ * @author Richard Johnson
  */
 class PSTTableBCItem extends PSTTableItem
 {

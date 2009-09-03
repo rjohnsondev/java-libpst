@@ -4,8 +4,9 @@
 package com.pff;
 
 /**
- * @author toweruser
- *
+ * Generic table item.
+ * Provides some basic string functions
+ * @author Richard Johnson
  */
 class PSTTableItem {
 

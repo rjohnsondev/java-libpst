@@ -5,8 +5,10 @@ package com.pff;
 
 
 /**
- * @author toweruser
- *
+ * The PST Table is the workhorse of the whole system.
+ * It allows for an item to be read and broken down into the individual properties that it consists of.
+ * For most PST Objects, it appears that only 7c and bc table types are used.
+ * @author Richard Johnson
  */
 class PSTTable {
 

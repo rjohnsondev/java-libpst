@@ -7,8 +7,11 @@ import java.io.*;
 import java.util.*;
 
 /**
- * @author toweruser
- *
+ * PST Descriptor handles the processing of the descriptors associated with a PST Item
+ * Not to be confused with the DescriptorsIndexNodes which point to an item, this rather clumsy
+ * terminology came from the PFF file format specification I was working off.  This actually handles
+ * data which describes an item.
+ * @author Richard Johnson
  */
 class PSTDescriptor {
 	

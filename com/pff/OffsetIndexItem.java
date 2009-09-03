@@ -5,7 +5,8 @@ package com.pff;
 
 /**
  * OffsetIndexItem is a leaf item from the Offset index b-tree
- * @author toweruser
+ * Only really used internally to get the file offset for items
+ * @author Richard Johnson
  */
 class OffsetIndexItem {
 	long indexIdentifier;

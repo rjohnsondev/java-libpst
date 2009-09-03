@@ -1,12 +1,11 @@
 /**
- * Taken from http://www.freeutils.net/source/jtnef/rtfcompressed.jsp
- * Licensed under GPL, if you want to use this commercially, re-implement
+
  */
 package com.pff;
 
 /**
- * @author toweruser
- *
+ * Taken from http://www.freeutils.net/source/jtnef/rtfcompressed.jsp
+ * Licensed under GPL, if you want to use this commercially, re-implement
  */
 public class LZFu {
 

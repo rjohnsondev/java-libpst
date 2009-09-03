@@ -4,8 +4,8 @@
 package com.pff;
 
 /**
- * @author toweruser
- *
+ * Simple exception for PST File related errors
+ * @author Richard Johnson
  */
 public class PSTException extends Exception
 {

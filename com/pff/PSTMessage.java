@@ -10,8 +10,12 @@ import java.util.HashMap;
 import java.util.Iterator;
 
 /**
- * @author toweruser
- *
+ * PST Message contains functions that are common across most MAPI objects.
+ * Note that many of these functions may not be applicable for the item in question,
+ * however there seems to be no hard and fast outline for what properties apply to which
+ * objects.  For properties where no value is set, a blank value is returned (rather than
+ * an exception being raised).
+ * @author Richard Johnson
  */
 public class PSTMessage extends PSTObject {
 
@@ -93,7 +97,7 @@ public class PSTMessage extends PSTObject {
 	
 	/**
 	 * get the client submit time
-	 * @returns null if not found
+	 * @return null if not found
 	 */
 	public Date getClientSubmitTime() {
 		return this.getDateItem(0x0039);
@@ -101,7 +105,7 @@ public class PSTMessage extends PSTObject {
 	
 	/**
 	 * get received by name
-	 * @returns empty string if not found
+	 * @return empty string if not found
 	 */
 	public String getReceivedByName() {
 		return this.getStringItem(0x0040);
@@ -109,7 +113,7 @@ public class PSTMessage extends PSTObject {
 	
 	/**
 	 * get sent representing name
-	 * @returns empty string if not found
+	 * @return empty string if not found
 	 */
 	public String getSentRepresentingName() {
 		return this.getStringItem(0x0042);
@@ -333,7 +337,6 @@ public class PSTMessage extends PSTObject {
 
 	/**
 	 * Originator non delivery report requested
-	 * @return
 	 */
 	public boolean isOriginatorNonDeliveryReportRequested() {
 		return (this.getIntItem(0x0c08) != 0);
@@ -344,7 +347,6 @@ public class PSTMessage extends PSTObject {
 	
 	/**
 	 * Recipient type Integer 32-bit signed 0x01 => To 0x02 =>CC
-	 * @return
 	 */
 	public int getRecipientType() {
 		return this.getIntItem(0x0c15);
@@ -352,7 +354,6 @@ public class PSTMessage extends PSTObject {
 	
 	/**
 	 * Reply requested
-	 * @return
 	 */
 	public boolean isReplyRequested() {
 		return (this.getIntItem(0x0c17) != 0);
@@ -360,7 +361,6 @@ public class PSTMessage extends PSTObject {
 	
 	/**
 	 * Sender name
-	 * @return
 	 */
 	public String getSenderName() {
 		return this.getStringItem(0x0c1a);
@@ -369,7 +369,6 @@ public class PSTMessage extends PSTObject {
 	/**
 	 * Sender address type.
 	 * Known values are SMTP, EX (Exchange) and UNKNOWN
-	 * @return
 	 */
 	public String getSenderAddrtype() {
 		return this.getStringItem(0x0c1e);
@@ -377,7 +376,6 @@ public class PSTMessage extends PSTObject {
 
 	/**
 	 * Sender e-mail address
-	 * @return
 	 */
 	public String getSenderEmailAddress() {
 		return this.getStringItem(0x0c1f);
@@ -449,28 +447,24 @@ public class PSTMessage extends PSTObject {
 	}
 	/**
 	 * Display BCC
-	 * @return
 	 */
 	public String getDisplayBCC() {
 		return this.getStringItem(0x0e02);
 	}
 	/**
 	 * Display CC
-	 * @return
 	 */
 	public String getDisplayCC() {
 		return this.getStringItem(0x0e03);
 	}
 	/**
 	 * Display To
-	 * @return
 	 */
 	public String getDisplayTo() {
 		return this.getStringItem(0x0e04);
 	}
 	/**
 	 * Message delivery time
-	 * @return
 	 */
 	public Date getMessageDeliveryTime() {
 		return this.getDateItem(0x0e06);
@@ -635,7 +629,6 @@ public class PSTMessage extends PSTObject {
 	
 	/**
 	 * get the number of attachments for this message
-	 * @return
 	 * @throws PSTException
 	 * @throws IOException
 	 */
@@ -653,7 +646,7 @@ public class PSTMessage extends PSTObject {
 	/**
 	 * get a specific attachment from this email.
 	 * @param attachmentNumber
-	 * @return
+	 * @return the attachment at the defined index
 	 * @throws PSTException
 	 * @throws IOException
 	 */

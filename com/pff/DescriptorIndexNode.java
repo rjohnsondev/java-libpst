@@ -5,7 +5,8 @@ package com.pff;
 
 /**
  * DescriptorIndexNode is a leaf item from the Descriptor index b-tree
- * @author toweruser
+ * It is like a pointer to an element in the PST file, everything has one...
+ * @author Richard Johnson
  */
 public class DescriptorIndexNode {
 	public int descriptorIdentifier;

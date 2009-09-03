@@ -8,8 +8,8 @@ import java.util.HashMap;
 import java.util.Date;
 
 /**
- * @author lappyuser
- *
+ * Object that represents Task items
+ * @author Richard Johnson
  */
 public class PSTTask extends PSTMessage {
 
@@ -37,7 +37,7 @@ public class PSTTask extends PSTMessage {
 	}
 
 	/**
-	 * Status Integer 32-bit signed 0x0 => Not started [TODO]
+	 * Status Integer 32-bit signed 0x0 => Not started
 	 */
 	public int getTaskStatus() {
 		return this.getIntItem(pstFile.getNameToIdMapItem(0x00008101));

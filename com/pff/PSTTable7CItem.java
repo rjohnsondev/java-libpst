@@ -3,10 +3,9 @@
  */
 package com.pff;
 
-
 /**
- * @author toweruser
- *
+ * Items found in the 7c tables
+ * @author Richard Johnson
  */
 class PSTTable7CItem extends PSTTableItem
 {

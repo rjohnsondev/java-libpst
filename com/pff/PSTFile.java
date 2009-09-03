@@ -6,8 +6,9 @@ import java.io.*;
 import java.util.*;
 
 /**
- * @author toweruser
- *
+ * PSTFile is the containing class that allows you to access items within a .pst file.
+ * Start here, get the root of the folders and work your way down through your items.
+ * @author Richard Johnson
  */
 public class PSTFile {
 
@@ -163,7 +164,7 @@ public class PSTFile {
 	
 	/**
 	 * get the type of encryption the file uses
-	 * @return
+	 * @return encryption type used in the PST File
 	 */
 	public int getEncryptionType() {
 		return this.encryptionType;
@@ -171,7 +172,6 @@ public class PSTFile {
 	
 	/**
 	 * get the handle to the file we are currently accessing
-	 * @return
 	 */
 	public RandomAccessFile getFileHandle() {
 		return this.in;
@@ -277,7 +277,6 @@ public class PSTFile {
 	/**
 	 * get the message store of the PST file.
 	 * Note that this doesn't really have much information, better to look under the root folder
-	 * @return
 	 * @throws PSTException
 	 * @throws IOException
 	 */
@@ -291,7 +290,6 @@ public class PSTFile {
 	/**
 	 * get the root folder for the PST file.
 	 * You should find all of your data under here...
-	 * @return
 	 * @throws PSTException
 	 * @throws IOException
 	 */

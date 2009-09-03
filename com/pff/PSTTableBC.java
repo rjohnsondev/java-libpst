@@ -7,8 +7,9 @@ import java.util.*;
 
 
 /**
- * Table class manages the parsing of table data binary blobs into manageable objects
- * @author toweruser
+ * The BC Table type.
+ * Used by pretty much everything.
+ * @author Richard Johnson
  */
 class PSTTableBC extends PSTTable {
 	

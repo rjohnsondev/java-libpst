@@ -7,8 +7,9 @@ import java.io.*;
 
 
 /**
- * @author toweruser
- *
+ * Object that represents the message store.
+ * Not much use other than to get the "name" of the PST file.
+ * @author Richard Johnson
  */
 public class PSTMessageStore extends PSTObject {
 	
@@ -21,7 +22,6 @@ public class PSTMessageStore extends PSTObject {
 	/**
 	 * Get the GUID
 	 * Note: I don't know if the endianess is correct!!! 
-	 * @return
 	 */
 	public String getGUID() {
 		// attempt to find in the table.
@@ -57,7 +57,6 @@ public class PSTMessageStore extends PSTObject {
 	
 	/**
 	 * get the message store display name
-	 * @return
 	 */
 	public String getDisplayName() {
 		// attempt to find in the table.

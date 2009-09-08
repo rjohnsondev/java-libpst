@@ -218,7 +218,7 @@ public class PSTObject {
 	 */
 
 	// substitution table for the compressible encryption type.
-	public static int[] compEnc = {
+	private static int[] compEnc = {
 	    0x47, 0xf1, 0xb4, 0xe6, 0x0b, 0x6a, 0x72, 0x48, 0x85, 0x4e, 0x9e, 0xeb, 0xe2, 0xf8, 0x94, 0x53,
 	    0xe0, 0xbb, 0xa0, 0x02, 0xe8, 0x5a, 0x09, 0xab, 0xdb, 0xe3, 0xba, 0xc6, 0x7c, 0xc3, 0x10, 0xdd,
 	    0x39, 0x05, 0x96, 0x30, 0xf5, 0x37, 0x60, 0x82, 0x8c, 0xc9, 0x13, 0x4a, 0x6b, 0x1d, 0xf3, 0xfb,
@@ -242,10 +242,10 @@ public class PSTObject {
 	 * @param data
 	 * @param pretty
 	 */
-	public static void printHexFormatted(byte[] data, boolean pretty) {
+	protected static void printHexFormatted(byte[] data, boolean pretty) {
 		printHexFormatted(data,pretty, new int[0]);
 	}
-	public static void printHexFormatted(byte[] data, boolean pretty, int[] indexes) {
+	protected static void printHexFormatted(byte[] data, boolean pretty, int[] indexes) {
 		// groups of two
 		if (pretty) { System.out.println("---"); }
 		long tmpLongValue;
@@ -306,7 +306,7 @@ public class PSTObject {
 	 * @throws IOException
 	 * @throws PSTException
 	 */
-	public static DescriptorIndexNode getDescriptorIndexNode(RandomAccessFile in, long identifier)
+	protected static DescriptorIndexNode getDescriptorIndexNode(RandomAccessFile in, long identifier)
 		throws IOException, PSTException
 	{
 		return new DescriptorIndexNode(findBtreeItem(in, identifier, true));
@@ -320,7 +320,7 @@ public class PSTObject {
 	 * @throws IOException
 	 * @throws PSTException
 	 */
-	public static OffsetIndexItem getOffsetIndexNode(RandomAccessFile in, long identifier)
+	protected static OffsetIndexItem getOffsetIndexNode(RandomAccessFile in, long identifier)
 		throws IOException, PSTException
 	{
 		return new OffsetIndexItem(findBtreeItem(in, identifier, false));
@@ -432,7 +432,7 @@ public class PSTObject {
 	 * @param data
 	 * @return decoded data
 	 */
-	public static byte[] decode(byte[] data) {
+	protected static byte[] decode(byte[] data) {
 		int temp;
 		for (int x = 0; x < data.length; x++) {
 			temp = data[x] & 0xff;
@@ -443,7 +443,7 @@ public class PSTObject {
 	}
 	
 
-	public static byte[] encode(byte[] data) {
+	protected static byte[] encode(byte[] data) {
 		// create the encoding array...
 		int[] enc = new int[compEnc.length];
 		for (int x = 0; x < enc.length; x++) {
@@ -491,7 +491,7 @@ public class PSTObject {
 	 * @param data
 	 * @return long version of the data
 	 */
-	public static long convertLittleEndianBytesToLong(byte[] data) {
+	protected static long convertLittleEndianBytesToLong(byte[] data) {
 		return convertLittleEndianBytesToLong(data, 0, data.length);
 	}
 	/**
@@ -501,7 +501,7 @@ public class PSTObject {
 	 * @param end
 	 * @return long version of the data
 	 */
-	public static long convertLittleEndianBytesToLong(byte[] data, int start, int end) {
+	protected static long convertLittleEndianBytesToLong(byte[] data, int start, int end) {
 		
 		long offset = data[end-1] & 0xff;
 		long tmpLongValue;
@@ -514,11 +514,11 @@ public class PSTObject {
 		return offset;
 	}
 	
-	public static boolean isPSTArray(byte[] data) {
+	protected static boolean isPSTArray(byte[] data) {
 		return (data[0] == 1 && data[1] == 1);
 	}
 	
-	public static byte[] processArray(RandomAccessFile in, byte[] data)
+	protected static byte[] processArray(RandomAccessFile in, byte[] data)
 		throws IOException, PSTException
 	{
 		// is the data an array?
@@ -553,7 +553,7 @@ public class PSTObject {
 		return tableOutput;
 	}
 	
-	public static int[] getBlockOffsets(RandomAccessFile in, byte[] data)
+	protected static int[] getBlockOffsets(RandomAccessFile in, byte[] data)
 		throws IOException, PSTException
 	{
 		// is the data an array?
@@ -713,7 +713,7 @@ public class PSTObject {
      * did you notice that you can tell from the epochs which
      * operating system is the modern one? :-))</p>
      */
-    public static final long EPOCH_DIFF = 11644473600000L;
+    private static final long EPOCH_DIFF = 11644473600000L;
 	
 	/**
      * <p>Converts a Windows FILETIME into a {@link Date}. The Windows
@@ -727,7 +727,7 @@ public class PSTObject {
      * @param low The lower double word of the FILETIME structure.
      * @return The Windows FILETIME as a {@link Date}.
      */
-    public static Date filetimeToDate(final int high, final int low)
+    protected static Date filetimeToDate(final int high, final int low)
     {
         final long filetime = ((long) high) << 32 | (low & 0xffffffffL);
         final long ms_since_16010101 = filetime / (1000 * 10);

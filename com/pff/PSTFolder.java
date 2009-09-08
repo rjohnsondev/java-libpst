@@ -45,13 +45,13 @@ public class PSTFolder extends PSTObject {
 	 * @throws PSTException
 	 * @throws IOException
 	 */
-	public LinkedHashSet<PSTObject> getSubFolders()
+	public LinkedHashSet<PSTFolder> getSubFolders()
 		throws PSTException, IOException
 	{
 		this.processChildren();
-		LinkedHashSet<PSTObject> output = new LinkedHashSet<PSTObject>();
+		LinkedHashSet<PSTFolder> output = new LinkedHashSet<PSTFolder>();
 		for (DescriptorIndexNode childDescriptor : this.subFolders) {
-			output.add(PSTObject.detectAndLoadPSTObject(this.pstFile, childDescriptor));
+			output.add((PSTFolder)PSTObject.detectAndLoadPSTObject(this.pstFile, childDescriptor));
 		}
 		return output;
 	}

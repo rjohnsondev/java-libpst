@@ -108,6 +108,8 @@ public class TestGui {
 //						System.out.println(selectedMessage.getMessageClass());
 //						emailText.setText(selectedMessage.getBody());
 						emailText.setText(selectedMessage.toString());
+//						PSTTask task = selectedMessage.toTask();
+//						emailText.setText(task.toString());
 					}
 					
 //					treePane.getViewport().setViewPosition(new Point(0,0));
@@ -256,6 +258,10 @@ class EmailTableModel extends AbstractTableModel {
 						next.displayTo();
 				case 4:
 					return next.getClientSubmitTime();
+//					return next.isFlagged();
+//					return next.isDraft();
+//					PSTTask task = next.toTask();
+//					return task.toString();
 				case 5:
 					return (next.hasAttachments() ? "Yes" : "No");
 			}
@@ -271,7 +277,7 @@ class EmailTableModel extends AbstractTableModel {
     public void setFolder(PSTFolder theFolder) {
     	theFolder.moveChildCursorTo(0);
     	this.theFolder = theFolder;
-    	cache = new HashMap();
+//    	cache = new HashMap();
     	this.fireTableDataChanged();
     }
 

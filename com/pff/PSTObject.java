@@ -63,8 +63,10 @@ public class PSTObject {
 		this.pstFile = theFile;
 		this.descriptorIndexNode = folderIndexNode;
 		this.items = table.getItems();
+		this.table = table;
 		this.localDescriptorItems = localDescriptorItems;
 	}
+	protected PSTTableBC table;
 	
 	
 	
@@ -579,7 +581,21 @@ public class PSTObject {
 		return output;
 	}
 	
-	public static PSTObject detectAndLoadPSTObject(PSTFile theFile, DescriptorIndexNode folderIndexNode)
+	/**
+	 * Detect and load a PST Object from a file with the specified descriptor index
+	 * @param theFile
+	 * @param descriptorIndex
+	 * @return PSTObject with that index
+	 * @throws IOException
+	 * @throws PSTException
+	 */
+	public static PSTObject detectAndLoadPSTObject(PSTFile theFile, long descriptorIndex)
+		throws IOException, PSTException
+	{
+		return PSTObject.detectAndLoadPSTObject(theFile, PSTObject.getDescriptorIndexNode(theFile.getFileHandle(), descriptorIndex));
+	}
+	
+	static PSTObject detectAndLoadPSTObject(PSTFile theFile, DescriptorIndexNode folderIndexNode)
 		throws IOException, PSTException
 	{
 		
@@ -668,6 +684,7 @@ public class PSTObject {
 		if (type.equals("Folder and address book")) {
 			return new PSTFolder(theFile, folderIndexNode, table, localDescriptorItems);
 		} else if (type.equals("Message envelope")) {
+			
 			PSTMessage message = new PSTMessage(theFile, folderIndexNode, table, localDescriptorItems);
 			if (message.getMessageClass().equals("IPM.Note")) {
 				return message;

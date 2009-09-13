@@ -242,6 +242,7 @@ public class PSTMessage extends PSTObject {
 	//0x003f 	0x0102 	PR_RECEIVED_BY_ENTRYID (PidTagReceivedByEntr yId) 	Received by entry identifier Binary data Contains recipient/sender structure
 	//0x0041 	0x0102 	PR_SENT_REPRESENTING_ENTRYID 	Sent representing entry identifier Binary data Contains recipient/sender structure
 	//0x0043 	0x0102 	PR_RCVD_REPRESENTING_ENTRYID 	Received representing entry identifier Binary data Contains recipient/sender structure
+	
 	/**
 	 * Received representing name ASCII or Unicode string
 	 */
@@ -470,6 +471,70 @@ public class PSTMessage extends PSTObject {
 		return this.getDateItem(0x0e06);
 	}
 	
+//	
+//	public int getFlags() {
+//		if (this.items.containsKey(0x0e17)) {
+//			System.out.println(this.items.get(0x0e17));
+//		}
+//		return this.getIntItem(0x0e17);
+//	}
+//	
+//	/**
+//	 * The message is to be highlighted in recipients' folder displays.
+//	 */
+//	public boolean isHighlighted() {
+//		return (this.getIntItem(0x0e17) & 0x1) != 0;
+//	}
+//
+//	/**
+//	 * The message has been tagged for a client-defined purpose.
+//	 */
+//	public boolean isTagged() {
+//		return (this.getIntItem(0x0e17) & 0x2) != 0;
+//	}
+//
+//	/**
+//	 * The message is to be suppressed from recipients' folder displays.
+//	 */
+//	public boolean isHidden() {
+//		return (this.getIntItem(0x0e17) & 0x4) != 0;
+//	}
+//
+//	/**
+//	 * The message has been marked for subsequent deletion
+//	 */
+//	public boolean isDelMarked() {
+//		return (this.getIntItem(0x0e17) & 0x8) != 0;
+//	}
+//
+//	/**
+//	 * The message is in draft revision status.
+//	 */
+//	public boolean isDraft() {
+//		return (this.getIntItem(0x0e17) & 0x100) != 0;
+//	}
+//
+//	/**
+//	 * The message has been replied to.
+//	 */
+//	public boolean isAnswered() {
+//		return (this.getIntItem(0x0e17) & 0x200) != 0;
+//	}
+//
+//	/**
+//	 * The message has been marked for downloading from the remote message store to the local client
+//	 */
+//	public boolean isMarkedForDownload() {
+//		return (this.getIntItem(0x0e17) & 0x1000) != 0;
+//	}
+//
+//	/**
+//	 * The message has been marked for deletion at the remote message store without downloading to the local client.
+//	 */
+//	public boolean isRemoteDelMarked() {
+//		return (this.getIntItem(0x0e17) & 0x2000) != 0;
+//	}
+	
 	/**
 	 * Message content properties
 	 */
@@ -540,6 +605,37 @@ public class PSTMessage extends PSTObject {
 	public int getIconIndex() {
 		return this.getIntItem(0x1080);
 	}
+	
+	/**
+	 * Action flag
+	 * This relates to the replying / forwarding of messages.
+	 * It is classified as "unknown" atm, so just provided here
+	 * in case someone works out what all the various flags mean.
+	 */
+	public int getActionFlag() {
+		return this.getIntItem(0x1081);
+	}
+	/**
+	 * is the action flag for this item "forward"?
+	 */
+	public boolean hasForwarded() {
+		int actionFlag = this.getIntItem(0x1081);
+		return ((actionFlag & 0x8) > 0);
+	}
+	/**
+	 * is the action flag for this item "replied"? 
+	 */
+	public boolean hasReplied() {
+		int actionFlag = this.getIntItem(0x1081);
+		return ((actionFlag & 0x4) > 0);
+	}
+	/**
+	 * the date that this item had an action performed (eg. replied or forwarded)
+	 */
+	public Date getActionDate() {
+		return this.getDateItem(0x1082);
+	}
+	
 	/**
 	 * Disable full fidelity
 	 */
@@ -628,6 +724,27 @@ public class PSTMessage extends PSTObject {
 	}
 	
 	/**
+	 * Start date Filetime
+	 */
+	public Date getTaskStartDate() {
+		return this.getDateItem(pstFile.getNameToIdMapItem(0x00008104));
+	}
+	/**
+	 * Due date Filetime
+	 */
+	public Date getTaskDueDate() {
+		return this.getDateItem(pstFile.getNameToIdMapItem(0x00008105));
+	}
+	
+	/**
+	 * "flagged" items are actually emails with a due date.
+	 * This convience method just checks to see if that is true.
+	 */
+	public boolean isFlagged() {
+		return (this.getDateItem(pstFile.getNameToIdMapItem(0x00008104)) != null);
+	}
+	
+	/**
 	 * get the number of attachments for this message
 	 * @throws PSTException
 	 * @throws IOException
@@ -693,7 +810,8 @@ public class PSTMessage extends PSTObject {
 			"PSTEmail: "+this.getSubject()+"\n"+
 			"Importance: "+this.getImportance()+"\n"+
 			"Message Class: "+this.getMessageClass() + "\n\n" +
-			this.getTransportMessageHeaders();
+			this.getTransportMessageHeaders()+"\n\n\n"+
+			this.items;
 	}
 	
 }

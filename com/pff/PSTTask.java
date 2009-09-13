@@ -54,18 +54,7 @@ public class PSTTask extends PSTMessage {
 	public boolean isTeamTask() {
 		return (this.getIntItem(pstFile.getNameToIdMapItem(0x00008103)) != 0);
 	}
-	/**
-	 * Start date Filetime
-	 */
-	public Date getTaskStartDate() {
-		return this.getDateItem(pstFile.getNameToIdMapItem(0x00008104));
-	}
-	/**
-	 * Due date Filetime
-	 */
-	public Date getTaskDueDate() {
-		return this.getDateItem(pstFile.getNameToIdMapItem(0x00008105));
-	}
+	
 	/**
 	 * Date completed Filetime
 	 */

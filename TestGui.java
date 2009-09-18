@@ -27,7 +27,7 @@ public class TestGui {
 		
 		// attempt to open the pst file
 		try {
-			pstFile = new PSTFile("Outlook.pst");
+			pstFile = new PSTFile("Outlook-new.pst");
 		} catch (Exception err) {
 			err.printStackTrace();
 			System.exit(1);

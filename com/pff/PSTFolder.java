@@ -111,12 +111,12 @@ public class PSTFolder extends PSTObject {
 	 * @throws PSTException
 	 * @throws IOException
 	 */
-	public LinkedHashSet<PSTObject> getChildren(int numberToReturn)
+	public Vector<PSTObject> getChildren(int numberToReturn)
 		throws PSTException, IOException
 	{
 		processChildren();
 		
-		LinkedHashSet<PSTObject> output = new LinkedHashSet<PSTObject>();
+		Vector<PSTObject> output = new Vector<PSTObject>();
 		
 		for (int x = 0; x < numberToReturn; x++) {
 			if (!emailIterator.hasNext())
@@ -124,8 +124,9 @@ public class PSTFolder extends PSTObject {
 				// no more!
 				break;
 			}
-//			DescriptorIndexNode childDescriptor = (DescriptorIndexNode)emailIterator.next();
-			emailIterator.next();
+			DescriptorIndexNode childDescriptor = (DescriptorIndexNode)emailIterator.next();
+			PSTObject child = PSTObject.detectAndLoadPSTObject(pstFile, childDescriptor);
+			output.add(child);
 			emailIteratorPosition++;
 		}
 

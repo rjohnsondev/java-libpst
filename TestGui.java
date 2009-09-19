@@ -107,7 +107,8 @@ public class TestGui {
 					} else if (selectedMessage != null) {
 //						System.out.println(selectedMessage.getMessageClass());
 //						emailText.setText(selectedMessage.getBody());
-						emailText.setText(selectedMessage.toString());
+						emailText.setText(selectedMessage.getBodyHTML());
+//						emailText.setText(selectedMessage.toString());
 //						PSTTask task = selectedMessage.toTask();
 //						emailText.setText(task.toString());
 					}
@@ -148,7 +149,7 @@ public class TestGui {
 	private void buildTree(DefaultMutableTreeNode top, PSTFolder theFolder) {
 		// this is recursive, try and keep up.
 		try {
-			Set children = theFolder.getSubFolders();
+			Vector children = theFolder.getSubFolders();
 			Iterator childrenIterator = children.iterator();
 			while (childrenIterator.hasNext()) {
 				PSTFolder folder = (PSTFolder)childrenIterator.next();
@@ -277,7 +278,7 @@ class EmailTableModel extends AbstractTableModel {
     public void setFolder(PSTFolder theFolder) {
     	theFolder.moveChildCursorTo(0);
     	this.theFolder = theFolder;
-//    	cache = new HashMap();
+    	cache = new HashMap();
     	this.fireTableDataChanged();
     }
 

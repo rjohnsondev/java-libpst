@@ -12,6 +12,7 @@ class PSTTableItem {
 
 	public static final int VALUE_TYPE_PT_UNICODE = 0x1f;
 	public static final int VALUE_TYPE_PT_STRING8 = 0x1e;
+	public static final int VALUE_TYPE_PT_BIN = 0x102;
 
 	public byte[] data = new byte[0];
 	
@@ -36,7 +37,8 @@ class PSTTableItem {
 			if (data.length % 2 == 1) {
 				outputBuffer.append((char)data[data.length-1]);
 			}
-		} else if (stringType == VALUE_TYPE_PT_STRING8) {
+		} else if (stringType == VALUE_TYPE_PT_STRING8 ||
+				stringType == VALUE_TYPE_PT_BIN) {
 			// we are a dirty asci character
 			char theChar;
 			for (int x = 0; x < data.length; x++) {

@@ -101,17 +101,20 @@ public class PSTObject {
 	
 	
 	protected long getLongItem(int identifier) {
-		return getLongItem(0);
+		return getLongItem(identifier, 0);
 	}
 	protected long getLongItem(int identifier, long defaultValue) {
 		if (this.items.containsKey(identifier)) {
 			PSTTableBCItem item = (PSTTableBCItem)this.items.get(identifier);
-			if (item.entryType == 0x0003) {
+			if (item.entryValueType == 0x0003) {
 				// we are really just an int
 				return item.entryValueReference;
 			} else {
 				// we are a long
 				// don't really know what to do with this yet
+//				PSTObject.printHexFormatted(item.data, true);
+//				System.out.println(item);
+//				System.exit(0);
 				PSTObject.convertLittleEndianBytesToLong(item.data);
 			}
 		}

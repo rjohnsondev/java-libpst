@@ -45,11 +45,11 @@ public class PSTFolder extends PSTObject {
 	 * @throws PSTException
 	 * @throws IOException
 	 */
-	public LinkedHashSet<PSTFolder> getSubFolders()
+	public Vector<PSTFolder> getSubFolders()
 		throws PSTException, IOException
 	{
 		this.processChildren();
-		LinkedHashSet<PSTFolder> output = new LinkedHashSet<PSTFolder>();
+		Vector<PSTFolder> output = new Vector<PSTFolder>();
 		for (DescriptorIndexNode childDescriptor : this.subFolders) {
 			output.add((PSTFolder)PSTObject.detectAndLoadPSTObject(this.pstFile, childDescriptor));
 		}

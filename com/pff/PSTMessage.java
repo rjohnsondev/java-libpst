@@ -579,7 +579,8 @@ public class PSTMessage extends PSTObject {
 	 * HTML e-mail body
 	 */
 	public String getBodyHTML() {
-		return this.getStringItem(0x1013, PSTTableItem.VALUE_TYPE_PT_STRING8);
+//		return this.getStringItem(0x1013, PSTTableItem.VALUE_TYPE_PT_STRING8);
+		return this.getStringItem(0x1013);
 	}
 	/**
 	 * Message identifier

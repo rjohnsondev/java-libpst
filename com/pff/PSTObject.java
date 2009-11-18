@@ -653,13 +653,13 @@ public class PSTObject {
 			{
 				type = "Attachment";
 				break;
-			}*/
+			}
 			else if (key.intValue() >= 0x3900 &&
 					key.intValue() <= 0x39ff)
 			{
 				type = "Address book";
 				break;
-			}
+			}*/
 			/*else if (key.intValue() >= 0x3a00 &&
 					key.intValue() <= 0x3bff)
 			{

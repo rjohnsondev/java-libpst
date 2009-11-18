@@ -121,6 +121,7 @@ public class TestGui {
         	err.printStackTrace();
         }
         
+        
         // the email
         emailText = new JTextPane();
         emailText.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 12));

@@ -24,18 +24,12 @@ class PSTTableItem {
 		if (stringType == VALUE_TYPE_PT_UNICODE) {
 			
 			// we are a nice little-endian unicode string.
-			char theChar;
-			for (int x = 0; x < data.length-1; x = x + 2) {
-				theChar = 0;
-				theChar = (char)data[x+1];
-				theChar <<= 8;
-				theChar |= (char)data[x];
-				outputBuffer.append(theChar);
-			}
-			// if we are odd, we may have 1 char left, don't think this actually happens,
-			// but better safe than sorry
-			if (data.length % 2 == 1) {
-				outputBuffer.append((char)data[data.length-1]);
+			// New code - use String class built-in decoding of little-endian unicode.
+			try {
+				return new String(data, "UTF-16LE");
+			} catch (java.io.UnsupportedEncodingException e) {
+				System.err.println("Error decoding string: " + data.toString());
+				return "";
 			}
 		} else if (stringType == VALUE_TYPE_PT_STRING8 ||
 				stringType == VALUE_TYPE_PT_BIN) {

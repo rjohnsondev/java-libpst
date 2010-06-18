@@ -90,13 +90,13 @@ public class PSTContact extends PSTMessage {
 		 return this.getStringItem(0x3a0b);
 	 }
 	/**
-	 * Contact’s language 
+	 * Contact's language
 	 */
 	 public String getLanguage() {
 		 return this.getStringItem(0x3a0c);
 	 }
 	/**
-	 * Contact’s location 
+	 * Contact's location
 	 */
 	 public String getLocation() {
 		 return this.getStringItem(0x3a0d);
@@ -286,7 +286,7 @@ public class PSTContact extends PSTMessage {
 		 return this.getStringItem(0x3a2f);
 	 }
 	/**
-	 * Assistant’s Name 
+	 * Assistant's Name
 	 */
 	 public String getAssistant() {
 		 return this.getStringItem(0x3a30);
@@ -322,7 +322,7 @@ public class PSTContact extends PSTMessage {
 		 return this.getStringItem(0x3a47);
 	 }
 	/**
-	 * Spouse’s Name 
+	 * Spouse's Name
 	 */
 	 public String getSpouseName() {
 		 return this.getStringItem(0x3a48);
@@ -352,7 +352,7 @@ public class PSTContact extends PSTMessage {
 		 return this.getStringItem(0x3a4c);
 	 }
 	/**
-	 * Manager’s Name 
+	 * Manager's Name
 	 */
 	 public String getManagerName() {
 		 return this.getStringItem(0x3a4e);
@@ -755,7 +755,7 @@ public class PSTContact extends PSTMessage {
 			"Display Name Prefix (Contact Title): "+getDisplayNamePrefix()+"\n"+
 			"Profession: "+getProfession()+"\n"+
 			"Preferred By Name: "+getPreferredByName()+"\n"+
-			"Spouse’s Name: "+getSpouseName()+"\n"+
+			"Spouse's Name: "+getSpouseName()+"\n"+
 			"Computer Network Name: "+getComputerNetworkName()+"\n"+
 			"Customer ID: "+getCustomerId()+"\n"+
 			"TTY/TDD Phone: "+getTtytddPhoneNumber()+"\n"+

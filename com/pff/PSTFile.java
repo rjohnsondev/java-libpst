@@ -133,9 +133,9 @@ public class PSTFile {
 			if (PSTObject.isPSTArray(nameToIdByte)) {
 				nameToIdByte = PSTObject.processArray(in, nameToIdByte);
 			}
-		}
-		if (this.encryptionType == PSTFile.ENCRYPTION_TYPE_COMPRESSIBLE) {
-			nameToIdByte = PSTObject.decode(nameToIdByte);
+			if (this.encryptionType == PSTFile.ENCRYPTION_TYPE_COMPRESSIBLE) {
+				nameToIdByte = PSTObject.decode(nameToIdByte);
+			}
 		}
 		
 		// process the entries
@@ -150,6 +150,9 @@ public class PSTFile {
 	}
 	
 	int getNameToIdMapItem(int key) {
+		if (!this.nameToId.containsKey(key)) {
+			return -1;
+		}
 		return this.nameToId.get(key);
 	}
 	

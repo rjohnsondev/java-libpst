@@ -84,7 +84,11 @@ class PSTTable {
 		indexes = new int[numberOfIndexItems+3];
 		description += "Indexes:\n";
 		for (int x = 1; x < numberOfIndexItems+3; x++) {
-			indexes[x] = (int)PSTObject.convertLittleEndianBytesToLong(data, tableIndexOffset+(x*2), tableIndexOffset+(x*2)+2);
+			if (x == 1) {
+				indexes[x] = 0;
+			} else {
+				indexes[x] = (int)PSTObject.convertLittleEndianBytesToLong(data, tableIndexOffset+(x*2), tableIndexOffset+(x*2)+2);
+			}
 			description += "   index"+x+": "+ indexes[x]+" ("+Long.toHexString(indexes[x])+")";
 			if (x > 1) {
 				description += " "+(indexes[x] - indexes[x-1]);

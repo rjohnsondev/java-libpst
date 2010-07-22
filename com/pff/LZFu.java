@@ -4,6 +4,8 @@
 
 package com.pff;
 
+import java.io.UnsupportedEncodingException;
+
 /**
  * An implementation of the LZFu algorithm to decompress RTF content
  * @author Richard Johnson
@@ -14,9 +16,11 @@ public class LZFu {
 
 	public static String decode(byte[] data) {
 
+		@SuppressWarnings("unused")
 		int compressedSize = (int)PSTObject.convertLittleEndianBytesToLong(data, 0, 4);
 		int uncompressedSize = (int)PSTObject.convertLittleEndianBytesToLong(data, 4, 8);
 		int compressionSig =  (int)PSTObject.convertLittleEndianBytesToLong(data, 8, 12);
+		@SuppressWarnings("unused")
 		int compressedCRC =  (int)PSTObject.convertLittleEndianBytesToLong(data, 12, 16);
 
 		if (compressionSig == 0x75465a4c) {
@@ -25,33 +29,42 @@ public class LZFu {
 			int outputPosition = 0;
 			byte[] lzBuffer = new byte[4096];
 			// preload our buffer.
-			System.arraycopy(LZFU_HEADER.getBytes(), 0, lzBuffer, 0, LZFU_HEADER.length());
+			try {
+				byte[] bytes = LZFU_HEADER.getBytes("US-ASCII");
+				System.arraycopy(bytes, 0, lzBuffer, 0, LZFU_HEADER.length());
+			} catch (UnsupportedEncodingException e) {
+				e.printStackTrace();
+			}
 			int bufferPosition = LZFU_HEADER.length();
 			int currentDataPosition = 16;
 
 			// next byte is the flags,
-			while (currentDataPosition < data.length - 7) {
-				int flags = data[currentDataPosition++];
-				for (int x = 0; x < 8; x++) {
-					boolean isRef = (((flags >> x) & 1) == 1);
+			while (currentDataPosition < data.length - 2 && outputPosition < output.length) {
+				int flags = data[currentDataPosition++] & 0xFF;
+				for (int x = 0; x < 8 && outputPosition < output.length; x++) {
+					boolean isRef = ((flags & 1) == 1);
+					flags >>= 1;
 					if (isRef) {
 						// get the starting point for the buffer and the
 						// length to read
 						int refOffsetOrig = data[currentDataPosition++] & 0xFF;
 						int refSizeOrig = data[currentDataPosition++] & 0xFF;
-
 						int refOffset = (refOffsetOrig << 4) | (refSizeOrig >>> 4);
-						refOffset &= 0xFFF;
-						int refSize = refSizeOrig & 0xF;
-						refSize += 2;
-						// copy the data from the buffer
-						for (int y = 0; y < refSize; y++) {
-							int index = refOffset+y;
-							index %= 4096;
-							output[outputPosition++] = lzBuffer[index];
-							lzBuffer[bufferPosition] = lzBuffer[index];
-							bufferPosition++;
-							bufferPosition %= 4096;
+						int refSize = (refSizeOrig & 0xF) + 2;
+						//refOffset &= 0xFFF;
+						try {
+							// copy the data from the buffer
+							int index = refOffset;
+							for (int y = 0; y < refSize && outputPosition < output.length; y++) {
+								output[outputPosition++] = lzBuffer[index];
+								lzBuffer[bufferPosition] = lzBuffer[index];
+								bufferPosition++;
+								bufferPosition %= 4096;
+								++index;
+								index %= 4096;
+							}
+						} catch ( Exception e ) {
+							e.printStackTrace();
 						}
 
 					} else {
@@ -64,6 +77,9 @@ public class LZFu {
 				}
 			}
 
+			if ( outputPosition != uncompressedSize ) {
+				System.out.printf("Error decompressing RTF! Expected %d bytes, got %d bytes\n", uncompressedSize, outputPosition);
+			}
 			return new String(output).trim();
 
 		} else if (compressionSig == 0x414c454d) {

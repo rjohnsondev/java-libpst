@@ -40,61 +40,61 @@ public class PSTActivity extends PSTMessage {
 	 * Type
 	 */
 	public String getLogType() {
-		return this.getStringItem(pstFile.getNameToIdMapItem(0x00008700));
+		return getStringItem(pstFile.getNameToIdMapItem(0x00008700, PSTFile.PSETID_Log));
 	}
 	/**
 	 * Start
 	 */
 	public Date getLogStart() {
-		return this.getDateItem(pstFile.getNameToIdMapItem(0x00008706));
+		return getDateItem(pstFile.getNameToIdMapItem(0x00008706, PSTFile.PSETID_Log));
 	}
 	/**
 	 * Duration
 	 */
 	public int getLogDuration() {
-		return this.getIntItem(pstFile.getNameToIdMapItem(0x00008707));
+		return getIntItem(pstFile.getNameToIdMapItem(0x00008707, PSTFile.PSETID_Log));
 	}
 	/**
 	 * End
 	 */
 	public Date getLogEnd() {
-		return this.getDateItem(pstFile.getNameToIdMapItem(0x00008708));
+		return getDateItem(pstFile.getNameToIdMapItem(0x00008708, PSTFile.PSETID_Log));
 	}
 	/**
 	 * LogFlags
 	 */
 	public int getLogFlags() {
-		return this.getIntItem(pstFile.getNameToIdMapItem(0x0000870c));
+		return getIntItem(pstFile.getNameToIdMapItem(0x0000870c, PSTFile.PSETID_Log));
 	}
 	/**
 	 * DocPrinted
 	 */
 	public boolean isDocumentPrinted() {
-		return (this.getIntItem(pstFile.getNameToIdMapItem(0x0000870e)) != 0);
+		return (getBooleanItem(pstFile.getNameToIdMapItem(0x0000870e, PSTFile.PSETID_Log)));
 	}
 	/**
 	 * DocSaved
 	 */
 	public boolean isDocumentSaved() {
-		return (this.getIntItem(pstFile.getNameToIdMapItem(0x0000870f)) != 0);
+		return (getBooleanItem(pstFile.getNameToIdMapItem(0x0000870f, PSTFile.PSETID_Log)));
 	}
 	/**
 	 * DocRouted
 	 */
 	public boolean isDocumentRouted() {
-		return (this.getIntItem(pstFile.getNameToIdMapItem(0x00008710)) != 0);
+		return (getBooleanItem(pstFile.getNameToIdMapItem(0x00008710, PSTFile.PSETID_Log)));
 	}
 	/**
 	 * DocPosted
 	 */
 	public boolean isDocumentPosted() {
-		return (this.getIntItem(pstFile.getNameToIdMapItem(0x00008711)) != 0);
+		return (getBooleanItem(pstFile.getNameToIdMapItem(0x00008711, PSTFile.PSETID_Log)));
 	}
 	/**
 	 * Type Description
 	 */
 	public String getLogTypeDesc() {
-		return this.getStringItem(pstFile.getNameToIdMapItem(0x00008712));
+		return getStringItem(pstFile.getNameToIdMapItem(0x00008712, PSTFile.PSETID_Log));
 	}
 
 	public String toString() {

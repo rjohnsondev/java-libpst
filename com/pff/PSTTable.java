@@ -3,6 +3,8 @@
  */
 package com.pff;
 
+import java.util.HashMap;
+
 
 /**
  * The PST Table is the workhorse of the whole system.
@@ -12,45 +14,47 @@ package com.pff;
  */
 class PSTTable {
 
-	protected int tableIndexOffset;
 	protected String tableType;
 	protected byte tableTypeByte;
-	protected int tableValueReference;
+	protected int hidUserRoot;
 	
 	// info from the b5 header
-	protected int sizeOfItemRecord;
+	protected int sizeOfItemKey;
 	protected int sizeOfItemValue;
-	protected int tableEntriesReference;
-	protected int tableEntriesReferenceAsOffset;
-	protected int tableEntriesStart;
-	protected int tableEntriesEnd;
-	protected int numberOfItems = 0;
+	protected int hidRoot;
+	protected int numberOfKeys = 0;
 	
-	protected int[] indexes;
-
+	private int		iHeapNodePageMap;
+	private int[]	rgbiAlloc = null;
+	private byte[]	data = null;
+	private int[]	arrayBlocks = null;
+	private HashMap<Integer, PSTDescriptorItem> subNodeDescriptorItems = null;
+	
 	protected String description = "";
 	
 	protected PSTTable(byte[] data)
 		throws PSTException
 	{
-		this(data, new int[0]);
+		this(data, new int[0], new HashMap<Integer, PSTDescriptorItem>());
 	}
 	
-	protected PSTTable(byte[] data, int[] arrayBlocks)
+	protected PSTTable(byte[] data, int[] arrayBlocks, HashMap<Integer, PSTDescriptorItem> subNodeDescriptorItems)
 		throws PSTException
 	{
-		
-		tableIndexOffset = (int)PSTObject.convertLittleEndianBytesToLong(data, 0, 2);
-		
-		// the next two bytes should be the table type.
+		this.data = data;
+		this.arrayBlocks = arrayBlocks;
+		this.subNodeDescriptorItems = subNodeDescriptorItems;
+
+		// the next two bytes should be the table type (bSig)
+		// 0xEC is HN (Heap-on-Node)
 		if ((int)data[2] != 0xffffffec) {
 			throw new PSTException("Unable to parse table, bad table type...");
 		}
-		boolean valid = false;
-		switch ((int)data[3]) {
-			case 0x7c:
+
+		tableTypeByte = data[3];
+		switch ((int)tableTypeByte) {	// bClientSig
+			case 0x7c:					// Table Context (TC/HN)
 				tableType = "7c";
-				valid = true;
 				break;
 //			case 0x9c:
 //				tableType = "9c";
@@ -64,124 +68,164 @@ class PSTTable {
 //				tableType = "ac";
 //				valid = true;
 //				break;
+//			case 0xFFFFFFb5:		// BTree-on-Heap (BTH)
+//				tableType = "b5";
+//				valid = true;
+//				break;
 			case 0xffffffbc:
-				tableType = "bc";
-				valid = true;
+				tableType = "bc";	// Property Context (PC/BTH)
 				break;
-		}
-		if (!valid) {
-			throw new PSTException("Unable to parse table, bad table type.  Unknown identifier: 0x"+Long.toHexString(data[3]));
-		} else {
-			tableTypeByte = data[3];
+			default:
+				throw new PSTException("Unable to parse table, bad table type.  Unknown identifier: 0x"+Long.toHexString(data[3]));
 		}
 		
-		tableValueReference = (int)PSTObject.convertLittleEndianBytesToLong(data, 4, 8);
-		
-		
-		// process the table index.
-		int numberOfIndexItems = (int)PSTObject.convertLittleEndianBytesToLong(data, tableIndexOffset, tableIndexOffset+2);
-		description += "Number of items: \n"+numberOfIndexItems;
-		indexes = new int[numberOfIndexItems+3];
-		description += "Indexes:\n";
-		for (int x = 1; x < numberOfIndexItems+3; x++) {
-			if (x == 1) {
-				indexes[x] = 0;
-			} else {
-				indexes[x] = (int)PSTObject.convertLittleEndianBytesToLong(data, tableIndexOffset+(x*2), tableIndexOffset+(x*2)+2);
-			}
-			description += "   index"+x+": "+ indexes[x]+" ("+Long.toHexString(indexes[x])+")";
+		// process the page map
+		iHeapNodePageMap = (int)PSTObject.convertLittleEndianBytesToLong(data, 0, 2);	// Offset of HN page map
+		int cAlloc = (int)PSTObject.convertLittleEndianBytesToLong(data, iHeapNodePageMap, iHeapNodePageMap+2);
+		int cFree = (int)PSTObject.convertLittleEndianBytesToLong(data, iHeapNodePageMap+2, iHeapNodePageMap+4);
+		description += "Number of items: "+cAlloc+" allocated, "+cFree+" freed\n";
+		rgbiAlloc = new int[cAlloc+1];	// There are actually cAlloc+1 entries in the array
+		description += "Page map:\n";
+		int entryOffset = iHeapNodePageMap + 4;
+		for (int x = 0; x < cAlloc+1; x++) {
+			rgbiAlloc[x] = (int)PSTObject.convertLittleEndianBytesToLong(data, entryOffset, entryOffset+2);
 			if (x > 1) {
-				description += " "+(indexes[x] - indexes[x-1]);
+				description += " "+(rgbiAlloc[x] - rgbiAlloc[x-1])+"\n";
 			}
-			description += "\n";
+			description += "   index"+x+": "+ rgbiAlloc[x]+" ("+Long.toHexString(rgbiAlloc[x])+")";
+			entryOffset += 2;
 		}
-		
+		description += "\n";
 
-		
-		int offset = 12;
-		// all tables should have a b5 header to start with...
-		if ((int)(data[offset] & 0xff) != 0xb5) {
-			throw new PSTException("Unable to parse table, does not appear to contain b5 header information: "+Long.toHexString(data[offset]));
+		hidUserRoot = (int)PSTObject.convertLittleEndianBytesToLong(data, 4, 8);		// hidUserRoot
+/*
+		System.out.printf("Table %s: hidUserRoot 0x%08X\n", tableType, hidUserRoot);
+/**/
+
+		// all tables should have a BTHHEADER at hnid == 0x20
+		NodeInfo nodeInfo = getNodeInfo(0x20);
+		if ( (int)(nodeInfo.data[nodeInfo.startOffset] & 0xff) != 0xb5 ) {
+			throw new PSTException("Unable to parse table, can't find BTHHEADER header information: "+Long.toHexString(nodeInfo.data[nodeInfo.startOffset]));
 		}
 		
-		sizeOfItemRecord = (int)PSTObject.convertLittleEndianBytesToLong(data, offset+1, offset+2);
-		sizeOfItemValue = (int)PSTObject.convertLittleEndianBytesToLong(data, offset+2, offset+3);
-		tableEntriesReference = (int)PSTObject.convertLittleEndianBytesToLong(data, offset+4, offset+8);
-		
+		sizeOfItemKey = (int)nodeInfo.data[nodeInfo.startOffset+1] & 0xFF;		// Size of key in key table
+		sizeOfItemValue = (int)nodeInfo.data[nodeInfo.startOffset+2] & 0xFF;	// Size of value in key table
+
+		if ( (int)nodeInfo.data[nodeInfo.startOffset+3] != 0 ) {
+			System.out.printf("Table with %d index levels\n", (int)nodeInfo.data[nodeInfo.startOffset+3]);
+		}
+		hidRoot = (int)PSTObject.convertLittleEndianBytesToLong(nodeInfo.data, nodeInfo.startOffset+4, nodeInfo.startOffset+8);	// hidRoot
+/*
+		System.out.printf("Table %s: hidRoot 0x%08X\n", tableType, hidRoot);
+/**/		
 		description += "Table ("+tableType+")\n"+
-			"Table Index Offset: "+tableIndexOffset+" - 0x"+Long.toHexString(tableIndexOffset)+"\n"+
-			"Table Value Reference: "+tableValueReference+" - 0x"+Long.toHexString(tableValueReference)+"\n"+
-			"Size Of Item Record: "+sizeOfItemRecord+" - 0x"+Long.toHexString(sizeOfItemRecord)+"\n"+
-			"Size Of Item Value: "+sizeOfItemValue+" - 0x"+Long.toHexString(sizeOfItemValue)+"\n"+
-			"Table Entries Reference: "+tableEntriesReference+" - 0x"+Long.toHexString(tableEntriesReference)+"\n";
-
-		
-		tableEntriesReferenceAsOffset = (tableEntriesReference >>> 4);
-		description += "tableEntriesReferenceAsOffset: "+tableEntriesReferenceAsOffset+"\n";
-		tableEntriesReferenceAsOffset += tableIndexOffset;
-		description += "tableEntriesReferenceAsOffset: "+tableEntriesReferenceAsOffset+"\n";
-
-//		System.out.println(description);
-//		PSTObject.printHexFormatted(data, true, indexes);
-//		System.exit(0);
-
-		
-//		System.out.println(description);
-		
-		if ((tableTypeByte & 0xff) == 0xbc)
-		{
-			tableEntriesReferenceAsOffset += 2; // why is this not for 7c????!!!
-		}
-		if (tableEntriesReference > 0x10000 && arrayBlocks.length > 0) {
-			// just kinda feeling my way around here....
-			int tableEntriesReferenceAsOffset2 = ((tableEntriesReference & 65535)>>>4)+2; // ahh, +2 shouldn't be here for 7c tables...
-			int whichBlock = (tableEntriesReference >>> 16);
-			int blockStart = arrayBlocks[whichBlock-1];
-			
-			// get the index offset of the applicable block
-			int tableIndexOffset2 = (int)PSTObject.convertLittleEndianBytesToLong(data, blockStart+0, blockStart+2)+blockStart;
-			
-			// get the location of the values block.
-			tableEntriesStart =
-				(int)
-				PSTObject.convertLittleEndianBytesToLong(
-					data,
-					tableIndexOffset2+tableEntriesReferenceAsOffset2,
-					tableIndexOffset2+tableEntriesReferenceAsOffset2+2
-				)+blockStart;
-			tableEntriesEnd =
-				(int)
-				PSTObject.convertLittleEndianBytesToLong(
-						data,
-						tableIndexOffset2+tableEntriesReferenceAsOffset2+2,
-						tableIndexOffset2+tableEntriesReferenceAsOffset2+4
-				)+blockStart;
-			// confused yet?
-//			System.out.println("start: "+tableEntriesStart+" - end: "+tableEntriesEnd);
-		}
-		else
-		{
-			tableEntriesStart = (int)PSTObject.convertLittleEndianBytesToLong(data, tableEntriesReferenceAsOffset, tableEntriesReferenceAsOffset+2);
-
-			description += ("tableEntriesStart: "+tableEntriesStart+"\n");
-			tableEntriesEnd = tableEntriesStart;
-			for (int x = 0; x < indexes.length; x++) {
-				if (indexes[x] > tableEntriesStart) {
-					tableEntriesEnd = indexes[x];
-					break;
-				}
-			}
-		}
+			"Table Page Map Offset: "+iHeapNodePageMap+" - 0x"+Long.toHexString(iHeapNodePageMap)+"\n"+
+			"hidUserRoot: "+hidUserRoot+" - 0x"+Long.toHexString(hidUserRoot)+"\n"+
+			"Size Of Keys: "+sizeOfItemKey+" - 0x"+Long.toHexString(sizeOfItemKey)+"\n"+
+			"Size Of Values: "+sizeOfItemValue+" - 0x"+Long.toHexString(sizeOfItemValue)+"\n"+
+			"hidRoot: "+hidRoot+" - 0x"+Long.toHexString(hidRoot)+"\n";
 	}
 
 
+	protected void ReleaseRawData() {
+		rgbiAlloc = null;
+		data = null;
+		arrayBlocks = null;
+		subNodeDescriptorItems = null;
+	}
+
+	
 	/**
 	 * get the number of items stored in this table.
 	 * @return
 	 */
-	public int getItemCount() {
-		return this.numberOfItems;
+	public int getRowCount() {
+		return this.numberOfKeys;
 	}
 	
+	class NodeInfo
+	{
+		int		startOffset;
+		int		endOffset;
+		byte[]	data;
+		
+		NodeInfo(int start, int end, byte[] data) {
+			startOffset = start;
+			endOffset = end;
+			this.data = data;
+		}
+		
+		int length() {
+			return endOffset - startOffset;
+		}
+	}
+	
+	protected NodeInfo getNodeInfo(int nid)
+		throws PSTException
+	{
+		if ( data == null ) {
+			throw new PSTException("Accessing PSTTable heap after release!");
+		}
+
+		// Zero-length node?
+		if ( nid == 0 ) {
+			return new NodeInfo(0, 0, data);
+		}
+
+		// Is it a subnode ID?
+		if ( subNodeDescriptorItems != null &&
+			 subNodeDescriptorItems.containsKey(nid) )
+		{
+			PSTDescriptorItem item = subNodeDescriptorItems.get(nid);
+			return new NodeInfo(0, item.data.length, item.data);
+		}
+
+		if ( (nid & 0x1F) != 0 ) {
+			// Some kind of external node
+			return null;
+		}
+
+		int whichBlock = (nid >>> 16);
+		if ( whichBlock == 0 )
+		{
+			// A normal node in the current heap?
+			nid >>= 5;
+			if ( nid >= rgbiAlloc.length ) {
+				return null;	// Invalid
+			}
+			return new NodeInfo(rgbiAlloc[nid - 1], rgbiAlloc[nid], data);
+		}
+
+		// A node in a different block
+		if ( whichBlock >= arrayBlocks.length ) {
+			// Block doesn't exist!
+			return null;
+		}
+
+		// just kinda feeling my way around here....
+		int blockStart = arrayBlocks[whichBlock-1];
+		int tableEntriesReferenceAsOffset2 = ((nid & 0xFFFF)>>>4)-2+4;	// -2 as 1-based, +4 to skip index table header
+		
+		// get the index offset of the applicable block
+		int tableIndexOffset2 = (int)PSTObject.convertLittleEndianBytesToLong(data, blockStart+0, blockStart+2)+blockStart;
+		
+		// get the location of the block.
+		int start =
+			(int)
+			PSTObject.convertLittleEndianBytesToLong(
+				data,
+				tableIndexOffset2+tableEntriesReferenceAsOffset2,
+				tableIndexOffset2+tableEntriesReferenceAsOffset2+2
+			)+blockStart;
+		int end =
+			(int)
+			PSTObject.convertLittleEndianBytesToLong(
+					data,
+					tableIndexOffset2+tableEntriesReferenceAsOffset2+2,
+					tableIndexOffset2+tableEntriesReferenceAsOffset2+4
+			)+blockStart;
+		
+		return new NodeInfo(start, end, data);
+	}
 	
 }

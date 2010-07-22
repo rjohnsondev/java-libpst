@@ -39,43 +39,43 @@ public class PSTRss extends PSTMessage {
 	 * Channel
 	 */
 	public String getPostRssChannelLink() {
-		return this.getStringItem(pstFile.getNameToIdMapItem(0x00008900));
+		return getStringItem(pstFile.getNameToIdMapItem(0x00008900, PSTFile.PSETID_PostRss));
 	}
 	/**
 	 * Item link
 	 */
 	public String getPostRssItemLink() {
-		return this.getStringItem(pstFile.getNameToIdMapItem(0x00008901));
+		return getStringItem(pstFile.getNameToIdMapItem(0x00008901, PSTFile.PSETID_PostRss));
 	}
 	/**
 	 * Item hash Integer 32-bit signed
 	 */
 	public int getPostRssItemHash() {
-		return this.getIntItem(pstFile.getNameToIdMapItem(0x00008902));
+		return getIntItem(pstFile.getNameToIdMapItem(0x00008902, PSTFile.PSETID_PostRss));
 	}
 	/**
 	 * Item GUID
 	 */
 	public String getPostRssItemGuid() {
-		return this.getStringItem(pstFile.getNameToIdMapItem(0x00008903));
+		return getStringItem(pstFile.getNameToIdMapItem(0x00008903, PSTFile.PSETID_PostRss));
 	}
 	/**
 	 * Channel GUID
 	 */
 	public String getPostRssChannel() {
-		return this.getStringItem(pstFile.getNameToIdMapItem(0x00008904));
+		return getStringItem(pstFile.getNameToIdMapItem(0x00008904, PSTFile.PSETID_PostRss));
 	}
 	/**
 	 * Item XML
 	 */
 	public String getPostRssItemXml() {
-		return this.getStringItem(pstFile.getNameToIdMapItem(0x00008905));
+		return getStringItem(pstFile.getNameToIdMapItem(0x00008905, PSTFile.PSETID_PostRss));
 	}
 	/**
 	 * Subscription
 	 */
 	public String getPostRssSubscription() {
-		return this.getStringItem(pstFile.getNameToIdMapItem(0x00008906));
+		return getStringItem(pstFile.getNameToIdMapItem(0x00008906, PSTFile.PSETID_PostRss));
 	}
 
 	public String toString() {

@@ -4,7 +4,9 @@
 package com.pff;
 
 import java.io.IOException;
+import java.util.Date;
 import java.util.HashMap;
+
 
 /**
  * Class for Contacts
@@ -90,13 +92,13 @@ public class PSTContact extends PSTMessage {
 		 return this.getStringItem(0x3a0b);
 	 }
 	/**
-	 * Contact's language
+	 * Contact’s language 
 	 */
 	 public String getLanguage() {
 		 return this.getStringItem(0x3a0c);
 	 }
 	/**
-	 * Contact's location
+	 * Contact’s location 
 	 */
 	 public String getLocation() {
 		 return this.getStringItem(0x3a0d);
@@ -286,7 +288,7 @@ public class PSTContact extends PSTMessage {
 		 return this.getStringItem(0x3a2f);
 	 }
 	/**
-	 * Assistant's Name
+	 * Assistant’s Name 
 	 */
 	 public String getAssistant() {
 		 return this.getStringItem(0x3a30);
@@ -322,7 +324,7 @@ public class PSTContact extends PSTMessage {
 		 return this.getStringItem(0x3a47);
 	 }
 	/**
-	 * Spouse's Name
+	 * Spouse’s Name 
 	 */
 	 public String getSpouseName() {
 		 return this.getStringItem(0x3a48);
@@ -352,7 +354,7 @@ public class PSTContact extends PSTMessage {
 		 return this.getStringItem(0x3a4c);
 	 }
 	/**
-	 * Manager's Name
+	 * Manager’s Name 
 	 */
 	 public String getManagerName() {
 		 return this.getStringItem(0x3a4e);
@@ -375,11 +377,31 @@ public class PSTContact extends PSTMessage {
 	 public String getBusinessHomePage() {
 		 return this.getStringItem(0x3a51);
 	 }
+	 
+	/**
+	 * Note 
+	 */
+	 public String getNote() {	
+		 return this.getStringItem(0x6619);
+	 }
+	 
+	 String getNamedStringItem(int key) {
+		 int id = pstFile.getNameToIdMapItem(key, PSTFile.PSETID_Address);
+		 if ( id != -1 ) {
+			 return getStringItem(id);
+		 }
+		 return "";
+	 }
+	 
+	 public String getSMTPAddress()
+	 {
+		 return getNamedStringItem(0x00008084);
+	 }
 	/**
 	 * Company Main Phone 
 	 */
 	 public String getCompanyMainPhoneNumber() {
-		 return this.getStringItem(0x3a57);
+		 return getStringItem(0x3a57);
 	 }
 	/**
 	 * Children's names 
@@ -468,247 +490,275 @@ public class PSTContact extends PSTMessage {
 	  * File under  FTK: File as
 	  */
 	 public String getFileUnder() {
-	 	return this.getStringItem(pstFile.getNameToIdMapItem(0x00008005));
+	 	return getNamedStringItem(0x00008005);
 	 }
 
 	 /**
 	  * Home Address 
 	  */
 	 public String getHomeAddress() {
-	 	return this.getStringItem(pstFile.getNameToIdMapItem(0x0000801a));
+	 	return getNamedStringItem(0x0000801a);
 	 }
 
 	 /**
 	  * Business Address 
 	  */
 	 public String getWorkAddress() {
-	 	return this.getStringItem(pstFile.getNameToIdMapItem(0x0000801b));
+	 	return getNamedStringItem(0x0000801b);
 	 }
 
 	 /**
 	  * Other Address 
 	  */
 	 public String getOtherAddress() {
-	 	return this.getStringItem(pstFile.getNameToIdMapItem(0x0000801c));
+	 	return getNamedStringItem(0x0000801c);
 	 }
 
 	 /**
 	  * Selected Mailing Address 
 	  */
-	 public String getPostalAddressId() {
-	 	return this.getStringItem(pstFile.getNameToIdMapItem(0x00008022));
+	 public int getPostalAddressId() {
+	 	return getIntItem(pstFile.getNameToIdMapItem(0x00008022, PSTFile.PSETID_Address));
 	 }
 
 	 /**
 	  * Webpage 
 	  */
 	 public String getHtml() {
-	 	return this.getStringItem(pstFile.getNameToIdMapItem(0x0000802b));
+	 	return getNamedStringItem(0x0000802b);
 	 }
 
 	 /**
 	  * Business Address City 
 	  */
 	 public String getWorkAddressStreet() {
-	 	return this.getStringItem(pstFile.getNameToIdMapItem(0x00008045));
+	 	return getNamedStringItem(0x00008045);
 	 }
 
 	 /**
 	  * Business Address Street 
 	  */
 	 public String getWorkAddressCity() {
-	 	return this.getStringItem(pstFile.getNameToIdMapItem(0x00008046));
+	 	return getNamedStringItem(0x00008046);
 	 }
 
 	 /**
 	  * Business Address State 
 	  */
 	 public String getWorkAddressState() {
-	 	return this.getStringItem(pstFile.getNameToIdMapItem(0x00008047));
+	 	return getNamedStringItem(0x00008047);
 	 }
 
 	 /**
 	  * Business Address Postal Code 
 	  */
 	 public String getWorkAddressPostalCode() {
-	 	return this.getStringItem(pstFile.getNameToIdMapItem(0x00008048));
+	 	return getNamedStringItem(0x00008048);
 	 }
 
 	 /**
 	  * Business Address Country 
 	  */
 	 public String getWorkAddressCountry() {
-	 	return this.getStringItem(pstFile.getNameToIdMapItem(0x00008049));
+	 	return getNamedStringItem(0x00008049);
+	 }
+
+	 /**
+	  * Business Address Country 
+	  */
+	 public String getWorkAddressPostOfficeBox() {
+	 	return getNamedStringItem(0x0000804A);
 	 }
 
 	 /**
 	  * IM Address 
 	  */
 	 public String getInstantMessagingAddress() {
-	 	return this.getStringItem(pstFile.getNameToIdMapItem(0x00008062));
+	 	return getNamedStringItem(0x00008062);
 	 }
 
 	 /**
 	  * E-mail1 Display Name 
 	  */
 	 public String getEmail1DisplayName() {
-	 	return this.getStringItem(pstFile.getNameToIdMapItem(0x00008080));
+	 	return getNamedStringItem(0x00008080);
 	 }
 
 	 /**
 	  * E-mail1 Address Type 
 	  */
 	 public String getEmail1AddressType() {
-	 	return this.getStringItem(pstFile.getNameToIdMapItem(0x00008082));
+	 	return getNamedStringItem(0x00008082);
 	 }
 
 	 /**
 	  * E-mail1 Address 
 	  */
 	 public String getEmail1EmailAddress() {
-	 	return this.getStringItem(pstFile.getNameToIdMapItem(0x00008083));
+		 return getNamedStringItem(0x00008083);
 	 }
 
 	 /**
 	  * E-mail1 Display Name 
 	  */
 	 public String getEmail1OriginalDisplayName() {
-	 	return this.getStringItem(pstFile.getNameToIdMapItem(0x00008084));
+		 return getNamedStringItem(0x00008084);
 	 }
 
 	 /**
-	  * E-mail1 type 
+	  * E-mail1 type
 	  */
 	 public String getEmail1EmailType() {
-	 	return this.getStringItem(pstFile.getNameToIdMapItem(0x00008087));
+		 return getNamedStringItem(0x00008087);
 	 }
 
 	 /**
 	  * E-mail2 display name 
 	  */
 	 public String getEmail2DisplayName() {
-	 	return this.getStringItem(pstFile.getNameToIdMapItem(0x00008090));
+		 return getNamedStringItem(0x00008090);
 	 }
 
 	 /**
 	  * E-mail2 address type 
 	  */
 	 public String getEmail2AddressType() {
-	 	return this.getStringItem(pstFile.getNameToIdMapItem(0x00008092));
+	 	return getNamedStringItem(0x00008092);
 	 }
 
 	 /**
 	  * E-mail2 e-mail address 
 	  */
 	 public String getEmail2EmailAddress() {
-	 	return this.getStringItem(pstFile.getNameToIdMapItem(0x00008093));
+		 return getNamedStringItem(0x00008093);
 	 }
 
 	 /**
 	  * E-mail2 original display name 
 	  */
 	 public String getEmail2OriginalDisplayName() {
-	 	return this.getStringItem(pstFile.getNameToIdMapItem(0x00008094));
+	 	return getNamedStringItem(0x00008094);
 	 }
 
 	 /**
 	  * E-mail3 display name 
 	  */
 	 public String getEmail3DisplayName() {
-	 	return this.getStringItem(pstFile.getNameToIdMapItem(0x000080a0));
+	 	return getNamedStringItem(0x000080a0);
 	 }
 
 	 /**
 	  * E-mail3 address type 
 	  */
 	 public String getEmail3AddressType() {
-	 	return this.getStringItem(pstFile.getNameToIdMapItem(0x000080a2));
+	 	return getNamedStringItem(0x000080a2);
 	 }
 
 	 /**
 	  * E-mail3 e-mail address 
 	  */
 	 public String getEmail3EmailAddress() {
-	 	return this.getStringItem(pstFile.getNameToIdMapItem(0x000080a3));
+	 	return getNamedStringItem(0x000080a3);
 	 }
 
 	 /**
 	  * E-mail3 original display name 
 	  */
 	 public String getEmail3OriginalDisplayName() {
-	 	return this.getStringItem(pstFile.getNameToIdMapItem(0x000080a4));
+	 	return getNamedStringItem(0x000080a4);
 	 }
 
 	 /**
 	  * Fax1 Address Type 
 	  */
 	 public String getFax1AddressType() {
-	 	return this.getStringItem(pstFile.getNameToIdMapItem(0x000080b2));
+	 	return getNamedStringItem(0x000080b2);
 	 }
 
 	 /**
 	  * Fax1 Email Address 
 	  */
 	 public String getFax1EmailAddress() {
-	 	return this.getStringItem(pstFile.getNameToIdMapItem(0x000080b3));
+	 	return getNamedStringItem(0x000080b3);
 	 }
 
 	 /**
 	  * Fax1 Original Display Name 
 	  */
 	 public String getFax1OriginalDisplayName() {
-	 	return this.getStringItem(pstFile.getNameToIdMapItem(0x000080b4));
+	 	return getNamedStringItem(0x000080b4);
 	 }
 
 	 /**
 	  * Fax2 Address Type 
 	  */
 	 public String getFax2AddressType() {
-	 	return this.getStringItem(pstFile.getNameToIdMapItem(0x000080c2));
+	 	return getNamedStringItem(0x000080c2);
 	 }
 
 	 /**
 	  * Fax2 Email Address 
 	  */
 	 public String getFax2EmailAddress() {
-	 	return this.getStringItem(pstFile.getNameToIdMapItem(0x000080c3));
+	 	return getNamedStringItem(0x000080c3);
 	 }
 
 	 /**
 	  * Fax2 Original Display Name 
 	  */
 	 public String getFax2OriginalDisplayName() {
-	 	return this.getStringItem(pstFile.getNameToIdMapItem(0x000080c4));
+	 	return getNamedStringItem(0x000080c4);
 	 }
 
 	 /**
 	  * Fax3 Address Type 
 	  */
 	 public String getFax3AddressType() {
-	 	return this.getStringItem(pstFile.getNameToIdMapItem(0x000080d2));
+	 	return getNamedStringItem(0x000080d2);
 	 }
 
 	 /**
 	  * Fax3 Email Address 
 	  */
 	 public String getFax3EmailAddress() {
-	 	return this.getStringItem(pstFile.getNameToIdMapItem(0x000080d3));
+	 	return getNamedStringItem(0x000080d3);
 	 }
 
 	 /**
 	  * Fax3 Original Display Name 
 	  */
 	 public String getFax3OriginalDisplayName() {
-	 	return this.getStringItem(pstFile.getNameToIdMapItem(0x000080d4));
-	 }
-
-
+	 	return getNamedStringItem(0x000080d4);
+	 } 
 	 
+	 /**
+	  * Free/Busy Location (URL)
+	  */
+	 public String getFreeBusyLocation() {
+	 	return getNamedStringItem(0x000080d8);
+	 } 
 	 
+	 /**
+	  * Birthday
+	  */
+	public Date getBirthday() {
+		return this.getDateItem(0x3a42);
+	}
+
+	 /**
+	  * (Wedding) Anniversary
+	  */
+	public Date getAnniversary() {
+		return this.getDateItem(0x3a41);
+	}
+
 	public String toString() {
-		
+
 		return 
 			"Contact's Account name: "+getAccount()+"\n"+
+			"Display Name: "+getGivenName()+" "+getSurname()+" ("+getSMTPAddress()+")\n"+
+			"Email1 Address Type: "+getEmail1AddressType()+"\n"+
+			"Email1 Address: "+getEmail1EmailAddress()+"\n"+
 			"Callback telephone number: "+getCallbackTelephoneNumber()+"\n"+
 			"Contact's generational abbreviation (name suffix): "+getGeneration()+"\n"+
 			"Contacts given name: "+getGivenName()+"\n"+
@@ -755,7 +805,7 @@ public class PSTContact extends PSTMessage {
 			"Display Name Prefix (Contact Title): "+getDisplayNamePrefix()+"\n"+
 			"Profession: "+getProfession()+"\n"+
 			"Preferred By Name: "+getPreferredByName()+"\n"+
-			"Spouse's Name: "+getSpouseName()+"\n"+
+			"Spouse’s Name: "+getSpouseName()+"\n"+
 			"Computer Network Name: "+getComputerNetworkName()+"\n"+
 			"Customer ID: "+getCustomerId()+"\n"+
 			"TTY/TDD Phone: "+getTtytddPhoneNumber()+"\n"+

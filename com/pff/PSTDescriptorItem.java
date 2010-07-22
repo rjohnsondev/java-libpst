@@ -7,11 +7,12 @@ import java.util.*;
  * This is like extended table entries, usually when the data cannot fit in a traditional table item.
  * @author Richard Johnson
  */
-class PSTDescriptorItem extends PSTTableItem
+class PSTDescriptorItem //extends PSTTableItem
 {
 	int descriptorIdentifier;
 	int offsetIndexIdentifier;
 	int subNodeOffsetIndexIdentifier;
+	public byte[] data = new byte[0];
 	
 	HashMap<Integer, PSTDescriptorItem> subNodeDescriptorItems;
 	

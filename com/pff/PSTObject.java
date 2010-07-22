@@ -2,6 +2,8 @@ package com.pff;
 
 import java.io.IOException;
 import java.io.RandomAccessFile;
+import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
 import java.util.*;
 
 /**
@@ -11,6 +13,10 @@ import java.util.*;
  * @author Richard Johnson
  */
 public class PSTObject {
+	
+	public String getItemsString() {
+		return items.toString();
+	}
 	
 	protected PSTFile pstFile;
 	protected byte[] data;
@@ -86,6 +92,16 @@ public class PSTObject {
 		return defaultValue;
 	}
 	
+	protected boolean getBooleanItem(int identifier) {
+		return getBooleanItem(identifier, false);
+	}
+	protected boolean getBooleanItem(int identifier, boolean defaultValue) {
+		if (this.items.containsKey(identifier)) {
+			PSTTableBCItem item = (PSTTableBCItem)this.items.get(identifier);
+			return item.entryValueReference != 0;
+		}
+		return defaultValue;
+	}
 
 	protected double getDoubleItem(int identifier) {
 		return getDoubleItem(identifier, 0);
@@ -109,13 +125,14 @@ public class PSTObject {
 			if (item.entryValueType == 0x0003) {
 				// we are really just an int
 				return item.entryValueReference;
-			} else {
+			} else if ( item.entryValueType == 0x0014 ){
 				// we are a long
-				// don't really know what to do with this yet
-//				PSTObject.printHexFormatted(item.data, true);
-//				System.out.println(item);
-//				System.exit(0);
-				PSTObject.convertLittleEndianBytesToLong(item.data);
+				if ( item.data != null && item.data.length == 8 ) {
+					PSTObject.convertLittleEndianBytesToLong(item.data, 0, 8);
+				} else {
+					System.out.printf("Invalid data length for long id 0x%04X\n", identifier);
+					// Return the default value for now...
+				}
 			}
 		}
 		return defaultValue;
@@ -125,25 +142,41 @@ public class PSTObject {
 		return getStringItem(identifier, 0);
 	}
 	protected String getStringItem(int identifier, int stringType) {
-		if (this.items.containsKey(identifier)) {
-			PSTTableBCItem item = (PSTTableBCItem)this.items.get(identifier);
+		PSTTableBCItem item = (PSTTableBCItem)this.items.get(identifier);
+		if ( item != null ) {
 			
 			// see if there is a descriptor entry
-			if (item.isExternalValueReference &&
-				this.localDescriptorItems != null &&
+			if ( !item.isExternalValueReference ) {
+				return item.getStringValue();
+			}
+			if (this.localDescriptorItems != null &&
 				this.localDescriptorItems.containsKey(item.entryValueReference))
 			{
 				// we have a hit!
 				PSTDescriptorItem descItem = (PSTDescriptorItem)this.localDescriptorItems.get(item.entryValueReference);
 				
-//				PSTObject.printHexFormatted(descItem.data, true);
-				
-				// and we want a string.
-				if (stringType == 0) {
-					return descItem.getStringValue(item.entryValueType);
-				} else {
-					return descItem.getStringValue(stringType);
+				// We want a string.
+				if ( stringType == 0 ) {
+					stringType = item.entryValueType;
 				}
+
+				if ( stringType == 0x1F ) {
+					try {
+						return new String(descItem.data, "UTF-16LE");
+					} catch (UnsupportedEncodingException e) {
+						System.out.printf("Error decoding string %s: %s\n",
+								PSTFile.getPropertyDescription(identifier, stringType), data.toString());
+						return "";
+					}
+				}
+				//if (stringType == 0x1E )
+				{
+					// Hope for the best...
+					return new String(descItem.data, Charset.defaultCharset());
+				}
+				
+				//System.out.printf("PSTObject.getStringItem - item isn't a string: 0x%08X\n", identifier);
+				//return "";
 			}
 			
 			return item.getStringValue();
@@ -151,8 +184,8 @@ public class PSTObject {
 		return "";
 	}
 	
-	protected Date getDateItem(int identifier) {
-		if (this.items.containsKey(identifier)) {
+	public Date getDateItem(int identifier) {
+		if ( this.items.containsKey(identifier) ) {
 			PSTTableBCItem item = (PSTTableBCItem)this.items.get(identifier);
 			if (item.data.length == 0 ) {
 				return new Date(0);
@@ -165,6 +198,35 @@ public class PSTObject {
 		return null;
 	}
 	
+	protected byte[] getBinaryItem(int identifier) {
+		if (this.items.containsKey(identifier)) {
+			PSTTableBCItem item = (PSTTableBCItem)this.items.get(identifier);
+			if ( item.entryValueType == 0x0102 ) {
+				if ( !item.isExternalValueReference ) {
+					return item.data;
+				}
+				if ( this.localDescriptorItems != null &&
+					 this.localDescriptorItems.containsKey(item.entryValueReference))
+				{
+					// we have a hit!
+					PSTDescriptorItem descItem = (PSTDescriptorItem)this.localDescriptorItems.get(item.entryValueReference);
+					return descItem.data;
+				}
+				
+				System.out.println("External reference!!!\n");
+			}
+		}
+		return null;
+	}
+	
+	protected PSTTimeZone getTimeZoneItem(int identifier) {
+		byte[] tzData = getBinaryItem(identifier);
+		if ( tzData != null && tzData.length != 0 ) {
+			return new PSTTimeZone(tzData);
+		}
+		return null;
+	}
+
 	public String getMessageClass() {
 		return this.getStringItem(0x001a);
 	}
@@ -506,7 +568,7 @@ public class PSTObject {
 	 * @param end
 	 * @return long version of the data
 	 */
-	protected static long convertLittleEndianBytesToLong(byte[] data, int start, int end) {
+	public static long convertLittleEndianBytesToLong(byte[] data, int start, int end) {
 		
 		long offset = data[end-1] & 0xff;
 		long tmpLongValue;
@@ -519,6 +581,24 @@ public class PSTObject {
 		return offset;
 	}
 	
+	/**
+	 * Utility function for converting big endian bytes into a usable java long
+	 * @param data
+	 * @param start
+	 * @param end
+	 * @return long version of the data
+	 */
+	public static long convertBigEndianBytesToLong(byte[] data, int start, int end) {
+		
+		long offset = 0;
+		for ( int x = start; x < end; ++x ) {
+			offset = offset << 8;
+			offset |= ((long)data[x] & 0xFFL);
+		}
+		
+		return offset;
+	}
+
 	protected static boolean isPSTArray(byte[] data) {
 		return (data[0] == 1 && data[1] == 1);
 	}
@@ -571,15 +651,18 @@ public class PSTObject {
 		int numberOfEntries = (int)PSTObject.convertLittleEndianBytesToLong(data, 2, 4);
 		int[] output = new int[numberOfEntries];
 		int tableOffset = 8;
+		int blockOffset = 0;
 		for (int y = 0; y < numberOfEntries; y++) {
 			// get the offset identifier
 			long tableOffsetIdentifierIndex = PSTObject.convertLittleEndianBytesToLong(data, tableOffset, tableOffset+8);
 			// clear the last bit of the identifier.  Why so hard?
 			tableOffsetIdentifierIndex = (tableOffsetIdentifierIndex & 0xfffffffe);
 			OffsetIndexItem tableOffsetIdentifier = PSTObject.getOffsetIndexNode(in, tableOffsetIdentifierIndex);
-			output[y] = tableOffsetIdentifier.size;
+			blockOffset += tableOffsetIdentifier.size;
+			output[y] = blockOffset;
 			tableOffset += 8;
 		}
+
 		// replace the item data with the stuff from the array...
 		return output;
 	}
@@ -621,13 +704,17 @@ public class PSTObject {
 		Iterator<Integer> iterator = keySet.iterator();
 		
 		String type = "";
-		
+		int nidType = (folderIndexNode.descriptorIdentifier & 0x1F);
+
 		while (iterator.hasNext()) {
 			Integer key = (Integer)iterator.next();
 			if (key.intValue() >= 0x0001 &&
 				key.intValue() <= 0x0bff)
 			{
 				type = "Message envelope";
+				if ( nidType != 4 ) {
+					System.out.printf("nidType 0x%02X for message envelope\n", nidType);
+				}
 				break;
 			}
 			/*else if (key.intValue() >= 0x1000 &&
@@ -646,6 +733,9 @@ public class PSTObject {
 				key.intValue() <= 0x36ff)
 			{
 				type = "Folder and address book";
+				if ( nidType != 2 && nidType != 3 ) {
+					System.out.printf("nidType: 0x%02X\n", nidType);
+				}
 				break;
 			}
 			/*else if (key.intValue() >= 0x3700 &&
@@ -684,37 +774,43 @@ public class PSTObject {
 //		System.out.println(type);
 //		System.out.println(table);
 		
-		if (type.equals("Folder and address book")) {
+//		if (type.equals("Folder and address book")) {
+		if ( nidType == 0x02 || nidType == 0x03 ) {
 			return new PSTFolder(theFile, folderIndexNode, table, localDescriptorItems);
-		} else if (type.equals("Message envelope")) {
+		//} else if (type.equals("Message envelope")) {
+		} else if ( nidType == 0x04 ) {
 			
-			PSTMessage message = new PSTMessage(theFile, folderIndexNode, table, localDescriptorItems);
-			if (message.getMessageClass().equals("IPM.Note")) {
-				return message;
-			} else if (message.getMessageClass().equals("IPM.Appointment")) {
+			PSTTableBCItem item = table.getItems().get(0x001a);
+			String messageClass = "";
+			if ( item != null )
+			{
+				messageClass = item.getStringValue();
+			}
+
+			if (messageClass.equals("IPM.Note")) {
+				return new PSTMessage(theFile, folderIndexNode, table, localDescriptorItems);
+			} else if (messageClass.equals("IPM.Appointment")) {
 				return new PSTAppointment(theFile, folderIndexNode, table, localDescriptorItems);
-			} else if (message.getMessageClass().equals("IPM.Contact")) {
+			} else if (messageClass.equals("IPM.Contact")) {
 				return new PSTContact(theFile, folderIndexNode, table, localDescriptorItems);
-			} else if (message.getMessageClass().equals("IPM.Task")) {
+			} else if (messageClass.equals("IPM.Task")) {
 				return new PSTTask(theFile, folderIndexNode, table, localDescriptorItems);
-			} else if (message.getMessageClass().equals("IPM.Activity")) {
+			} else if (messageClass.equals("IPM.Activity")) {
 				return new PSTActivity(theFile, folderIndexNode, table, localDescriptorItems);
-			} else if (message.getMessageClass().equals("IPM.Post.Rss")) {
+			} else if (messageClass.equals("IPM.Post.Rss")) {
 				return new PSTRss(theFile, folderIndexNode, table, localDescriptorItems);
+			} else if ( messageClass.equals("IPM.Schedule.Meeting.Request") ) {
+				System.out.println("Meeting Request!");
 			} else {
-				System.out.println("some kind of message: "+message.getMessageClass());
+				System.out.println("Unknown message type: "+messageClass);
 			}
 			
-			return message;
+			return new PSTMessage(theFile, folderIndexNode, table, localDescriptorItems);
 		}
 		else
-		{
-//			System.out.println(table);
-//			return message;
-			
+		{			
+			System.out.println("Unknown child type: "+type);
 			throw new PSTException("Unknown child type: "+type+" - "+folderIndexNode.localDescriptorsOffsetIndexIdentifier);
-			//System.out.println("Unknown child type: "+type);
-//			return null;
 		}
 		
 	}
@@ -750,9 +846,48 @@ public class PSTObject {
     protected static Date filetimeToDate(final int high, final int low)
     {
         final long filetime = ((long) high) << 32 | (low & 0xffffffffL);
+		//System.out.printf("0x%X\n", filetime);
         final long ms_since_16010101 = filetime / (1000 * 10);
         final long ms_since_19700101 = ms_since_16010101 - EPOCH_DIFF;
         return new Date(ms_since_19700101);
     }
 
+    public static Calendar apptTimeToCalendar(int minutes) {
+    	final long ms_since_16010101 = (long)minutes * (60*1000L);
+        final long ms_since_19700101 = ms_since_16010101 - EPOCH_DIFF;
+        Calendar c = Calendar.getInstance(new SimpleTimeZone(0, "UTC"));
+        c.setTimeInMillis(ms_since_19700101);
+        return c;
+    }
+    
+    public static Calendar apptTimeToUTC(int minutes, PSTTimeZone tz) {
+		// Must convert minutes since 1/1/1601 in local time to UTC
+		// There's got to be a better way of doing this...
+		// First get a UTC calendar object that contains _local time_
+		Calendar cUTC = PSTObject.apptTimeToCalendar(minutes);
+		if ( tz != null ) {
+			// Create an empty Calendar object with the required time zone
+			SimpleTimeZone stz = tz.getSimpleTimeZone();
+			GregorianCalendar cLocal = new GregorianCalendar(stz);
+			cLocal.clear();
+			
+			// Now transfer the local date/time from the UTC calendar object
+			// to the object that knows about the time zone...
+			cLocal.set(cUTC.get(Calendar.YEAR),
+					   cUTC.get(Calendar.MONTH),
+					   cUTC.get(Calendar.DATE),
+					   cUTC.get(Calendar.HOUR_OF_DAY),
+					   cUTC.get(Calendar.MINUTE),
+					   cUTC.get(Calendar.SECOND));
+			
+			// Get the true UTC from the local time calendar object.
+			// Drop any milliseconds, they won't be printed anyway!
+			long utcs = cLocal.getTimeInMillis() / 1000;
+			
+			// Finally, set the true UTC in the UTC calendar object
+			cUTC.setTimeInMillis(utcs * 1000);
+		} // else hope for the best!
+
+		return cUTC;
+	}
 }

@@ -29,6 +29,38 @@ public class PSTAttachment extends PSTObject {
 		return this.getDateItem(0x3008);
 	}
 	
+	public PSTAppointment getEmbeddedAppointment() {
+		if ( getIntItem(0x3705) == 5 ) {
+			byte[] data = null;
+			PSTTableBCItem item = items.get(0x3701);
+			if ( item.entryValueType == 0x0102 ) {
+				if ( !item.isExternalValueReference )
+				{
+					data = item.data;
+				} else {
+					// We are in trouble!
+				}
+			} else if ( item.entryValueType == 0x000D ) {
+				int descriptorItem = (int)PSTObject.convertLittleEndianBytesToLong(item.data, 0, 4);
+				PSTDescriptorItem descriptorItemNested = this.localDescriptorItems.get(descriptorItem);
+				data = descriptorItemNested.data;
+			}
+			
+			if ( data == null ) {
+				return null;
+			}
+
+			try {
+				PSTTableBC table = new PSTTableBC(data);
+				return new PSTAppointment(pstFile, this.descriptorIndexNode, table, localDescriptorItems);
+			} catch ( PSTException e ) {
+				e.printStackTrace();
+			}
+			return null;
+		}
+		return null;
+	}
+	
 	public byte[] getFileContents()
 		throws IOException, PSTException
 	{

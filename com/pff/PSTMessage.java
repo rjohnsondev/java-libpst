@@ -7,7 +7,6 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.util.Date;
 import java.util.HashMap;
-import java.util.Iterator;
 
 /**
  * PST Message contains functions that are common across most MAPI objects.
@@ -29,7 +28,8 @@ public class PSTMessage extends PSTObject {
 		super(theFile, descriptorIndexNode);
 	}
 
-	PSTMessage(PSTFile theFile, DescriptorIndexNode folderIndexNode, PSTTableBC table, HashMap<Integer, PSTDescriptorItem> localDescriptorItems){
+	PSTMessage(PSTFile theFile, DescriptorIndexNode folderIndexNode, PSTTableBC table, HashMap<Integer, PSTDescriptorItem> localDescriptorItems)
+	{
 		super(theFile, folderIndexNode, table, localDescriptorItems);
 	}
 	
@@ -42,9 +42,9 @@ public class PSTMessage extends PSTObject {
 			// is it a reference?
 			PSTTableBCItem item = this.items.get(0x1009);
 			if (item.data.length > 0) {
-				throw new PSTException("Umm, not sure what to do with this data here, was just expecting a local descriptor node ref.");
+				return (LZFu.decode(item.data));
 			}
-			int ref = this.getIntItem(0x1009);
+			int ref = item.entryValueReference;
 			PSTDescriptorItem descItem = this.localDescriptorItems.get(ref);
 			RandomAccessFile in = this.pstFile.getFileHandle();
 			//get the data at the location
@@ -52,7 +52,15 @@ public class PSTMessage extends PSTObject {
 			in.seek(indexItem.fileOffset);
 			byte[] temp = new byte[indexItem.size];
 			in.read(temp);
-			temp = PSTObject.decode(temp);
+
+			if (PSTObject.isPSTArray(temp))
+			{
+				temp = PSTObject.processArray(in, temp);
+			}
+			if (this.pstFile.getEncryptionType() == PSTFile.ENCRYPTION_TYPE_COMPRESSIBLE) {
+				temp = PSTObject.decode(temp);
+			}
+
 			return (LZFu.decode(temp));
 		}
 		
@@ -83,14 +91,17 @@ public class PSTMessage extends PSTObject {
 	 */
 	public String getSubject() {
 		String subject = this.getStringItem(0x0037);
-		byte[] controlCodesA = {0x01, 0x01};
-		byte[] controlCodesB = {0x01, 0x05};
-		byte[] controlCodesC = {0x01, 0x10};
-		if (subject.startsWith(new String(controlCodesA)) ||
-			subject.startsWith(new String(controlCodesB)) ||
-			subject.startsWith(new String(controlCodesC)))
+
+//		byte[] controlCodesA = {0x01, 0x01};
+//		byte[] controlCodesB = {0x01, 0x05};
+//		byte[] controlCodesC = {0x01, 0x10};
+		if ( subject != null &&
+//			 (subject.startsWith(new String(controlCodesA)) ||
+//			  subject.startsWith(new String(controlCodesB)) ||
+//			  subject.startsWith(new String(controlCodesC)))
+			  subject.charAt(0) == 0x01 )
 		{
-			subject = subject.substring(2,subject.length());
+			subject = subject.substring(2, subject.length());
 		}
 		return subject;
 	}
@@ -243,6 +254,13 @@ public class PSTMessage extends PSTObject {
 	//0x0041 	0x0102 	PR_SENT_REPRESENTING_ENTRYID 	Sent representing entry identifier Binary data Contains recipient/sender structure
 	//0x0043 	0x0102 	PR_RCVD_REPRESENTING_ENTRYID 	Received representing entry identifier Binary data Contains recipient/sender structure
 	
+	/*
+	 * Address book search key
+	 */
+	public byte[] getPidTagSentRepresentingSearchKey()
+	{
+		return this.getBinaryItem(0x003b);
+	}
 	/**
 	 * Received representing name ASCII or Unicode string
 	 */
@@ -284,7 +302,7 @@ public class PSTMessage extends PSTObject {
 	 * Response requested Boolean
 	 */
 	public boolean getResponseRequested () {
-		return (this.getIntItem(0x0063) != 0);
+		return getBooleanItem(0x0063);
 	}
 	/**
 	 * Sent representing address type ASCII or Unicode string Known values are SMTP, EX (Exchange) and UNKNOWN
@@ -360,6 +378,13 @@ public class PSTMessage extends PSTObject {
 		return (this.getIntItem(0x0c17) != 0);
 	}
 	
+	/*
+	 * Sending mailbox owner's address book entry ID
+	 */
+	public byte[] getSenderEntryId() {
+		return this.getBinaryItem(0x0c19);
+	}
+	
 	/**
 	 * Sender name
 	 */
@@ -410,6 +435,21 @@ public class PSTMessage extends PSTObject {
 	public int getInternetArticleNumber() {
 		return this.getIntItem(0x0e23);
 	}
+	
+	/*
+	 * Server that the client should attempt to send the mail with
+	 */
+	public String getPrimarySendAccount() {
+		return this.getStringItem(0x0e28);
+	}
+
+	/*
+	 * Server that the client is currently using to send mail
+	 */
+	public String getNextSendAcct() {
+		return this.getStringItem(0x0e29);
+	}
+
 	/**
 	 * URL computer name postfix
 	 */
@@ -545,6 +585,12 @@ public class PSTMessage extends PSTObject {
 	public String getBody() {
 		return this.getStringItem(0x1000);
 	}
+	/*
+	 * Plain text body prefix
+	 */
+	public String getBodyPrefix() {
+		return this.getStringItem(0x6619);
+	}
 	/**
 	 * RTF Sync Body CRC
 	 */
@@ -670,6 +716,48 @@ public class PSTMessage extends PSTObject {
 	}
 
 	
+	private PSTTable7C recipientTable = null;
+	/**
+	 * find, extract and load up all of the attachments in this email
+	 * necessary for the other operations.
+	 * @throws PSTException
+	 * @throws IOException
+	 */
+	private void processRecipients()
+	{
+		try {
+			int recipientTableKey = 0x0692;
+			if (this.recipientTable == null &&
+				this.localDescriptorItems != null &&
+				this.localDescriptorItems.containsKey(recipientTableKey))
+			{
+				PSTDescriptorItem item = this.localDescriptorItems.get(recipientTableKey);
+				if (item.data.length > 0) {
+					recipientTable = new PSTTable7C(item.data, item.subNodeDescriptorItems);
+				}
+			}
+		} catch ( Exception e ) {
+			e.printStackTrace();
+			recipientTable = null;
+		}
+	}
+	
+	/**
+	 * get the number of recipients for this message
+	 * @throws PSTException
+	 * @throws IOException
+	 */
+	public int getNumberOfRecipients()
+		throws PSTException, IOException
+	{
+		this.processRecipients();
+
+		// still nothing? must be no recipients...
+		if ( this.recipientTable == null ) {
+			return 0;
+		}
+		return this.recipientTable.getRowCount();
+	}
 	
 	/**
 	 * attachment stuff here, not sure if these can just exist in emails or not,
@@ -695,28 +783,8 @@ public class PSTMessage extends PSTObject {
 		{
 			PSTDescriptorItem item = this.localDescriptorItems.get(attachmentTableKey);
 			if (item.data.length > 0) {
-				byte[] valuesArray = null;
-				if (item.subNodeOffsetIndexIdentifier != 0) {
-					// we have a sub-node!!!!
-					// most likely an external values array.  Doesn't really contain any values
-					// as far as I can tell, but useful for knowing how many entries we are dealing with
-					if (item.subNodeDescriptorItems.size() > 1) {
-						throw new PSTException("not sure how to deal with multiple value arrays in subdescriptors");
-					}
-					// get the first value out
-					Iterator<PSTDescriptorItem> valueIterator = item.subNodeDescriptorItems.values().iterator();
-					PSTDescriptorItem next = valueIterator.next();
-					
-					RandomAccessFile in = this.pstFile.getFileHandle();
-					OffsetIndexItem offset = PSTObject.getOffsetIndexNode(in, next.offsetIndexIdentifier);
-					valuesArray = new byte[offset.size];
-					in.seek(offset.fileOffset);
-					in.read(valuesArray);
-					valuesArray = PSTObject.decode(valuesArray);
-				}
-				attachmentTable = new PSTTable7C(item.data, valuesArray);
-			}
-			
+				attachmentTable = new PSTTable7C(item.data, item.subNodeDescriptorItems);
+			}		
 		}
 	}
 	
@@ -728,13 +796,25 @@ public class PSTMessage extends PSTObject {
 	 * Start date Filetime
 	 */
 	public Date getTaskStartDate() {
-		return this.getDateItem(pstFile.getNameToIdMapItem(0x00008104));
+		return getDateItem(pstFile.getNameToIdMapItem(0x00008104, PSTFile.PSETID_Task));
 	}
 	/**
 	 * Due date Filetime
 	 */
 	public Date getTaskDueDate() {
-		return this.getDateItem(pstFile.getNameToIdMapItem(0x00008105));
+		return getDateItem(pstFile.getNameToIdMapItem(0x00008105, PSTFile.PSETID_Task));
+	}
+	
+	/**
+	 * Is a reminder set on this object?
+	 * @return
+	 */
+	public boolean getReminderSet() {
+		return getBooleanItem(pstFile.getNameToIdMapItem(0x00008503, PSTFile.PSETID_Common));
+	}
+	
+	public int getReminderDelta() {
+		return getIntItem(pstFile.getNameToIdMapItem(0x00008501, PSTFile.PSETID_Common));
 	}
 	
 	/**
@@ -742,7 +822,7 @@ public class PSTMessage extends PSTObject {
 	 * This convience method just checks to see if that is true.
 	 */
 	public boolean isFlagged() {
-		return (this.getDateItem(pstFile.getNameToIdMapItem(0x00008104)) != null);
+		return getTaskDueDate() != null;
 	}
 	
 	/**
@@ -751,14 +831,19 @@ public class PSTMessage extends PSTObject {
 	 * @throws IOException
 	 */
 	public int getNumberOfAttachments()
-		throws PSTException, IOException
 	{
-		this.processAttachments();
-		// still nothing? must be no attachments...
-		if (this.attachmentTable == null) {
+		try {
+			this.processAttachments();
+		} catch (Exception e) {
+			e.printStackTrace();
 			return 0;
 		}
-		return this.attachmentTable.getItemCount();
+
+		// still nothing? must be no attachments...
+		if ( this.attachmentTable == null ) {
+			return 0;
+		}
+		return this.attachmentTable.getRowCount();
 	}
 	
 	/**
@@ -774,13 +859,13 @@ public class PSTMessage extends PSTObject {
 		this.processAttachments();
 		
 		if (attachmentNumber >= this.getNumberOfAttachments()) {
-			throw new PSTException("unable to fetch attachment number "+attachmentNumber+", only "+this.attachmentTable.getItemCount()+" in this email");
+			throw new PSTException("unable to fetch attachment number "+attachmentNumber+", only "+this.attachmentTable.getRowCount()+" in this email");
 		}
 		
 		// we process the C7 table here, basically we just want the attachment local descriptor...
 		HashMap<Integer, PSTTable7CItem> attachmentDetails = this.attachmentTable.getItems().get(attachmentNumber);
 		PSTTable7CItem attachmentTableItem = attachmentDetails.get(0x67f2);
-		int descriptorItemId = (int)attachmentTableItem.getLongValue();
+		int descriptorItemId = attachmentTableItem.entryValueReference;
 		// get the local descriptor for the attachmentDetails table.
 		PSTDescriptorItem descriptorItem = this.localDescriptorItems.get(descriptorItemId); 
 		OffsetIndexItem attachmentOffset = PSTObject.getOffsetIndexNode(this.pstFile.getFileHandle(), descriptorItem.offsetIndexIdentifier);
@@ -802,7 +887,40 @@ public class PSTMessage extends PSTObject {
 		return new PSTAttachment(this.pstFile, attachmentDetailsTable, this.localDescriptorItems);
 	}
 	
+	/**
+	 * get a specific recipient from this email.
+	 * @param recipientNumber
+	 * @return the recipient at the defined index
+	 * @throws PSTException
+	 * @throws IOException
+	 */
+	public PSTRecipient getRecipient(int recipientNumber)
+		throws PSTException, IOException
+	{
+		if ( recipientNumber >= getNumberOfRecipients() )
+		{
+			throw new PSTException("unable to fetch recipient number "+recipientNumber);
+		}
+
+		HashMap<Integer, PSTTable7CItem> recipientDetails = recipientTable.getItem(recipientNumber);
+		
+		if ( recipientDetails != null ) {
+			return new PSTRecipient(recipientDetails);
+		}
+
+		return null;
+	}
+
 	
+	public String getRecipientsString() {
+		if ( recipientTable != null ) {
+			return recipientTable.getItemsString();
+		}
+		
+		return "No recipients table!";
+	}
+	
+
 	/**
 	 * string representation of this email
 	 */

@@ -25,99 +25,139 @@ public class PSTAppointment extends PSTMessage {
 	}
 
 	public boolean getSendAsICAL() {
-		return (this.getIntItem(this.pstFile.getNameToIdMapItem(0x8200)) != 0);
+		return (getBooleanItem(pstFile.getNameToIdMapItem(0x00008200, PSTFile.PSETID_Appointment)));
+	}
+	public int getBusyStatus()
+	{
+		return getIntItem(pstFile.getNameToIdMapItem(0x00008205, PSTFile.PSETID_Appointment));
 	}
 	public boolean getShowAsBusy() {
-		return (this.getIntItem(this.pstFile.getNameToIdMapItem(0x8205)) == 2);
+		return getBusyStatus() == 2;
 	}
 	public String getLocation() {
-		return this.getStringItem(this.pstFile.getNameToIdMapItem(0x8208));
+		return getStringItem(pstFile.getNameToIdMapItem(0x00008208, PSTFile.PSETID_Appointment));
 	}
 	public Date getStartTime() {
-		return this.getDateItem(this.pstFile.getNameToIdMapItem(0x820d));
+		return getDateItem(pstFile.getNameToIdMapItem(0x0000820d, PSTFile.PSETID_Appointment));
+	}
+	public PSTTimeZone getStartTimeZone() {
+		return getTimeZoneItem(pstFile.getNameToIdMapItem(0x0000825e, PSTFile.PSETID_Appointment));
 	}
 	public Date getEndTime() {
-		return this.getDateItem(this.pstFile.getNameToIdMapItem(0x820e));
+		return getDateItem(pstFile.getNameToIdMapItem(0x0000820e, PSTFile.PSETID_Appointment));
+	}
+	public PSTTimeZone getEndTimeZone() {
+		return getTimeZoneItem(pstFile.getNameToIdMapItem(0x0000825f, PSTFile.PSETID_Appointment));
+	}
+	
+	public PSTTimeZone getRecurrenceTimeZone() {
+		String desc = getStringItem(pstFile.getNameToIdMapItem(0x00008234, PSTFile.PSETID_Appointment));
+		if ( desc!= null && desc.length() != 0 ) {
+			byte[] tzData = getBinaryItem(pstFile.getNameToIdMapItem(0x00008233, PSTFile.PSETID_Appointment));
+			if ( tzData != null && tzData.length != 0 ) {
+				return new PSTTimeZone(desc, tzData);
+			}
+		}
+		return null;
 	}
 	public int getDuration() {
-		return this.getIntItem(this.pstFile.getNameToIdMapItem(0x8213));
+		return getIntItem(pstFile.getNameToIdMapItem(0x00008213, PSTFile.PSETID_Appointment));
 	}
 	public int getColor() {
-		return this.getIntItem(this.pstFile.getNameToIdMapItem(0x8214));
+		return getIntItem(pstFile.getNameToIdMapItem(0x00008214, PSTFile.PSETID_Appointment));
 	}
 	public boolean getSubType() {
-		return (this.getIntItem(this.pstFile.getNameToIdMapItem(0x8215)) != 0);
+		return (getIntItem(pstFile.getNameToIdMapItem(0x00008215, PSTFile.PSETID_Appointment)) != 0);
 	}
 	public int getMeetingStatus() {
-		return this.getIntItem(this.pstFile.getNameToIdMapItem(0x8217));
+		return getIntItem(pstFile.getNameToIdMapItem(0x00008217, PSTFile.PSETID_Appointment));
 	}
 	public int getResponseStatus() {
-		return this.getIntItem(this.pstFile.getNameToIdMapItem(0x8218));
+		return getIntItem(pstFile.getNameToIdMapItem(0x00008218, PSTFile.PSETID_Appointment));
 	}
-	public int isRecurring() {
-		return this.getIntItem(this.pstFile.getNameToIdMapItem(0x8223));
+	public boolean isRecurring() {
+		return getBooleanItem(pstFile.getNameToIdMapItem(0x00008223, PSTFile.PSETID_Appointment));
 	}
 	public Date getRecurrenceBase() {
-		return this.getDateItem(this.pstFile.getNameToIdMapItem(0x8228));
+		return getDateItem(pstFile.getNameToIdMapItem(0x00008228, PSTFile.PSETID_Appointment));
 	}
 	public int getRecurrenceType() {
-		return this.getIntItem(this.pstFile.getNameToIdMapItem(0x8231));
+		return getIntItem(pstFile.getNameToIdMapItem(0x00008231, PSTFile.PSETID_Appointment));
 	}
 	public String getRecurrencePattern() {
-		return this.getStringItem(this.pstFile.getNameToIdMapItem(0x8232));
+		return getStringItem(pstFile.getNameToIdMapItem(0x00008232, PSTFile.PSETID_Appointment));
 	}
-	public String getTimezone() {
-		return this.getStringItem(this.pstFile.getNameToIdMapItem(0x8233));
+	public byte[] getRecurrenceStructure() {
+		return getBinaryItem(pstFile.getNameToIdMapItem(0x00008216, PSTFile.PSETID_Appointment));
+	}
+	public byte[] getTimezone() {
+		return getBinaryItem(pstFile.getNameToIdMapItem(0x00008233, PSTFile.PSETID_Appointment));
 	}
 	public String getAllAttendees() {
-		return this.getStringItem(this.pstFile.getNameToIdMapItem(0x8238));
+		return getStringItem(pstFile.getNameToIdMapItem(0x00008238, PSTFile.PSETID_Appointment));
 	}
 	public String getToAttendees() {
-		return this.getStringItem(this.pstFile.getNameToIdMapItem(0x823b));
+		return getStringItem(pstFile.getNameToIdMapItem(0x0000823b, PSTFile.PSETID_Appointment));
 	}
 	public String getCCAttendees() {
-		return this.getStringItem(this.pstFile.getNameToIdMapItem(0x823c));
+		return getStringItem(pstFile.getNameToIdMapItem(0x0000823c, PSTFile.PSETID_Appointment));
+	}
+	public int getAppointmentSequence() {
+		return getIntItem(pstFile.getNameToIdMapItem(0x00008201, PSTFile.PSETID_Appointment));
 	}
 	
 	// online meeting properties
 	public boolean isOnlineMeeting() {
-		return (this.getIntItem(this.pstFile.getNameToIdMapItem(0x8240)) != 0);
+		return (getBooleanItem(pstFile.getNameToIdMapItem(0x00008240, PSTFile.PSETID_Appointment)));
 	}
 	public int getNetMeetingType() {
-		return this.getIntItem(this.pstFile.getNameToIdMapItem(0x8241));
+		return getIntItem(pstFile.getNameToIdMapItem(0x00008241, PSTFile.PSETID_Appointment));
 	}
 	public String getNetMeetingServer() {
-		return this.getStringItem(this.pstFile.getNameToIdMapItem(0x8242));
+		return getStringItem(pstFile.getNameToIdMapItem(0x00008242, PSTFile.PSETID_Appointment));
 	}
 	public String getNetMeetingOrganizerAlias() {
-		return this.getStringItem(this.pstFile.getNameToIdMapItem(0x8243));
+		return getStringItem(pstFile.getNameToIdMapItem(0x00008243, PSTFile.PSETID_Appointment));
 	}
 	public boolean getNetMeetingAutostart() {
-		return (this.getIntItem(this.pstFile.getNameToIdMapItem(0x8245)) != 0);
+		return (getIntItem(pstFile.getNameToIdMapItem(0x00008245, PSTFile.PSETID_Appointment)) != 0);
 	}
 	public boolean getConferenceServerAllowExternal() {
-		return (this.getIntItem(this.pstFile.getNameToIdMapItem(0x8246)) != 0);
+		return (getBooleanItem(pstFile.getNameToIdMapItem(0x00008246, PSTFile.PSETID_Appointment)));
 	}
 	public String getNetMeetingDocumentPathName() {
-		return this.getStringItem(this.pstFile.getNameToIdMapItem(0x8247));
+		return getStringItem(pstFile.getNameToIdMapItem(0x00008247, PSTFile.PSETID_Appointment));
 	}
 	public String getNetShowURL() {
-		return this.getStringItem(this.pstFile.getNameToIdMapItem(0x8248));
+		return getStringItem(pstFile.getNameToIdMapItem(0x00008248, PSTFile.PSETID_Appointment));
+	}
+	public Date getAttendeeCriticalChange() {
+		return getDateItem(pstFile.getNameToIdMapItem(0x00000001, PSTFile.PSETID_Meeting));
+	}
+	public Date getOwnerCriticalChange() {
+		return getDateItem(pstFile.getNameToIdMapItem(0x0000001a, PSTFile.PSETID_Meeting));
 	}
 	public String getConferenceServerPassword() {
-		return this.getStringItem(this.pstFile.getNameToIdMapItem(0x8249));
+		return getStringItem(pstFile.getNameToIdMapItem(0x00008249, PSTFile.PSETID_Appointment));
 	}
 	
 	public boolean getAppointmentCounterProposal() {
-		return (this.getIntItem(this.pstFile.getNameToIdMapItem(0x8257)) != 0);
+		return (getBooleanItem(pstFile.getNameToIdMapItem(0x00008257, PSTFile.PSETID_Appointment)));
 	}
-//
-//	public boolean isSilent() {
-//		return (this.getIntItem(this.pstFile.getNameToIdMapItem(0x4)) > 0);
-//	}
-//	public String getRequiredAttendees() {
-//		return this.getStringItem(this.pstFile.getNameToIdMapItem(0x6));
-//	}
+
+	public boolean isSilent() {
+		return (getBooleanItem(pstFile.getNameToIdMapItem(0x00000004, PSTFile.PSETID_Meeting)));
+	}
+
+	public String getRequiredAttendees() {
+		return getStringItem(this.pstFile.getNameToIdMapItem(0x00000006, PSTFile.PSETID_Meeting));
+	}
 	
-	
+	public int getLocaleId() {
+		return getIntItem(0x3ff1);
+	}
+
+	public byte[] getGlobalObjectId() {
+		return getBinaryItem(pstFile.getNameToIdMapItem(0x00000003, PSTFile.PSETID_Meeting));
+	}
 }

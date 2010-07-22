@@ -40,98 +40,98 @@ public class PSTTask extends PSTMessage {
 	 * Status Integer 32-bit signed 0x0 => Not started
 	 */
 	public int getTaskStatus() {
-		return this.getIntItem(pstFile.getNameToIdMapItem(0x00008101));
+		return getIntItem(pstFile.getNameToIdMapItem(0x00008101, PSTFile.PSETID_Task));
 	}
 	/**
 	 * Percent Complete Floating point double precision (64-bit)
 	 */
 	public double getPercentComplete() {
-		return this.getDoubleItem(pstFile.getNameToIdMapItem(0x00008102));
+		return getDoubleItem(pstFile.getNameToIdMapItem(0x00008102, PSTFile.PSETID_Task));
 	}
 	/**
 	 * Is team task Boolean
 	 */
 	public boolean isTeamTask() {
-		return (this.getIntItem(pstFile.getNameToIdMapItem(0x00008103)) != 0);
+		return getBooleanItem(pstFile.getNameToIdMapItem(0x00008103, PSTFile.PSETID_Task));
 	}
 	
 	/**
 	 * Date completed Filetime
 	 */
 	public Date getTaskDateCompleted() {
-		return this.getDateItem(pstFile.getNameToIdMapItem(0x0000810f));
+		return getDateItem(pstFile.getNameToIdMapItem(0x0000810f, PSTFile.PSETID_Task));
 	}
 	/**
 	 * Actual effort in minutes Integer 32-bit signed
 	 */
 	public int getTaskActualEffort() {
-		return this.getIntItem(pstFile.getNameToIdMapItem(0x00008110));
+		return getIntItem(pstFile.getNameToIdMapItem(0x00008110, PSTFile.PSETID_Task));
 	}
 	/**
 	 * Total effort in minutes Integer 32-bit signed
 	 */
 	public int getTaskEstimatedEffort() {
-		return this.getIntItem(pstFile.getNameToIdMapItem(0x00008111));
+		return getIntItem(pstFile.getNameToIdMapItem(0x00008111, PSTFile.PSETID_Task));
 	}
 	/**
 	 * Task version Integer 32-bit signed FTK: Access count
 	 */
 	public int getTaskVersion() {
-		return this.getIntItem(pstFile.getNameToIdMapItem(0x00008112));
+		return getIntItem(pstFile.getNameToIdMapItem(0x00008112, PSTFile.PSETID_Task));
 	}
 	/**
 	 * Complete Boolean
 	 */
 	public boolean isTaskComplete() {
-		return (this.getIntItem(pstFile.getNameToIdMapItem(0x0000811c)) != 0);
+		return getBooleanItem(pstFile.getNameToIdMapItem(0x0000811c, PSTFile.PSETID_Task));
 	}
 	/**
 	 * Owner ASCII or Unicode string
 	 */
 	public String getTaskOwner() {
-		return this.getStringItem(pstFile.getNameToIdMapItem(0x0000811f));
+		return getStringItem(pstFile.getNameToIdMapItem(0x0000811f, PSTFile.PSETID_Task));
 	}
 	/**
 	 * Delegator ASCII or Unicode string
 	 */
 	public String getTaskAssigner() {
-		return this.getStringItem(pstFile.getNameToIdMapItem(0x00008121));
+		return getStringItem(pstFile.getNameToIdMapItem(0x00008121, PSTFile.PSETID_Task));
 	}
 	/**
 	 * Unknown ASCII or Unicode string
 	 */
 	public String getTaskLastUser() {
-		return this.getStringItem(pstFile.getNameToIdMapItem(0x00008122));
+		return getStringItem(pstFile.getNameToIdMapItem(0x00008122, PSTFile.PSETID_Task));
 	}
 	/**
 	 * Ordinal Integer 32-bit signed
 	 */
 	public int getTaskOrdinal() {
-		return this.getIntItem(pstFile.getNameToIdMapItem(0x00008123));
+		return this.getIntItem(pstFile.getNameToIdMapItem(0x00008123, PSTFile.PSETID_Task));
 	}
 	/**
 	 * Is recurring Boolean
 	 */
 	public boolean isTaskFRecurring() {
-		return (this.getIntItem(pstFile.getNameToIdMapItem(0x00008126)) != 0);
+		return getBooleanItem(pstFile.getNameToIdMapItem(0x00008126, PSTFile.PSETID_Task));
 	}
 	/**
 	 * Role ASCII or Unicode string
 	 */
 	public String getTaskRole() {
-		return this.getStringItem(pstFile.getNameToIdMapItem(0x00008127));
+		return getStringItem(pstFile.getNameToIdMapItem(0x00008127, PSTFile.PSETID_Task));
 	}
 	/**
 	 * Ownership Integer 32-bit signed
 	 */
 	public int getTaskOwnership() {
-		return this.getIntItem(pstFile.getNameToIdMapItem(0x00008129));
+		return getIntItem(pstFile.getNameToIdMapItem(0x00008129, PSTFile.PSETID_Task));
 	}
 	/**
 	 * Delegation State
 	 */
 	public int getAcceptanceState() {
-		return this.getIntItem(pstFile.getNameToIdMapItem(0x0000812a));
+		return getIntItem(pstFile.getNameToIdMapItem(0x0000812a, PSTFile.PSETID_Task));
 	}
 
 	public String toString() {

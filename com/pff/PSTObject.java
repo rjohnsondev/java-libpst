@@ -801,7 +801,8 @@ public class PSTObject {
 
 		if (messageClass.equals("IPM.Note")) {
 			return new PSTMessage(theFile, folderIndexNode, table, localDescriptorItems);
-		} else if (messageClass.equals("IPM.Appointment")) {
+		} else if (messageClass.equals("IPM.Appointment") ||
+				   messageClass.equals("IPM.OLE.CLASS.{00061055-0000-0000-C000-000000000046}")) {
 			return new PSTAppointment(theFile, folderIndexNode, table, localDescriptorItems);
 		} else if (messageClass.equals("IPM.Contact")) {
 			return new PSTContact(theFile, folderIndexNode, table, localDescriptorItems);
@@ -860,7 +861,7 @@ public class PSTObject {
     public static Calendar apptTimeToCalendar(int minutes) {
     	final long ms_since_16010101 = (long)minutes * (60*1000L);
         final long ms_since_19700101 = ms_since_16010101 - EPOCH_DIFF;
-        Calendar c = Calendar.getInstance(new SimpleTimeZone(0, "UTC"));
+        Calendar c = Calendar.getInstance(PSTTimeZone.utcTimeZone);
         c.setTimeInMillis(ms_since_19700101);
         return c;
     }
@@ -872,8 +873,7 @@ public class PSTObject {
 		Calendar cUTC = PSTObject.apptTimeToCalendar(minutes);
 		if ( tz != null ) {
 			// Create an empty Calendar object with the required time zone
-			SimpleTimeZone stz = tz.getSimpleTimeZone();
-			GregorianCalendar cLocal = new GregorianCalendar(stz);
+			Calendar cLocal = Calendar.getInstance(tz.getSimpleTimeZone());
 			cLocal.clear();
 			
 			// Now transfer the local date/time from the UTC calendar object

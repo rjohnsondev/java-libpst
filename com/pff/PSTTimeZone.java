@@ -61,9 +61,15 @@ public class PSTTimeZone {
 	}
 	
 	public SimpleTimeZone getSimpleTimeZone() {
+		if ( simpleTimeZone != null ) {
+			return simpleTimeZone;
+		}
+
 		if ( rule.startStandard.wMonth == 0 ) {
-			// A timezone with no daylight savings time
-			return new SimpleTimeZone((rule.lBias+rule.lStandardBias) * 60 * 1000, name);
+			// A time zone with no daylight savings time
+			simpleTimeZone = new SimpleTimeZone((rule.lBias+rule.lStandardBias) * 60 * 1000, name);
+
+			return simpleTimeZone;
 		}
 
 		int startMonth = (rule.startDaylight.wMonth -1 ) + Calendar.JANUARY;
@@ -74,7 +80,7 @@ public class PSTTimeZone {
 		int endDayOfWeek = rule.startStandard.wDayOfWeek + Calendar.SUNDAY;
 		int savings = (rule.lStandardBias-rule.lDaylightBias) * 60 * 1000;
 
-		return new SimpleTimeZone(
+		simpleTimeZone = new SimpleTimeZone(
 				-((rule.lBias+rule.lStandardBias) * 60 * 1000),
 				name,
 				startMonth, startDayOfMonth, -startDayOfWeek,
@@ -89,6 +95,8 @@ public class PSTTimeZone {
 					 rule.startStandard.wMilliseconds,
 				savings
 				);
+		
+		return simpleTimeZone;
 	}
 	
 	public boolean isEqual(PSTTimeZone rhs) {
@@ -171,6 +179,11 @@ public class PSTTimeZone {
 		public short wMilliseconds;
 	}
 
+	/**
+	 * A static copy of the UTC time zone, available for others to use
+	 */
+	public static SimpleTimeZone utcTimeZone = new SimpleTimeZone(0, "UTC");
+
 	private class TZRule {
 
 		TZRule(SYSTEMTIME dtStart, byte[] timeZoneData, int offset) {
@@ -216,4 +229,5 @@ public class PSTTimeZone {
 	
 	private String	name;
 	private TZRule	rule;
+	private SimpleTimeZone simpleTimeZone = null;
 }

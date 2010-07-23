@@ -280,12 +280,19 @@ public class PSTFile {
 	}
 
 	static private Properties propertyNames = null;
+	static private boolean bFirstTime = true;
 	
 	static String getPropertyName(int propertyId, boolean bNamed) {
-		if ( propertyNames == null ) {
+		if ( bFirstTime ) {
+			bFirstTime = false;
 			propertyNames = new Properties();
 			try {
-				propertyNames.load(PSTFile.class.getResourceAsStream("/PropertyNames.txt"));
+				InputStream propertyStream = PSTFile.class.getResourceAsStream("/PropertyNames.txt");
+				if ( propertyStream != null ) {
+					propertyNames.load(propertyStream);
+				} else {
+					propertyNames = null;
+				}
 			} catch (FileNotFoundException e) {
 				propertyNames = null;
 				e.printStackTrace();

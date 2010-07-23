@@ -780,32 +780,7 @@ public class PSTObject {
 		//} else if (type.equals("Message envelope")) {
 		} else if ( nidType == 0x04 ) {
 			
-			PSTTableBCItem item = table.getItems().get(0x001a);
-			String messageClass = "";
-			if ( item != null )
-			{
-				messageClass = item.getStringValue();
-			}
-
-			if (messageClass.equals("IPM.Note")) {
-				return new PSTMessage(theFile, folderIndexNode, table, localDescriptorItems);
-			} else if (messageClass.equals("IPM.Appointment")) {
-				return new PSTAppointment(theFile, folderIndexNode, table, localDescriptorItems);
-			} else if (messageClass.equals("IPM.Contact")) {
-				return new PSTContact(theFile, folderIndexNode, table, localDescriptorItems);
-			} else if (messageClass.equals("IPM.Task")) {
-				return new PSTTask(theFile, folderIndexNode, table, localDescriptorItems);
-			} else if (messageClass.equals("IPM.Activity")) {
-				return new PSTActivity(theFile, folderIndexNode, table, localDescriptorItems);
-			} else if (messageClass.equals("IPM.Post.Rss")) {
-				return new PSTRss(theFile, folderIndexNode, table, localDescriptorItems);
-			} else if ( messageClass.equals("IPM.Schedule.Meeting.Request") ) {
-				System.out.println("Meeting Request!");
-			} else {
-				System.out.println("Unknown message type: "+messageClass);
-			}
-			
-			return new PSTMessage(theFile, folderIndexNode, table, localDescriptorItems);
+			return PSTObject.createAppropriatePSTMessageObject(theFile, folderIndexNode, table, localDescriptorItems);
 		}
 		else
 		{			
@@ -813,6 +788,36 @@ public class PSTObject {
 			throw new PSTException("Unknown child type: "+type+" - "+folderIndexNode.localDescriptorsOffsetIndexIdentifier);
 		}
 		
+	}
+
+	static PSTMessage createAppropriatePSTMessageObject(PSTFile theFile, DescriptorIndexNode folderIndexNode, PSTTableBC table, HashMap<Integer, PSTDescriptorItem> localDescriptorItems) {
+
+		PSTTableBCItem item = table.getItems().get(0x001a);
+		String messageClass = "";
+		if ( item != null )
+		{
+			messageClass = item.getStringValue();
+		}
+
+		if (messageClass.equals("IPM.Note")) {
+			return new PSTMessage(theFile, folderIndexNode, table, localDescriptorItems);
+		} else if (messageClass.equals("IPM.Appointment")) {
+			return new PSTAppointment(theFile, folderIndexNode, table, localDescriptorItems);
+		} else if (messageClass.equals("IPM.Contact")) {
+			return new PSTContact(theFile, folderIndexNode, table, localDescriptorItems);
+		} else if (messageClass.equals("IPM.Task")) {
+			return new PSTTask(theFile, folderIndexNode, table, localDescriptorItems);
+		} else if (messageClass.equals("IPM.Activity")) {
+			return new PSTActivity(theFile, folderIndexNode, table, localDescriptorItems);
+		} else if (messageClass.equals("IPM.Post.Rss")) {
+			return new PSTRss(theFile, folderIndexNode, table, localDescriptorItems);
+		} else if ( messageClass.equals("IPM.Schedule.Meeting.Request") ) {
+			System.out.println("Meeting Request!");
+		} else {
+			System.out.println("Unknown message type: "+messageClass);
+		}
+
+		return new PSTMessage(theFile, folderIndexNode, table, localDescriptorItems);
 	}
 	
 	/**

@@ -285,7 +285,7 @@ public class PSTFile {
 		if ( propertyNames == null ) {
 			propertyNames = new Properties();
 			try {
-				propertyNames.load(new FileInputStream("PropertyNames.txt"));
+				propertyNames.load(PSTFile.class.getResourceAsStream("/PropertyNames.txt"));
 			} catch (FileNotFoundException e) {
 				propertyNames = null;
 				e.printStackTrace();

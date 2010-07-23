@@ -28,6 +28,7 @@ public class TestGui {
 		// attempt to open the pst file
 		try {
 			pstFile = new PSTFile("Outlook-new.pst");
+
 		} catch (Exception err) {
 			err.printStackTrace();
 			System.exit(1);
@@ -108,7 +109,7 @@ public class TestGui {
 //						System.out.println(selectedMessage.getMessageClass());
 //						emailText.setText(selectedMessage.getBody());
 						emailText.setText(selectedMessage.getBodyHTML());
-//						emailText.setText(selectedMessage.toString());
+						//emailText.setText(selectedMessage.toString());
 //						PSTTask task = selectedMessage.toTask();
 //						emailText.setText(task.toString());
 					}

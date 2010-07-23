@@ -418,18 +418,6 @@ public class PSTMessage extends PSTObject {
 		return this.getLongItem(0x0e08);
 	}
 	/**
-	 * Attachment size
-	 */
-	public int getAttachSize() {
-		return this.getIntItem(0x0e20);
-	}
-	/**
-	 * Attachment number
-	 */
-	public int getAttachNum() {
-		return this.getIntItem(0x0e21);
-	}
-	/**
 	 * Internet article number
 	 */
 	public int getInternetArticleNumber() {

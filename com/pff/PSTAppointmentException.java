@@ -12,8 +12,8 @@ import java.util.Date;
  */
 public class PSTAppointmentException {
 	
-	// Access methods - return the value from the exception
-	// if OverrideFlags say it's present, otherwise the value from the appointment.
+	// Access methods - return the value from the exception if
+	// OverrideFlags say it's present, otherwise the value from the appointment.
 	public String getSubject() {
 		if ( (OverrideFlags & 0x0001) != 0 ) {
 			try {
@@ -179,7 +179,7 @@ public class PSTAppointmentException {
 		OverrideFlags = (short)PSTObject.convertLittleEndianBytesToLong(recurrencePattern, offset, offset+2);
 		offset += 2;
 		
-		if ( (OverrideFlags & 0x0001) != 0 ) {
+		if ( (OverrideFlags & ARO_SUBJECT) != 0 ) {
 			@SuppressWarnings("unused")
 			short SubjectLength = (short)PSTObject.convertLittleEndianBytesToLong(recurrencePattern, offset, offset+2);
 			offset += 2;
@@ -190,22 +190,22 @@ public class PSTAppointmentException {
 			offset += SubjectLength2;
 		}
 		
-		if ( (OverrideFlags & 0x0002) != 0 ) {
+		if ( (OverrideFlags & ARO_MEETINGTYPE) != 0 ) {
 			MeetingType = (int)PSTObject.convertLittleEndianBytesToLong(recurrencePattern, offset, offset+4);
 			offset += 4;
 		}
 
-		if ( (OverrideFlags & 0x0004) != 0 ) {
+		if ( (OverrideFlags & ARO_REMINDERDELTA) != 0 ) {
 			ReminderDelta = (int)PSTObject.convertLittleEndianBytesToLong(recurrencePattern, offset, offset+4);
 			offset += 4;
 		}
 
-		if ( (OverrideFlags & 0x0008) != 0 ) {
+		if ( (OverrideFlags & ARO_REMINDER) != 0 ) {
 			ReminderSet = ((int)PSTObject.convertLittleEndianBytesToLong(recurrencePattern, offset, offset+4) != 0);
 			offset += 4;
 		}
 
-		if ( (OverrideFlags & 0x0010) != 0 ) {
+		if ( (OverrideFlags & ARO_LOCATION) != 0 ) {
 			@SuppressWarnings("unused")
 			short LocationLength = (short)PSTObject.convertLittleEndianBytesToLong(recurrencePattern, offset, offset+2);
 			offset += 2;
@@ -216,17 +216,17 @@ public class PSTAppointmentException {
 			offset += LocationLength2;
 		}
 
-		if ( (OverrideFlags & 0x0020) != 0 ) {
+		if ( (OverrideFlags & ARO_BUSYSTATUS) != 0 ) {
 			BusyStatus = (int)PSTObject.convertLittleEndianBytesToLong(recurrencePattern, offset, offset+4);
 			offset += 4;
 		}
 
-		if ( (OverrideFlags & 0x0040) != 0 ) {
+		if ( (OverrideFlags & ARO_ATTACHMENT) != 0 ) {
 			Attachment = (int)PSTObject.convertLittleEndianBytesToLong(recurrencePattern, offset, offset+4);
 			offset += 4;
 		}
 
-		if ( (OverrideFlags & 0x0080) != 0 ) {
+		if ( (OverrideFlags & ARO_SUBTYPE) != 0 ) {
 			SubType = ((int)PSTObject.convertLittleEndianBytesToLong(recurrencePattern, offset, offset+4) != 0);
 			offset += 4;
 		}
@@ -247,38 +247,46 @@ public class PSTAppointmentException {
 		int ReservedBlockEESize = (int)PSTObject.convertLittleEndianBytesToLong(recurrencePattern, offset, offset+4);
 		offset += 4 + ReservedBlockEESize;
 
-		// Same as regular Exception structure?
-		StartDateTime = (int)PSTObject.convertLittleEndianBytesToLong(recurrencePattern, offset, offset+4);
-		offset += 4;
-		EndDateTime = (int)PSTObject.convertLittleEndianBytesToLong(recurrencePattern, offset, offset+4);
-		offset += 4;
-		OriginalStartDate = (int)PSTObject.convertLittleEndianBytesToLong(recurrencePattern, offset, offset+4);
-		offset += 4;
+		// See http://msdn.microsoft.com/en-us/library/cc979209(office.12).aspx
+		if ( (OverrideFlags & (ARO_SUBJECT|ARO_LOCATION)) != 0 ) {
+			// Same as regular Exception structure?
+			StartDateTime = (int)PSTObject.convertLittleEndianBytesToLong(recurrencePattern, offset, offset+4);
+			offset += 4;
+			EndDateTime = (int)PSTObject.convertLittleEndianBytesToLong(recurrencePattern, offset, offset+4);
+			offset += 4;
+			OriginalStartDate = (int)PSTObject.convertLittleEndianBytesToLong(recurrencePattern, offset, offset+4);
+			offset += 4;
+		}
 
-		if ( (OverrideFlags & 0x0001) != 0 ) {
+		if ( (OverrideFlags & ARO_SUBJECT) != 0 ) {
 			WideCharSubjectLength = (short)PSTObject.convertLittleEndianBytesToLong(recurrencePattern, offset, offset+2);
 			offset += 2;
 			WideCharSubject = new byte[WideCharSubjectLength * 2];
 			System.arraycopy(recurrencePattern, offset, WideCharSubject, 0, WideCharSubject.length);
 			offset += WideCharSubject.length;
-			
+/*			
 			try {
 				String subject = new String(WideCharSubject, "UTF-16LE");
 				System.out.printf("Exception Subject: %s\n", subject);
 			} catch (UnsupportedEncodingException e) {
 				e.printStackTrace();
 			}
+/**/
 		}
-		
-		if ( (OverrideFlags & 0x0010) != 0 ) {
+	
+		if ( (OverrideFlags & ARO_LOCATION) != 0 ) {
 			WideCharLocationLength = (short)PSTObject.convertLittleEndianBytesToLong(recurrencePattern, offset, offset+2);
 			offset += 2;
 			WideCharLocation = new byte[WideCharLocationLength*2];
 			System.arraycopy(recurrencePattern, offset, WideCharLocation, 0, WideCharLocation.length);
 			offset += WideCharLocation.length;
 		}
-		ReservedBlockEESize = (int)PSTObject.convertLittleEndianBytesToLong(recurrencePattern, offset, offset+4);
-		offset += 4 + ReservedBlockEESize;
+		
+		// See http://msdn.microsoft.com/en-us/library/cc979209(office.12).aspx
+		if ( (OverrideFlags & (ARO_SUBJECT|ARO_LOCATION)) != 0 ) {
+			ReservedBlockEESize = (int)PSTObject.convertLittleEndianBytesToLong(recurrencePattern, offset, offset+4);
+			offset += 4 + ReservedBlockEESize;
+		}
 
 		extendedLength = offset - initialOffset;
 	}
@@ -300,7 +308,7 @@ public class PSTAppointmentException {
 	private int		BusyStatus;
 	private int		Attachment;
 	private boolean	SubType;
-//	private int		AppointmentColor;
+//	private int		AppointmentColor;	// Reserved - don't read from the PST file
 	@SuppressWarnings("unused")
 	private int		ChangeHighlightValue;
 	private int		WideCharSubjectLength = 0;
@@ -308,16 +316,27 @@ public class PSTAppointmentException {
 	private int		WideCharLocationLength = 0;
 	private byte[]	WideCharLocation = null;
 	
+	// Length of this ExceptionInfo structure in the PST file
 	int getLength() {
 		return length;
 	}
-	
+
+	// Length of this ExtendedException structure in the PST file
 	int getExtendedLength() {
 		return extendedLength;
 	}
 
-	private PSTAppointment	embeddedMessage;
+	private PSTAppointment	embeddedMessage = null;
 	private PSTAppointment	appt;
 	private int length;
 	private int extendedLength;
+	
+	static final short ARO_SUBJECT = 0x0001;
+	static final short ARO_MEETINGTYPE = 0x0002;
+	static final short ARO_REMINDERDELTA = 0x0004;
+	static final short ARO_REMINDER = 0x0008;
+	static final short ARO_LOCATION = 0x0010;
+	static final short ARO_BUSYSTATUS = 0x0020;
+	static final short ARO_ATTACHMENT = 0x0040;
+	static final short ARO_SUBTYPE = 0x0080;
 }

@@ -161,6 +161,18 @@ public class PSTAppointmentException {
 		return false;
 	}
 	
+	public boolean embeddedMessagePresent() {
+		return embeddedMessage != null;
+	}
+
+	//
+	// Allow access to an embedded message for
+	// properties that don't have access methods here.
+	//
+	public PSTAppointment getEmbeddedMessage() {
+		return embeddedMessage;
+	}
+
 	PSTAppointmentException(byte[] recurrencePattern,
 			int offset,
 			int writerVersion2,

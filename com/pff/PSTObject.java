@@ -75,9 +75,22 @@ public class PSTObject {
 	protected PSTTableBC table;
 	
 	
-	
+
+	/**
+	 * get the descriptor node for this item
+	 * this identifies the location of the node in the BTree and assocatiated info
+	 * @return items' descriptor node
+	 */
 	public DescriptorIndexNode getDescriptorNode() {
 		return this.descriptorIndexNode;
+	}
+	/**
+	 * get the descriptor identifier for this item
+	 * can be used for loading objects through detectAndLoadPSTObject(PSTFile theFile, long descriptorIndex)
+	 * @return items' descriptor node identifier
+	 */
+	public long getDescriptorNodeId() {
+		return this.descriptorIndexNode.descriptorIdentifier;
 	}
 	
 	

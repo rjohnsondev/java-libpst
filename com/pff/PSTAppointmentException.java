@@ -192,8 +192,8 @@ public class PSTAppointmentException {
 		offset += 2;
 		
 		if ( (OverrideFlags & ARO_SUBJECT) != 0 ) {
-			@SuppressWarnings("unused")
-			short SubjectLength = (short)PSTObject.convertLittleEndianBytesToLong(recurrencePattern, offset, offset+2);
+			//@SuppressWarnings("unused")
+			//short SubjectLength = (short)PSTObject.convertLittleEndianBytesToLong(recurrencePattern, offset, offset+2);
 			offset += 2;
 			short SubjectLength2 = (short)PSTObject.convertLittleEndianBytesToLong(recurrencePattern, offset, offset+2);
 			offset += 2;
@@ -218,8 +218,8 @@ public class PSTAppointmentException {
 		}
 
 		if ( (OverrideFlags & ARO_LOCATION) != 0 ) {
-			@SuppressWarnings("unused")
-			short LocationLength = (short)PSTObject.convertLittleEndianBytesToLong(recurrencePattern, offset, offset+2);
+			//@SuppressWarnings("unused")
+			//short LocationLength = (short)PSTObject.convertLittleEndianBytesToLong(recurrencePattern, offset, offset+2);
 			offset += 2;
 			short LocationLength2 = (short)PSTObject.convertLittleEndianBytesToLong(recurrencePattern, offset, offset+2);
 			offset += 2;
@@ -327,6 +327,11 @@ public class PSTAppointmentException {
 	private byte[]	WideCharSubject = null;
 	private int		WideCharLocationLength = 0;
 	private byte[]	WideCharLocation = null;
+	private PSTAppointment	embeddedMessage = null;
+	private PSTAppointment	appt;
+	private int 	length;
+	private int 	extendedLength;
+	
 	
 	// Length of this ExceptionInfo structure in the PST file
 	int getLength() {
@@ -338,11 +343,7 @@ public class PSTAppointmentException {
 		return extendedLength;
 	}
 
-	private PSTAppointment	embeddedMessage = null;
-	private PSTAppointment	appt;
-	private int length;
-	private int extendedLength;
-	
+
 	static final short ARO_SUBJECT = 0x0001;
 	static final short ARO_MEETINGTYPE = 0x0002;
 	static final short ARO_REMINDERDELTA = 0x0004;

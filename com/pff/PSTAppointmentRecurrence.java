@@ -1,6 +1,9 @@
 package com.pff;
 
+/*
 import java.text.SimpleDateFormat;
+/**/
+
 import java.util.Calendar;
 import java.util.Date;
 import java.util.SimpleTimeZone;
@@ -13,8 +16,9 @@ import java.util.SimpleTimeZone;
  */
 
 public class PSTAppointmentRecurrence {
+
 	// Access methods
-	
+
 	public short getExceptionCount() {
 		return ExceptionCount;
 	}
@@ -125,6 +129,11 @@ public class PSTAppointmentRecurrence {
 					(int)PSTObject.convertLittleEndianBytesToLong(recurrencePattern, offset, offset+4),
 					RecurrenceTimeZone);
 			offset += 4;
+/*
+			SimpleDateFormat f = new SimpleDateFormat("yyyyMMdd'T'HHmmss");
+			f.setTimeZone(RecurrenceTimeZone.getSimpleTimeZone());
+			System.out.printf("DeletedInstanceDates[%d]: %s\n", i, f.format(DeletedInstanceDates[i].getTime()));
+/**/		
 		}
 		
 		ModifiedInstanceCount = (int)PSTObject.convertLittleEndianBytesToLong(recurrencePattern, offset, offset+4);
@@ -135,7 +144,7 @@ public class PSTAppointmentRecurrence {
 					(int)PSTObject.convertLittleEndianBytesToLong(recurrencePattern, offset, offset+4),
 					RecurrenceTimeZone);
 			offset += 4;
-/**/
+/*
 			SimpleDateFormat f = new SimpleDateFormat("yyyyMMdd'T'HHmmss");
 			f.setTimeZone(RecurrenceTimeZone.getSimpleTimeZone());
 			System.out.printf("ModifiedInstanceDates[%d]: %s\n", i, f.format(ModifiedInstanceDates[i].getTime()));
@@ -171,7 +180,7 @@ public class PSTAppointmentRecurrence {
 		for ( int i = 0; i < ExceptionCount; ++i ) {
 			Exceptions[i].ExtendedException(recurrencePattern, offset);
 			offset += Exceptions[i].getExtendedLength();
-/**/
+/*
 			Calendar c = PSTObject.apptTimeToUTC(Exceptions[i].getStartDateTime(), RecurrenceTimeZone);
 			System.out.printf("Exception[%d] start: %s\n", i, FormatUTC(c.getTime()));
 			c = PSTObject.apptTimeToUTC(Exceptions[i].getEndDateTime(), RecurrenceTimeZone);
@@ -180,6 +189,7 @@ public class PSTAppointmentRecurrence {
 			System.out.printf("Exception[%d] original start: %s\n", i, FormatUTC(c.getTime()));
 /**/
 		}
+		// Ignore any extra data - see http://msdn.microsoft.com/en-us/library/cc979209(office.12).aspx
 
 		// Get attachments, if any
 		PSTAttachment[] attachments = new PSTAttachment[appt.getNumberOfAttachments()];
@@ -204,7 +214,7 @@ public class PSTAppointmentRecurrence {
 						}
 						embeddedMessage = (PSTAppointment)message;
 						Date replaceTime = embeddedMessage.getRecurrenceBase();
-/**/
+/*
 						SimpleDateFormat f = new SimpleDateFormat("yyyyMMdd'T'HHmmss");
 						f.setTimeZone(stz);
 						System.out.printf("Attachment[%d] time: %s\n", iAttachment, f.format(replaceTime));
@@ -215,7 +225,7 @@ public class PSTAppointmentRecurrence {
 							 c.get(Calendar.MONTH) == ModifiedInstanceDates[i].get(Calendar.MONTH) &&
 							 c.get(Calendar.YEAR) == ModifiedInstanceDates[i].get(Calendar.YEAR) )
 						{
-/**/							System.out.println("\tEmbedded Message matched"); /**/
+/*							System.out.println("\tEmbedded Message matched"); /**/
 
 							Exceptions[i].setEmbeddedMessage(embeddedMessage);
 							break;
@@ -229,13 +239,15 @@ public class PSTAppointmentRecurrence {
 
 		attachments = null;
 	}
-	
+
+/*
 	private String FormatUTC(Date date) {
 		SimpleDateFormat f = new SimpleDateFormat("yyyyMMdd'T'HHmmss'Z'");
 		f.setTimeZone(PSTTimeZone.utcTimeZone);
 		return f.format(date);
 	}
-	
+/**/
+
 	private short	RecurFrequency;
 	private short	PatternType;
 	private short	CalendarType;
@@ -248,9 +260,9 @@ public class PSTAppointmentRecurrence {
 	private int		OccurrenceCount;
 	private int		FirstDOW;
 	private int		DeletedInstanceCount;
-	private Calendar[]	DeletedInstanceDates;
+	private Calendar[]	DeletedInstanceDates = null;
 	private int		ModifiedInstanceCount;
-	private Calendar[]	ModifiedInstanceDates;
+	private Calendar[]	ModifiedInstanceDates = null;
 	private int		StartDate;
 	private int		EndDate;
 	//private int	readerVersion2;
@@ -259,5 +271,5 @@ public class PSTAppointmentRecurrence {
 	private int		EndTimeOffset;
 	private short	ExceptionCount;
 	private PSTAppointmentException[] Exceptions = null;
-	private PSTTimeZone RecurrenceTimeZone;
+	private PSTTimeZone RecurrenceTimeZone = null;
 }

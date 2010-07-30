@@ -75,7 +75,7 @@ public class PSTObject {
 	protected PSTTableBC table;
 	
 	
-
+	
 	/**
 	 * get the descriptor node for this item
 	 * this identifies the location of the node in the BTree and assocatiated info
@@ -815,7 +815,8 @@ public class PSTObject {
 		if (messageClass.equals("IPM.Note")) {
 			return new PSTMessage(theFile, folderIndexNode, table, localDescriptorItems);
 		} else if (messageClass.equals("IPM.Appointment") ||
-				   messageClass.equals("IPM.OLE.CLASS.{00061055-0000-0000-C000-000000000046}")) {
+				   messageClass.equals("IPM.OLE.CLASS.{00061055-0000-0000-C000-000000000046}") ||
+				   messageClass.startsWith("IPM.Schedule.Meeting")) {
 			return new PSTAppointment(theFile, folderIndexNode, table, localDescriptorItems);
 		} else if (messageClass.equals("IPM.Contact")) {
 			return new PSTContact(theFile, folderIndexNode, table, localDescriptorItems);
@@ -825,8 +826,6 @@ public class PSTObject {
 			return new PSTActivity(theFile, folderIndexNode, table, localDescriptorItems);
 		} else if (messageClass.equals("IPM.Post.Rss")) {
 			return new PSTRss(theFile, folderIndexNode, table, localDescriptorItems);
-		} else if ( messageClass.equals("IPM.Schedule.Meeting.Request") ) {
-			System.out.println("Meeting Request!");
 		} else {
 			System.out.println("Unknown message type: "+messageClass);
 		}

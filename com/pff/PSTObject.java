@@ -128,7 +128,7 @@ public class PSTObject {
 			} else if ( item.entryValueType == 0x0014 ){
 				// we are a long
 				if ( item.data != null && item.data.length == 8 ) {
-					PSTObject.convertLittleEndianBytesToLong(item.data, 0, 8);
+					return PSTObject.convertLittleEndianBytesToLong(item.data, 0, 8);
 				} else {
 					System.out.printf("Invalid data length for long id 0x%04X\n", identifier);
 					// Return the default value for now...

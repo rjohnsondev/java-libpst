@@ -43,6 +43,19 @@ public class PSTRecipient {
 	
 	public String getSmtpAddress()
 	{
+		// If the recipient address type is SMTP,
+		// we can simply return the recipient address.
+		String addressType = getEmailAddressType();
+		if ( addressType!= null &&
+			 addressType.equalsIgnoreCase("smtp") )
+		{
+			String addr = getEmailAddress();
+			if ( addr != null && addr.length() != 0 ) {
+				return addr;
+			}
+		}
+		// Otherwise, we have to hope the SMTP address is
+		// present as the PidTagPrimarySmtpAddress property.
 		return getString(0x39FE);
 	}
 	

@@ -75,6 +75,7 @@ class PSTDescriptor {
 			// is the data an array?
 			if (PSTObject.isPSTArray(item.data))
 			{
+				item.blockOffsets = PSTObject.getBlockOffsets(in, item.data);
 				item.data = PSTObject.processArray(in, item.data);
 			}
 			if (encryptionType == PSTFile.ENCRYPTION_TYPE_COMPRESSIBLE) {

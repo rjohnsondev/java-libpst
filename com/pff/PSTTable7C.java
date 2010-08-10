@@ -3,7 +3,9 @@
  */
 package com.pff;
 
+/*
 import java.io.UnsupportedEncodingException;
+/**/
 import java.util.*;
 
 /**
@@ -16,10 +18,10 @@ class PSTTable7C extends PSTTable {
 	private List<HashMap<Integer, PSTTable7CItem>> items = new ArrayList<HashMap<Integer, PSTTable7CItem>>();
 	private int numberOfDataSets = 0;
 	
-	protected PSTTable7C(byte[] Data, HashMap<Integer, PSTDescriptorItem> subNodeDescriptorItems)
+	protected PSTTable7C(byte[] Data, int[] blockOffsets, HashMap<Integer, PSTDescriptorItem> subNodeDescriptorItems)
 		throws PSTException
 	{
-		super(Data, new int[0], subNodeDescriptorItems);
+		super(Data, blockOffsets, subNodeDescriptorItems);
 		
 		if (tableTypeByte != 0x7c)
 		{
@@ -27,10 +29,6 @@ class PSTTable7C extends PSTTable {
 			throw new PSTException("unable to create PSTTable7C, table does not appear to be a 7c!");
 		}
 		
-		if ( Data.length > (8192-16) ) {
-			System.out.printf("TC table - more than one block: %d bytes\n", Data.length);
-		}
-
 		// TCINFO header is in the hidUserRoot node
 		NodeInfo tcHeaderNode = getNodeInfo(hidUserRoot);
 		int offset = tcHeaderNode.startOffset;

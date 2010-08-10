@@ -96,12 +96,18 @@ public class PSTMessage extends PSTObject {
 //		byte[] controlCodesB = {0x01, 0x05};
 //		byte[] controlCodesC = {0x01, 0x10};
 		if ( subject != null &&
+			 (subject.length() >= 2) &&
+
 //			 (subject.startsWith(new String(controlCodesA)) ||
 //			  subject.startsWith(new String(controlCodesB)) ||
 //			  subject.startsWith(new String(controlCodesC)))
 			  subject.charAt(0) == 0x01 )
 		{
-			subject = subject.substring(2, subject.length());
+			if ( subject.length() == 2 ) {
+				subject = "";
+			} else {
+				subject = subject.substring(2, subject.length());
+			}
 		}
 		return subject;
 	}
@@ -721,7 +727,7 @@ public class PSTMessage extends PSTObject {
 			{
 				PSTDescriptorItem item = this.localDescriptorItems.get(recipientTableKey);
 				if (item.data.length > 0) {
-					recipientTable = new PSTTable7C(item.data, item.subNodeDescriptorItems);
+					recipientTable = new PSTTable7C(item.data, item.blockOffsets, item.subNodeDescriptorItems);
 				}
 			}
 		} catch ( Exception e ) {
@@ -771,7 +777,7 @@ public class PSTMessage extends PSTObject {
 		{
 			PSTDescriptorItem item = this.localDescriptorItems.get(attachmentTableKey);
 			if (item.data.length > 0) {
-				attachmentTable = new PSTTable7C(item.data, item.subNodeDescriptorItems);
+				attachmentTable = new PSTTable7C(item.data, item.blockOffsets, item.subNodeDescriptorItems);
 			}		
 		}
 	}

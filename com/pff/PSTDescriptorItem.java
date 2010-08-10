@@ -13,6 +13,7 @@ class PSTDescriptorItem //extends PSTTableItem
 	int offsetIndexIdentifier;
 	int subNodeOffsetIndexIdentifier;
 	public byte[] data = new byte[0];
+	public int[] blockOffsets = new int[0];
 	
 	HashMap<Integer, PSTDescriptorItem> subNodeDescriptorItems;
 	

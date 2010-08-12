@@ -5,6 +5,8 @@ import java.io.RandomAccessFile;
 import java.nio.charset.Charset;
 import java.util.*;
 
+import com.pff.PSTFile.PSTFileBlock;
+
 /**
  * PST Object is the root class of all PST Items.
  * It also provides a number of static utility functions.  The most important of which is the
@@ -605,12 +607,12 @@ public class PSTObject {
 		
 		return offset;
 	}
-
+/*
 	protected static boolean isPSTArray(byte[] data) {
 		return (data[0] == 1 && data[1] == 1);
 	}
-	
-	protected static byte[] processArray(RandomAccessFile in, byte[] data)
+/**/	
+	protected static PSTFileBlock processArray(RandomAccessFile in, byte[] data)
 		throws IOException, PSTException
 	{
 		// is the data an array?
@@ -623,8 +625,10 @@ public class PSTObject {
 		// get the array items and merge them together
 		int numberOfEntries = (int)PSTObject.convertLittleEndianBytesToLong(data, 2, 4);
 		int dataSize = (int)PSTObject.convertLittleEndianBytesToLong(data, 4, 8);
-		byte[] tableOutput = new byte[dataSize];
-		int tableOutputIndex = 0;
+		PSTFileBlock dataBlock = new PSTFileBlock();
+		dataBlock.data = new byte[dataSize];
+		dataBlock.blockOffsets = new int[numberOfEntries];
+		int blockOffset = 0;
 		int tableOffset = 8;
 		for (int y = 0; y < numberOfEntries; y++) {
 			// get the offset identifier
@@ -634,18 +638,22 @@ public class PSTObject {
 			tableOffsetIdentifierIndex = (tableOffsetIdentifierIndex & 0xfffffffe);
 			
 			OffsetIndexItem tableOffsetIdentifier = PSTObject.getOffsetIndexNode(in, tableOffsetIdentifierIndex);
-//			System.out.println(tableOffsetIdentifier);
-			byte[] tempTableOutput = new byte[tableOffsetIdentifier.size];
+			
+			// Paranoia...
+			if ( blockOffset + tableOffsetIdentifier.size > dataBlock.data.length ) {
+				throw new PSTException("Invalid XBLOCK entry!");
+			}
+
 			in.seek(tableOffsetIdentifier.fileOffset);
-			in.read(tempTableOutput);
-			System.arraycopy(tempTableOutput, 0, tableOutput, tableOutputIndex, tableOffsetIdentifier.size);
-			tableOutputIndex += tableOffsetIdentifier.size;
+			in.read(dataBlock.data, blockOffset, tableOffsetIdentifier.size);
+			blockOffset += tableOffsetIdentifier.size;
+			dataBlock.blockOffsets[y] = blockOffset;
 			tableOffset += 8;
 		}
-		// replace the item data with the stuff from the array...
-		return tableOutput;
+
+		return dataBlock;
 	}
-	
+/*	
 	protected static int[] getBlockOffsets(RandomAccessFile in, byte[] data)
 		throws IOException, PSTException
 	{
@@ -675,7 +683,7 @@ public class PSTObject {
 		// replace the item data with the stuff from the array...
 		return output;
 	}
-	
+/**/	
 	/**
 	 * Detect and load a PST Object from a file with the specified descriptor index
 	 * @param theFile

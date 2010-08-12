@@ -458,7 +458,7 @@ public class PSTFile {
 	}
 	
 	
-	class PSTFileBlock {
+	static class PSTFileBlock {
 		byte[]	data = null;
 		int[]	blockOffsets = null;
 	}
@@ -466,28 +466,44 @@ public class PSTFile {
 	public PSTFileBlock readLeaf(long bid)
 		throws IOException, PSTException
 	{
-		PSTFileBlock ret = new PSTFileBlock();
+		PSTFileBlock ret = null;
 
 		// get the index node for the descriptor index
 		OffsetIndexItem offsetItem = PSTObject.getOffsetIndexNode(in, bid);
 		boolean bInternal = (offsetItem.indexIdentifier & 0x02) != 0;
 
-		ret.data = new byte[offsetItem.size];
+		byte[] data = new byte[offsetItem.size];
 		in.seek(offsetItem.fileOffset);
-		in.read(ret.data);
+		in.read(data);
 		
-		if ( bInternal &&
-			 offsetItem.size >= 8 &&
-			 ret.data[0] == 1 )
-		{
-			// (X)XBLOCK
-			if ( ret.data[1] == 2 ) {
-				throw new PSTException("XXBLOCKS not supported yet!");
+		if ( bInternal ) {
+			// All internal blocks are at least 8 bytes long...
+			if ( offsetItem.size < 8 ) {
+				throw new PSTException("Invalid internal block size");
 			}
 
-			ret.blockOffsets = PSTObject.getBlockOffsets(in, ret.data);
-			ret.data = PSTObject.processArray(in, ret.data);
-			bInternal = false;
+			if ( data[0] == 1 )
+			{
+				// (X)XBLOCK
+				if ( data[1] == 2 ) {
+					throw new PSTException("XXBLOCKS not supported yet!");
+				}
+
+				ret = PSTObject.processArray(in, data);
+				
+				// The resulting data isn't an internal block any more
+				bInternal = false;
+			}
+			
+			// data[0] == 2 SLBLOCK or SIBLOCK
+			// let the caller deal with them
+		}
+		
+		if ( ret == null ) {
+			// non-array block
+			ret = new PSTFileBlock();
+			ret.data = data;
+			// (Callers must be able to handle ret.blockOffsets == null)
 		}
 
 		// (Internal blocks aren't compressed)

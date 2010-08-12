@@ -3,6 +3,7 @@
  */
 package com.pff;
 
+import java.io.IOException;
 import java.util.HashMap;
 
 
@@ -24,26 +25,22 @@ class PSTTable {
 	protected int hidRoot;
 	protected int numberOfKeys = 0;
 	
-	private int		iHeapNodePageMap;
-	private int[]	rgbiAlloc = null;
+	private int[][]	rgbiAlloc = null;
 	private byte[]	data = null;
-	private int[]	arrayBlocks = null;
 	private HashMap<Integer, PSTDescriptorItem> subNodeDescriptorItems = null;
 	
 	protected String description = "";
-	
-	protected PSTTable(byte[] data)
-		throws PSTException
-	{
-		this(data, new int[0], new HashMap<Integer, PSTDescriptorItem>());
-	}
 	
 	protected PSTTable(byte[] data, int[] arrayBlocks, HashMap<Integer, PSTDescriptorItem> subNodeDescriptorItems)
 		throws PSTException
 	{
 		this.data = data;
-		this.arrayBlocks = arrayBlocks;
 		this.subNodeDescriptorItems = subNodeDescriptorItems;
+
+		if ( arrayBlocks == null ) {
+			arrayBlocks = new int[1];
+			arrayBlocks[0] = data.length;
+		}
 
 		// the next two bytes should be the table type (bSig)
 		// 0xEC is HN (Heap-on-Node)
@@ -79,23 +76,32 @@ class PSTTable {
 				throw new PSTException("Unable to parse table, bad table type.  Unknown identifier: 0x"+Long.toHexString(data[3]));
 		}
 		
-		// process the page map
-		iHeapNodePageMap = (int)PSTObject.convertLittleEndianBytesToLong(data, 0, 2);	// Offset of HN page map
-		int cAlloc = (int)PSTObject.convertLittleEndianBytesToLong(data, iHeapNodePageMap, iHeapNodePageMap+2);
-		int cFree = (int)PSTObject.convertLittleEndianBytesToLong(data, iHeapNodePageMap+2, iHeapNodePageMap+4);
-		description += "Number of items: "+cAlloc+" allocated, "+cFree+" freed\n";
-		rgbiAlloc = new int[cAlloc+1];	// There are actually cAlloc+1 entries in the array
-		description += "Page map:\n";
-		int entryOffset = iHeapNodePageMap + 4;
-		for (int x = 0; x < cAlloc+1; x++) {
-			rgbiAlloc[x] = (int)PSTObject.convertLittleEndianBytesToLong(data, entryOffset, entryOffset+2);
-			if (x > 1) {
-				description += " "+(rgbiAlloc[x] - rgbiAlloc[x-1])+"\n";
+		// process the page maps
+		rgbiAlloc = new int[arrayBlocks.length][];
+		int blockOffset = 0;
+		for ( int block = 0; block < arrayBlocks.length; ++block ) {
+			// Get offset of HN page map
+			int iHeapNodePageMap = (int)PSTObject.convertLittleEndianBytesToLong(data, blockOffset, blockOffset+2) + blockOffset;
+			int cAlloc = (int)PSTObject.convertLittleEndianBytesToLong(data, iHeapNodePageMap, iHeapNodePageMap+2);
+			//int cFree = (int)PSTObject.convertLittleEndianBytesToLong(data, iHeapNodePageMap+2, iHeapNodePageMap+4);
+			iHeapNodePageMap += 4;
+			//description += "Block["+block+"] number of items: "+cAlloc+" allocated, "+cFree+" freed\n";
+			rgbiAlloc[block] = new int[cAlloc+1];	// There are actually cAlloc+1 entries in the array
+			//description += "Page map:\n";
+			for (int x = 0; x < cAlloc+1; x++) {
+				rgbiAlloc[block][x] = (int)PSTObject.convertLittleEndianBytesToLong(data, iHeapNodePageMap, iHeapNodePageMap+2)
+										+ blockOffset;
+				iHeapNodePageMap += 2;
+				//if (x > 1) {
+				//	description += " "+(rgbiAlloc[block][x] - rgbiAlloc[block][x-1])+"\n";
+				//}
+				//description += "   index"+x+": "+ rgbiAlloc[block][x]+" ("+Long.toHexString(rgbiAlloc[block][x])+")";
 			}
-			description += "   index"+x+": "+ rgbiAlloc[x]+" ("+Long.toHexString(rgbiAlloc[x])+")";
-			entryOffset += 2;
+			//description += "\n";
+
+			// Get offset of next block in data[]
+			blockOffset = arrayBlocks[block];
 		}
-		description += "\n";
 
 		hidUserRoot = (int)PSTObject.convertLittleEndianBytesToLong(data, 4, 8);		// hidUserRoot
 /*
@@ -119,7 +125,6 @@ class PSTTable {
 		System.out.printf("Table %s: hidRoot 0x%08X\n", tableType, hidRoot);
 /**/		
 		description += "Table ("+tableType+")\n"+
-			"Table Page Map Offset: "+iHeapNodePageMap+" - 0x"+Long.toHexString(iHeapNodePageMap)+"\n"+
 			"hidUserRoot: "+hidUserRoot+" - 0x"+Long.toHexString(hidUserRoot)+"\n"+
 			"Size Of Keys: "+sizeOfItemKey+" - 0x"+Long.toHexString(sizeOfItemKey)+"\n"+
 			"Size Of Values: "+sizeOfItemValue+" - 0x"+Long.toHexString(sizeOfItemValue)+"\n"+
@@ -130,7 +135,7 @@ class PSTTable {
 	protected void ReleaseRawData() {
 		rgbiAlloc = null;
 		data = null;
-		arrayBlocks = null;
+//		arrayBlocks = null;
 		subNodeDescriptorItems = null;
 	}
 
@@ -177,7 +182,17 @@ class PSTTable {
 			 subNodeDescriptorItems.containsKey(nid) )
 		{
 			PSTDescriptorItem item = subNodeDescriptorItems.get(nid);
-			return new NodeInfo(0, item.data.length, item.data);
+			byte[] data;
+			try {
+				data = item.getData();
+			} catch (IOException e) {
+				throw new PSTException(String.format("IOException reading subNode: 0x%08X", nid));
+			}
+
+			if ( data == null ) {
+				return null;
+			}
+			return new NodeInfo(0, data.length, data);
 		}
 
 		if ( (nid & 0x1F) != 0 ) {
@@ -186,46 +201,20 @@ class PSTTable {
 		}
 
 		int whichBlock = (nid >>> 16);
-		if ( whichBlock == 0 )
-		{
-			// A normal node in the current heap?
-			nid >>= 5;
-			if ( nid >= rgbiAlloc.length ) {
-				return null;	// Invalid
-			}
-			return new NodeInfo(rgbiAlloc[nid - 1], rgbiAlloc[nid], data);
-		}
-
-		// A node in a different block
-		if ( whichBlock >= arrayBlocks.length ) {
+		if ( whichBlock >= rgbiAlloc.length ) {
 			// Block doesn't exist!
+			System.out.printf("getNodeInfo: block doesn't exist! nid = 0x%08X\n", nid);
 			return null;
 		}
 
-		// just kinda feeling my way around here....
-		int blockStart = arrayBlocks[whichBlock-1];
-		int tableEntriesReferenceAsOffset2 = ((nid & 0xFFFF)>>>4)-2+4;	// -2 as 1-based, +4 to skip index table header
-		
-		// get the index offset of the applicable block
-		int tableIndexOffset2 = (int)PSTObject.convertLittleEndianBytesToLong(data, blockStart+0, blockStart+2)+blockStart;
-		
-		// get the location of the block.
-		int start =
-			(int)
-			PSTObject.convertLittleEndianBytesToLong(
-				data,
-				tableIndexOffset2+tableEntriesReferenceAsOffset2,
-				tableIndexOffset2+tableEntriesReferenceAsOffset2+2
-			)+blockStart;
-		int end =
-			(int)
-			PSTObject.convertLittleEndianBytesToLong(
-					data,
-					tableIndexOffset2+tableEntriesReferenceAsOffset2+2,
-					tableIndexOffset2+tableEntriesReferenceAsOffset2+4
-			)+blockStart;
-		
-		return new NodeInfo(start, end, data);
+		// A normal node in a local heap
+		int index = (nid & 0xFFFF) >> 5;
+		if ( index >= rgbiAlloc[whichBlock].length ) {
+			System.out.printf("getNodeInfo: node index doesn't exist! nid = 0x%08X\n", nid);
+			return null;
+		}
+
+		return new NodeInfo(rgbiAlloc[whichBlock][index-1], rgbiAlloc[whichBlock][index], data);
 	}
-	
+
 }

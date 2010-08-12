@@ -142,21 +142,7 @@ public class PSTFile {
 		
 		// process the name to id map
 		DescriptorIndexNode nameToIdMapDescriptorNode = (PSTObject.getDescriptorIndexNode(in, 97));
-
-		// get the data for the map
-		OffsetIndexItem nameToIdMapOffset = PSTObject.getOffsetIndexNode(in, nameToIdMapDescriptorNode.dataOffsetIndexIdentifier);
-		int[] blockOffsets = new int[0];
-		byte[] nameToIdByte = new byte[nameToIdMapOffset.size];
-		in.seek(nameToIdMapOffset.fileOffset);
-		in.read(nameToIdByte);
-
-		if (PSTObject.isPSTArray(nameToIdByte)) {
-			blockOffsets = PSTObject.getBlockOffsets(in, nameToIdByte);
-			nameToIdByte = PSTObject.processArray(in, nameToIdByte);
-		}
-		if (this.encryptionType == PSTFile.ENCRYPTION_TYPE_COMPRESSIBLE) {
-			nameToIdByte = PSTObject.decode(nameToIdByte);
-		}
+		nameToIdMapDescriptorNode.readData(this);
 
 		// get the descriptors if we have them
 		HashMap<Integer, PSTDescriptorItem> localDescriptorItems = null;
@@ -166,7 +152,7 @@ public class PSTFile {
 		}
 		
 		// process the map
-		PSTTableBC bcTable = new PSTTableBC(nameToIdByte, blockOffsets);
+		PSTTableBC bcTable = new PSTTableBC(nameToIdMapDescriptorNode.dataBlock.data, nameToIdMapDescriptorNode.dataBlock.blockOffsets);
 		HashMap<Integer, PSTTableBCItem> tableItems = (bcTable.getItems());
 		
 		// Get the guids
@@ -195,7 +181,7 @@ public class PSTFile {
 		
 		// if we have a reference to an internal descriptor
 		PSTTableBCItem mapEntries = tableItems.get(3);	// 
-		nameToIdByte = getData(mapEntries, localDescriptorItems);
+		byte[] nameToIdByte = getData(mapEntries, localDescriptorItems);
 		
 		// process the entries
 		for (int x = 0; x+8 < nameToIdByte.length; x += 8) {
@@ -239,20 +225,7 @@ public class PSTFile {
 		}
 
 		PSTDescriptorItem mapDescriptorItem = localDescriptorItems.get(item.entryValueReference);
-		OffsetIndexItem tempoffset = PSTObject.getOffsetIndexNode(in, mapDescriptorItem.offsetIndexIdentifier);
-		byte[] ret = new byte[tempoffset.size];
-		in.seek(tempoffset.fileOffset);
-		in.read(ret);
-
-		// could be an array...
-		if (PSTObject.isPSTArray(ret)) {
-			ret = PSTObject.processArray(in, ret);
-		}
-		if ( encryptionType == ENCRYPTION_TYPE_COMPRESSIBLE ) {
-			ret = PSTObject.decode(ret);
-		}
-
-		return ret;
+		return mapDescriptorItem.getData();
 	}
 	
 	int getNameToIdMapItem(int key, int propertySetIndex)
@@ -484,4 +457,68 @@ public class PSTFile {
 		return output;
 	}
 	
+	
+	class PSTFileBlock {
+		byte[]	data = null;
+		int[]	blockOffsets = null;
+	}
+	
+	public PSTFileBlock readLeaf(long bid)
+		throws IOException, PSTException
+	{
+		PSTFileBlock ret = new PSTFileBlock();
+
+		// get the index node for the descriptor index
+		OffsetIndexItem offsetItem = PSTObject.getOffsetIndexNode(in, bid);
+		boolean bInternal = (offsetItem.indexIdentifier & 0x02) != 0;
+
+		ret.data = new byte[offsetItem.size];
+		in.seek(offsetItem.fileOffset);
+		in.read(ret.data);
+		
+		if ( bInternal &&
+			 offsetItem.size >= 8 &&
+			 ret.data[0] == 1 )
+		{
+			// (X)XBLOCK
+			if ( ret.data[1] == 2 ) {
+				throw new PSTException("XXBLOCKS not supported yet!");
+			}
+
+			ret.blockOffsets = PSTObject.getBlockOffsets(in, ret.data);
+			ret.data = PSTObject.processArray(in, ret.data);
+			bInternal = false;
+		}
+
+		// (Internal blocks aren't compressed)
+		if ( !bInternal &&
+			 encryptionType == PSTFile.ENCRYPTION_TYPE_COMPRESSIBLE)
+		{
+			ret.data = PSTObject.decode(ret.data);
+		}
+		
+		return ret;
+	}
+	
+	
+	public int getLeafSize(long bid)
+		throws IOException, PSTException
+	{
+		OffsetIndexItem offsetItem = PSTObject.getOffsetIndexNode(in, bid);
+
+		// Internal block?
+		if ( (offsetItem.indexIdentifier & 0x02) == 0 ) {
+			// No, return the raw size
+			return offsetItem.size;
+		}
+	
+		// we only need the first 8 bytes
+		byte[] data = new byte[8];
+		in.seek(offsetItem.fileOffset);
+		in.read(data);
+	
+		// we are an array, get the sum of the sizes...
+		return (int)PSTObject.convertLittleEndianBytesToLong(data, 4, 8);
+	}
+
 }

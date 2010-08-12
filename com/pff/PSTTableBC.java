@@ -15,12 +15,6 @@ class PSTTableBC extends PSTTable {
 	
 	private HashMap<Integer, PSTTableBCItem> items = new HashMap<Integer, PSTTableBCItem>();
 	
-	PSTTableBC(byte[] data)
-		throws PSTException
-	{
-		this(data, new int[0]);
-	}
-	
 	PSTTableBC(byte[] data, int[] offsets)
 		throws PSTException
 	{

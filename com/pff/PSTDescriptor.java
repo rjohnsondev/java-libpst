@@ -15,8 +15,7 @@ import java.util.*;
  */
 class PSTDescriptor {
 	
-	private RandomAccessFile in;
-	private int encryptionType;
+	private PSTFile pstFile;
 	private HashMap<Integer, PSTDescriptorItem> children = new HashMap<Integer, PSTDescriptorItem>();
 	
 	PSTDescriptor(PSTFile theFile, long localDescriptorsOffsetIndexIdentifier)
@@ -27,16 +26,11 @@ class PSTDescriptor {
 			throw new PSTException("unable to create PSTDescriptor, invalid descriptors offset passed!");
 		}
 
-		in = theFile.getFileHandle();
-		encryptionType = theFile.getEncryptionType();
+		pstFile = theFile;
 		
 		// we need to get out the local descriptor which will give us descriptor node lookups for the file location of larger blobs of data
-		OffsetIndexItem localDescriptorOffset = PSTObject.getOffsetIndexNode(in, localDescriptorsOffsetIndexIdentifier);
-		
-		byte[] data = new byte[localDescriptorOffset.size];
-		in.seek(localDescriptorOffset.fileOffset);
-		in.read(data);
-		this.children = processDescriptor(data);
+		PSTFile.PSTFileBlock dataBlock = pstFile.readLeaf(localDescriptorsOffsetIndexIdentifier);
+		this.children = processDescriptor(dataBlock.data);
 	}
 	
 	HashMap<Integer, PSTDescriptorItem> getChildren() {
@@ -59,40 +53,13 @@ class PSTDescriptor {
 		
 		for (int x = 0; x < numberOfItems; x++) {
 			
-			PSTDescriptorItem item = new PSTDescriptorItem();
-			
-			item.descriptorIdentifier = (int)PSTObject.convertLittleEndianBytesToLong(data, offset, offset+4);
-			item.offsetIndexIdentifier = (int)PSTObject.convertLittleEndianBytesToLong(data, offset+8, offset+16);
-			item.subNodeOffsetIndexIdentifier =  (int)PSTObject.convertLittleEndianBytesToLong(data, offset+16, offset+24);
-			
-			item.offsetIndexIdentifier = (item.offsetIndexIdentifier & 0xfffffffe);
-			
-			OffsetIndexItem itemOffsetIndex = PSTObject.getOffsetIndexNode(in, item.offsetIndexIdentifier);
-			item.data = new byte[itemOffsetIndex.size];
-			in.seek(itemOffsetIndex.fileOffset);
-			in.read(item.data);
-			
-			// is the data an array?
-			if (PSTObject.isPSTArray(item.data))
-			{
-				item.blockOffsets = PSTObject.getBlockOffsets(in, item.data);
-				item.data = PSTObject.processArray(in, item.data);
-			}
-			if (encryptionType == PSTFile.ENCRYPTION_TYPE_COMPRESSIBLE) {
-				item.data = PSTObject.decode(item.data);
-			}
-			if (item.subNodeOffsetIndexIdentifier != 0) {
+			PSTDescriptorItem item = new PSTDescriptorItem(data, offset, pstFile);
 
-				item.subNodeOffsetIndexIdentifier = (item.subNodeOffsetIndexIdentifier & 0xfffffffe);
-				OffsetIndexItem subNodeLocalDescriptorOffset = PSTObject.getOffsetIndexNode(in, item.subNodeOffsetIndexIdentifier);
-			
-				byte[] subNodeData = new byte[subNodeLocalDescriptorOffset.size];
-				in.seek(subNodeLocalDescriptorOffset.fileOffset);
-				in.read(subNodeData);
-
+			byte[] subNodeData = item.getSubNodeData();
+			if ( subNodeData != null ) {
 				// recurse baby
-				item.subNodeDescriptorItems = processDescriptor(subNodeData);
-				output.putAll(item.subNodeDescriptorItems);
+				item.setSubNodeDescriptorItems(processDescriptor(subNodeData));
+				output.putAll(item.getSubNodeDescriptorItems());
 			}
 			
 			output.put(item.descriptorIdentifier, item);

@@ -3,6 +3,8 @@
  */
 package com.pff;
 
+import java.io.IOException;
+
 /**
  * DescriptorIndexNode is a leaf item from the Descriptor index b-tree
  * It is like a pointer to an element in the PST file, everything has one...
@@ -14,6 +16,8 @@ public class DescriptorIndexNode {
 	public long localDescriptorsOffsetIndexIdentifier;
 	public int parentDescriptorIndexIdentifier;
 	public int itemType;
+
+	PSTFile.PSTFileBlock dataBlock = null;
 	
 	/**
 	 * parse the data out into something meaningful
@@ -29,6 +33,15 @@ public class DescriptorIndexNode {
 		parentDescriptorIndexIdentifier = (int)PSTObject.convertLittleEndianBytesToLong(data, 24, 28);
 		itemType = (int)PSTObject.convertLittleEndianBytesToLong(data, 28, 32);
 	}
+	
+	void readData(PSTFile file)
+		throws IOException, PSTException
+	{
+		if ( dataBlock == null ) {
+			dataBlock = file.readLeaf(dataOffsetIndexIdentifier);
+		}
+	}
+
 	
 	public String toString() {
 		

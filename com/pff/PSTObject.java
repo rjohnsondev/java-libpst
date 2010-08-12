@@ -2,7 +2,6 @@ package com.pff;
 
 import java.io.IOException;
 import java.io.RandomAccessFile;
-import java.io.UnsupportedEncodingException;
 import java.nio.charset.Charset;
 import java.util.*;
 
@@ -32,24 +31,8 @@ public class PSTObject {
 		this.pstFile = theFile;
 		this.descriptorIndexNode = descriptorIndexNode;
 		
-		// we need to process ourselves, that means:
-		
-		// get the index node for the descriptor index
-		RandomAccessFile in = theFile.getFileHandle();
-		OffsetIndexItem offsetItem = PSTObject.getOffsetIndexNode(in, descriptorIndexNode.dataOffsetIndexIdentifier);
-
-		// process the table, obtaining our information and setting internal vars.
-		data = new byte[offsetItem.size];
-		in.seek(offsetItem.fileOffset);
-		in.read(data);
-		
-		if (pstFile.getEncryptionType() == PSTFile.ENCRYPTION_TYPE_COMPRESSIBLE) {
-			data = PSTObject.decode(data);
-		}
-		
-		//PSTObject.printHexFormatted(data, true);
-		
-		PSTTableBC table = new PSTTableBC(data);
+		descriptorIndexNode.readData(theFile);
+		PSTTableBC table = new PSTTableBC(descriptorIndexNode.dataBlock.data, descriptorIndexNode.dataBlock.blockOffsets);
 		//System.out.println(table);
 		this.items = table.getItems();
 		
@@ -173,21 +156,26 @@ public class PSTObject {
 					stringType = item.entryValueType;
 				}
 
-				if ( stringType == 0x1F ) {
-					try {
-						return new String(descItem.data, "UTF-16LE");
-					} catch (UnsupportedEncodingException e) {
-						System.out.printf("Error decoding string %s: %s\n",
-								PSTFile.getPropertyDescription(identifier, stringType), data.toString());
+				try {
+					byte[] data = descItem.getData();
+					if ( data == null ) {
 						return "";
 					}
+
+					if ( stringType == 0x1F ) {
+						return new String(data, "UTF-16LE");
+					}
+					//if (stringType == 0x1E )
+					{
+						// Hope for the best...
+						return new String(data, Charset.defaultCharset());
+					}
+				} catch (Exception e) {
+					System.out.printf("Exception %s decoding string %s: %s\n",
+							e.toString(),
+							PSTFile.getPropertyDescription(identifier, stringType), data.toString());
+					return "";
 				}
-				//if (stringType == 0x1E )
-				{
-					// Hope for the best...
-					return new String(descItem.data, Charset.defaultCharset());
-				}
-				
 				//System.out.printf("PSTObject.getStringItem - item isn't a string: 0x%08X\n", identifier);
 				//return "";
 			}
@@ -223,7 +211,13 @@ public class PSTObject {
 				{
 					// we have a hit!
 					PSTDescriptorItem descItem = (PSTDescriptorItem)this.localDescriptorItems.get(item.entryValueReference);
-					return descItem.data;
+					try {
+						return descItem.getData();
+					} catch (Exception e) {
+						System.out.printf("Exception reading binary item: reference 0x%08X\n", item.entryValueReference);
+						
+						return null;
+					}
 				}
 				
 				System.out.println("External reference!!!\n");
@@ -620,10 +614,11 @@ public class PSTObject {
 		throws IOException, PSTException
 	{
 		// is the data an array?
-		if (!PSTObject.isPSTArray(data))
+		if (!(data[0] == 1 && data[1] == 1))
 		{
 			throw new PSTException("Unable to process array, does not appear to be one!");
 		}
+
 		// we are an array!
 		// get the array items and merge them together
 		int numberOfEntries = (int)PSTObject.convertLittleEndianBytesToLong(data, 2, 4);
@@ -655,10 +650,11 @@ public class PSTObject {
 		throws IOException, PSTException
 	{
 		// is the data an array?
-		if (!PSTObject.isPSTArray(data))
+		if (!(data[0] == 1 && data[1] == 1))
 		{
 			throw new PSTException("Unable to process array, does not appear to be one!");
 		}
+
 		// we are an array!
 		// get the array items and merge them together
 		int numberOfEntries = (int)PSTObject.convertLittleEndianBytesToLong(data, 2, 4);
@@ -697,21 +693,9 @@ public class PSTObject {
 	static PSTObject detectAndLoadPSTObject(PSTFile theFile, DescriptorIndexNode folderIndexNode)
 		throws IOException, PSTException
 	{
-		
-		// get the index node for the descriptor index
-		RandomAccessFile in = theFile.getFileHandle();
-		OffsetIndexItem offsetItem = PSTObject.getOffsetIndexNode(in, folderIndexNode.dataOffsetIndexIdentifier);
+		folderIndexNode.readData(theFile);
+		PSTTableBC table = new PSTTableBC(folderIndexNode.dataBlock.data, folderIndexNode.dataBlock.blockOffsets);
 
-		// process the table, obtaining our information and setting internal vars.
-		byte[] data = new byte[offsetItem.size];
-		in.seek(offsetItem.fileOffset);
-		in.read(data);
-		
-		if (theFile.getEncryptionType() == PSTFile.ENCRYPTION_TYPE_COMPRESSIBLE) {
-			data = PSTObject.decode(data);
-		}
-		
-		PSTTableBC table = new PSTTableBC(data);
 		// get the table items and look at the types we are dealing with
 		Set<Integer> keySet = table.getItems().keySet();
 		Iterator<Integer> iterator = keySet.iterator();

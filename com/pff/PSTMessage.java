@@ -4,7 +4,6 @@
 package com.pff;
 
 import java.io.IOException;
-import java.io.RandomAccessFile;
 import java.util.Date;
 import java.util.HashMap;
 
@@ -46,22 +45,9 @@ public class PSTMessage extends PSTObject {
 			}
 			int ref = item.entryValueReference;
 			PSTDescriptorItem descItem = this.localDescriptorItems.get(ref);
-			RandomAccessFile in = this.pstFile.getFileHandle();
-			//get the data at the location
-			OffsetIndexItem indexItem = PSTObject.getOffsetIndexNode(in, descItem.offsetIndexIdentifier);
-			in.seek(indexItem.fileOffset);
-			byte[] temp = new byte[indexItem.size];
-			in.read(temp);
-
-			if (PSTObject.isPSTArray(temp))
-			{
-				temp = PSTObject.processArray(in, temp);
+			if ( descItem != null ) {
+				return LZFu.decode(descItem.getData());
 			}
-			if (this.pstFile.getEncryptionType() == PSTFile.ENCRYPTION_TYPE_COMPRESSIBLE) {
-				temp = PSTObject.decode(temp);
-			}
-
-			return (LZFu.decode(temp));
 		}
 		
 		return "";
@@ -726,8 +712,9 @@ public class PSTMessage extends PSTObject {
 				this.localDescriptorItems.containsKey(recipientTableKey))
 			{
 				PSTDescriptorItem item = this.localDescriptorItems.get(recipientTableKey);
-				if (item.data.length > 0) {
-					recipientTable = new PSTTable7C(item.data, item.blockOffsets, item.subNodeDescriptorItems);
+				byte[] data = item.getData();
+				if (data != null && data.length > 0) {
+					recipientTable = new PSTTable7C(data, item.getBlockOffsets(), item.getSubNodeDescriptorItems());
 				}
 			}
 		} catch ( Exception e ) {
@@ -776,8 +763,9 @@ public class PSTMessage extends PSTObject {
 			this.localDescriptorItems.containsKey(attachmentTableKey))
 		{
 			PSTDescriptorItem item = this.localDescriptorItems.get(attachmentTableKey);
-			if (item.data.length > 0) {
-				attachmentTable = new PSTTable7C(item.data, item.blockOffsets, item.subNodeDescriptorItems);
+			byte[] data = item.getData();
+			if (data != null && data.length > 0) {
+				attachmentTable = new PSTTable7C(data, item.getBlockOffsets(), item.getSubNodeDescriptorItems());
 			}		
 		}
 	}
@@ -852,33 +840,35 @@ public class PSTMessage extends PSTObject {
 	{
 		this.processAttachments();
 		
-		if (attachmentNumber >= this.getNumberOfAttachments()) {
-			throw new PSTException("unable to fetch attachment number "+attachmentNumber+", only "+this.attachmentTable.getRowCount()+" in this email");
+		int attachmentCount = 0;
+		if ( this.attachmentTable != null ) {
+			attachmentCount = this.attachmentTable.getRowCount();
+		}
+		
+		if (attachmentNumber >= attachmentCount) {
+			throw new PSTException("unable to fetch attachment number "+attachmentNumber+", only "+attachmentCount+" in this email");
 		}
 		
 		// we process the C7 table here, basically we just want the attachment local descriptor...
 		HashMap<Integer, PSTTable7CItem> attachmentDetails = this.attachmentTable.getItems().get(attachmentNumber);
 		PSTTable7CItem attachmentTableItem = attachmentDetails.get(0x67f2);
 		int descriptorItemId = attachmentTableItem.entryValueReference;
+
 		// get the local descriptor for the attachmentDetails table.
 		PSTDescriptorItem descriptorItem = this.localDescriptorItems.get(descriptorItemId); 
-		OffsetIndexItem attachmentOffset = PSTObject.getOffsetIndexNode(this.pstFile.getFileHandle(), descriptorItem.offsetIndexIdentifier);
-		// read in the data from the attachmentOffset
-		RandomAccessFile in = this.pstFile.getFileHandle();
-		in.seek(attachmentOffset.fileOffset);
-		byte[] attachmentData = new byte[attachmentOffset.size];
-		in.read(attachmentData);
-		if (this.pstFile.getEncryptionType() == PSTFile.ENCRYPTION_TYPE_COMPRESSIBLE) {
-			attachmentData = PSTObject.decode(attachmentData);
-		}
-		
+
 		// try and decode it
-		PSTTableBC attachmentDetailsTable = new PSTTableBC(attachmentData);
+		byte[] attachmentData = descriptorItem.getData();
+		if ( attachmentData != null && attachmentData.length > 0 ) {
+			PSTTableBC attachmentDetailsTable = new PSTTableBC(descriptorItem.getData(), descriptorItem.getBlockOffsets());
 		
-		// create our all-precious attachment object.
-		// note that all the information that was in the c7 table is repeated in the eb table in attachment data.
-		// so no need to pass it...
-		return new PSTAttachment(this.pstFile, attachmentDetailsTable, this.localDescriptorItems);
+			// create our all-precious attachment object.
+			// note that all the information that was in the c7 table is repeated in the eb table in attachment data.
+			// so no need to pass it...
+			return new PSTAttachment(this.pstFile, attachmentDetailsTable, this.localDescriptorItems);
+		}
+
+		throw new PSTException("unable to fetch attachment number "+attachmentNumber+", unable to read attachment details table");
 	}
 	
 	/**

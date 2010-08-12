@@ -32,6 +32,7 @@ public class PSTAttachment extends PSTObject {
 	public PSTMessage getEmbeddedPSTMessage() {
 		if ( getIntItem(0x3705) == PSTAttachment.ATTACHMENT_METHOD_EMBEDDED ) {
 			byte[] data = null;
+			int[] blockOffsets = null;
 			PSTTableBCItem item = items.get(0x3701);
 			if ( item.entryValueType == 0x0102 ) {
 				if ( !item.isExternalValueReference )
@@ -39,11 +40,22 @@ public class PSTAttachment extends PSTObject {
 					data = item.data;
 				} else {
 					// We are in trouble!
+					System.out.printf("External reference in getEmbeddedPSTMessage()!\n");
 				}
 			} else if ( item.entryValueType == 0x000D ) {
 				int descriptorItem = (int)PSTObject.convertLittleEndianBytesToLong(item.data, 0, 4);
 				PSTDescriptorItem descriptorItemNested = this.localDescriptorItems.get(descriptorItem);
-				data = descriptorItemNested.data;
+				if ( descriptorItemNested != null ) {
+					try {
+						data = descriptorItemNested.getData();
+						blockOffsets = descriptorItemNested.getBlockOffsets();
+					} catch (Exception e) {
+						e.printStackTrace();
+
+						data = null;
+						blockOffsets = null;
+					}
+				}
 			}
 			
 			if ( data == null ) {
@@ -51,7 +63,7 @@ public class PSTAttachment extends PSTObject {
 			}
 
 			try {
-				PSTTableBC attachmentTable = new PSTTableBC(data);
+				PSTTableBC attachmentTable = new PSTTableBC(data, blockOffsets);
 				return PSTObject.createAppropriatePSTMessageObject(pstFile, this.descriptorIndexNode, attachmentTable, localDescriptorItems);
 			} catch ( PSTException e ) {
 				e.printStackTrace();
@@ -70,53 +82,20 @@ public class PSTAttachment extends PSTObject {
 		
 		PSTTableBCItem attachmentDataObject = items.get(0x3701);
 		
-		PSTDescriptorItem descriptorItemNested = this.localDescriptorItems.get(attachmentDataObject.entryValueReference); 
-		OffsetIndexItem attachmentOffsetNested = PSTObject.getOffsetIndexNode(this.pstFile.getFileHandle(), descriptorItemNested.offsetIndexIdentifier);
-		
-		RandomAccessFile in = this.pstFile.getFileHandle();
-		in.seek(attachmentOffsetNested.fileOffset);
-		byte[] attachmentData = new byte[attachmentOffsetNested.size];
-		in.read(attachmentData);
-
-		// we could be an array, so check and process if required.
-		if (PSTObject.isPSTArray(attachmentData))
-		{
-			attachmentData = PSTObject.processArray(in, attachmentData);
-		}
-		if (this.pstFile.getEncryptionType() == PSTFile.ENCRYPTION_TYPE_COMPRESSIBLE) {
-			attachmentData = PSTObject.decode(attachmentData);
-		}
-
-		return attachmentData;
+		PSTDescriptorItem descriptorItemNested = this.localDescriptorItems.get(attachmentDataObject.entryValueReference);
+		return descriptorItemNested.getData();
 	}
 	
 	public int getFilesize()
 		throws PSTException, IOException
 	{
 		PSTTableBCItem attachmentDataObject = items.get(0x3701);
-		PSTDescriptorItem descriptorItemNested = this.localDescriptorItems.get(attachmentDataObject.entryValueReference); 
+		PSTDescriptorItem descriptorItemNested = this.localDescriptorItems.get(attachmentDataObject.entryValueReference);
 		if (descriptorItemNested == null) {
 			return 0;
 		}
-		OffsetIndexItem attachmentOffsetNested = PSTObject.getOffsetIndexNode(this.pstFile.getFileHandle(), descriptorItemNested.offsetIndexIdentifier);
 		
-		RandomAccessFile in = this.pstFile.getFileHandle();
-		in.seek(attachmentOffsetNested.fileOffset);
-		// we only need the first 8 bytes, just in case on an array...
-		byte[] attachmentData = new byte[8];
-		in.read(attachmentData);
-		
-		// we could be an array, so check and process if required.
-		if (PSTObject.isPSTArray(attachmentData))
-		{
-			// we are an array, get the sum of the sizes...
-			int dataSize = (int)PSTObject.convertLittleEndianBytesToLong(attachmentData, 4, 8);
-			return dataSize;
-		}
-		else
-		{
-			return attachmentOffsetNested.size;
-		}
+		return descriptorItemNested.getDataSize();
 	}
 
 	

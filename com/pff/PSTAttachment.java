@@ -73,29 +73,40 @@ public class PSTAttachment extends PSTObject {
 		return null;
 	}
 	
-	public byte[] getFileContents()
+	public InputStream getFileInputStream()
 		throws IOException, PSTException
 	{
+
 		if (this.getFilesize() == 0) {
 			throw new PSTException("Attachment is empty!");
 		}
 		
 		PSTTableBCItem attachmentDataObject = items.get(0x3701);
-		
-		PSTDescriptorItem descriptorItemNested = this.localDescriptorItems.get(attachmentDataObject.entryValueReference);
-		return descriptorItemNested.getData();
+
+		if (attachmentDataObject.isExternalValueReference) {
+			PSTDescriptorItem descriptorItemNested = this.localDescriptorItems.get(attachmentDataObject.entryValueReference);
+			return new PSTAttachmentInputStream(this.pstFile, descriptorItemNested);
+		} else {
+			return new PSTAttachmentInputStream(this.pstFile, attachmentDataObject.data);
+		}
+
 	}
 	
 	public int getFilesize()
 		throws PSTException, IOException
 	{
 		PSTTableBCItem attachmentDataObject = items.get(0x3701);
-		PSTDescriptorItem descriptorItemNested = this.localDescriptorItems.get(attachmentDataObject.entryValueReference);
-		if (descriptorItemNested == null) {
-			return 0;
+		if (attachmentDataObject.isExternalValueReference) {
+			PSTDescriptorItem descriptorItemNested = this.localDescriptorItems.get(attachmentDataObject.entryValueReference);
+			if (descriptorItemNested == null) {
+				return 0;
+			}
+			return descriptorItemNested.getDataSize();
+		} else {
+			// raw attachment data, right there!
+			return attachmentDataObject.data.length;
 		}
 		
-		return descriptorItemNested.getDataSize();
 	}
 
 	

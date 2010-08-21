@@ -14,15 +14,23 @@ class OffsetIndexItem {
 	int size;
 	long cRef;
 	
-	OffsetIndexItem(byte[] data) {
-		indexIdentifier = PSTObject.convertLittleEndianBytesToLong(data, 0, 8);
-		fileOffset = PSTObject.convertLittleEndianBytesToLong(data, 8, 16);
-		size = (int)PSTObject.convertLittleEndianBytesToLong(data, 16, 18);
-		cRef = (int)PSTObject.convertLittleEndianBytesToLong(data, 16, 18);
+	OffsetIndexItem(byte[] data, int pstFileType) {
+		if (pstFileType == PSTFile.PST_TYPE_ANSI) {
+			indexIdentifier = PSTObject.convertLittleEndianBytesToLong(data, 0, 4);
+			fileOffset = PSTObject.convertLittleEndianBytesToLong(data, 4, 8);
+			size = (int)PSTObject.convertLittleEndianBytesToLong(data, 8, 10);
+			cRef = (int)PSTObject.convertLittleEndianBytesToLong(data, 10, 12);
+		} else {
+			indexIdentifier = PSTObject.convertLittleEndianBytesToLong(data, 0, 8);
+			fileOffset = PSTObject.convertLittleEndianBytesToLong(data, 8, 16);
+			size = (int)PSTObject.convertLittleEndianBytesToLong(data, 16, 18);
+			cRef = (int)PSTObject.convertLittleEndianBytesToLong(data, 16, 18);
+		}
 		//System.out.println("Data size: "+data.length);
 		
 	}
-	
+
+	@Override
 	public String toString() {
 		return "OffsetIndexItem\n"+
 			"Index Identifier: "+indexIdentifier+" (0x"+Long.toHexString(indexIdentifier)+")\n"+

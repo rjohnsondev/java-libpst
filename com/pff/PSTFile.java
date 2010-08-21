@@ -17,6 +17,9 @@ public class PSTFile {
 
 	private static final int MESSAGE_STORE_DESCRIPTOR_IDENTIFIER = 33;
 	private static final int ROOT_FOLDER_DESCRIPTOR_IDENTIFIER = 290;
+
+	public static final int PST_TYPE_ANSI = 14; // MS docs says this should be 15 :/
+	public static final int PST_TYPE_UNICODE = 23;
 	
 	// Known GUIDs
 	// Local IDs first
@@ -92,19 +95,23 @@ public class PSTFile {
 				throw new PSTException("Invalid file header: "+strValue+", expected: !BDN"); 
 			}
 			
-			// make sure we are using a 64bit version of a PST...
-			temp = new byte[2];
+			// make sure we are using a supported version of a PST...
+			byte[] fileTypeBytes = new byte[2];
 			in.seek(10);
-			in.read(temp);
-			if ((temp[0] != 0x15 && temp[0] != 0x17) ||
-				temp[1] != 0x00)
+			in.read(fileTypeBytes);
+			if (fileTypeBytes[0] != PSTFile.PST_TYPE_ANSI &&
+				fileTypeBytes[0] != PSTFile.PST_TYPE_UNICODE)
 			{
-	
-				throw new PSTException("Only 64bit PST files are supported at this time"); 
+				throw new PSTException("Unrecognised PST File version: "+fileTypeBytes[0]);
 			}
+			this.pstFileType = fileTypeBytes[0];
 			
 			// make sure encryption is turned off at this stage...
-			in.seek(513);
+			if (this.getPSTFileType() == PST_TYPE_ANSI) {
+				in.seek(461);
+			} else {
+				in.seek(513);
+			}
 			encryptionType = in.readByte();
 			if (encryptionType == 0x02) {
 				throw new PSTException("Only unencrypted and compressable PST files are supported at this time"); 
@@ -114,12 +121,22 @@ public class PSTFile {
 			buildDescriptorTree(in);
 			
 			// build out name to id map.
-			processNameToIdMap(in);
+			if (this.getPSTFileType() == PST_TYPE_ANSI) {
+				// TODO: name to id maps!
+				processNameToIdMap(in);
+			} else {
+				processNameToIdMap(in);
+			}
 			
 		}  catch (IOException err) {
 			throw new PSTException("Unable to read PST Sig", err);
 		}
 
+	}
+
+	private int pstFileType = 0;
+	public int getPSTFileType() {
+		return pstFileType;
 	}
 	
 	/**
@@ -141,7 +158,7 @@ public class PSTFile {
 		}
 		
 		// process the name to id map
-		DescriptorIndexNode nameToIdMapDescriptorNode = (PSTObject.getDescriptorIndexNode(in, 97));
+		DescriptorIndexNode nameToIdMapDescriptorNode = (getDescriptorIndexNode(97));
 		nameToIdMapDescriptorNode.readData(this);
 
 		// get the descriptors if we have them
@@ -150,7 +167,7 @@ public class PSTFile {
 			PSTDescriptor descriptor = new PSTDescriptor(this, nameToIdMapDescriptorNode.localDescriptorsOffsetIndexIdentifier);
 			localDescriptorItems = descriptor.getChildren();
 		}
-		
+
 		// process the map
 		PSTTableBC bcTable = new PSTTableBC(nameToIdMapDescriptorNode.dataBlock.data, nameToIdMapDescriptorNode.dataBlock.blockOffsets);
 		HashMap<Integer, PSTTableBCItem> tableItems = (bcTable.getItems());
@@ -180,9 +197,9 @@ public class PSTFile {
 		}
 		
 		// if we have a reference to an internal descriptor
-		PSTTableBCItem mapEntries = tableItems.get(3);	// 
+		PSTTableBCItem mapEntries = tableItems.get(3);	//
 		byte[] nameToIdByte = getData(mapEntries, localDescriptorItems);
-		
+
 		// process the entries
 		for (int x = 0; x+8 < nameToIdByte.length; x += 8) {
 			int dwPropertyId = (int)PSTObject.convertLittleEndianBytesToLong(nameToIdByte, x, x+4);
@@ -312,6 +329,7 @@ public class PSTFile {
 	/**
 	 * destructor just closes the file handle...
 	 */
+	@Override
 	protected void finalize()
 		throws IOException
 	{
@@ -344,8 +362,13 @@ public class PSTFile {
 	private void buildDescriptorTree(RandomAccessFile in)
 		throws IOException, PSTException
 	{
-		long btreeStartOffset = PSTObject.extractLEFileOffset(in, 224);
-		processTree(in, btreeStartOffset);
+		if (this.getPSTFileType() == PSTFile.PST_TYPE_ANSI) {
+			long btreeStartOffset = this.extractLEFileOffset(188);
+			processTree(in, btreeStartOffset);
+		} else {
+			long btreeStartOffset = this.extractLEFileOffset(224);
+			processTree(in, btreeStartOffset);
+		}
 	}
 	
 	/**
@@ -359,12 +382,20 @@ public class PSTFile {
 		throws IOException, PSTException
 	{
 		byte[] temp = new byte[2];
-		in.seek(btreeStartOffset+496);
+		if (this.getPSTFileType() == PSTFile.PST_TYPE_ANSI) {
+			in.seek(btreeStartOffset+500);
+		} else {
+			in.seek(btreeStartOffset+496);
+		}
 		in.read(temp);
-		
+
 		if ((temp[0] == 0xffffff81 && temp[1] == 0xffffff81)) {
 			
-			in.seek(btreeStartOffset+488);
+			if (this.getPSTFileType() == PSTFile.PST_TYPE_ANSI) {
+				in.seek(btreeStartOffset+496);
+			} else {
+				in.seek(btreeStartOffset+488);
+			}
 
 			int numberOfItems = in.read();
 			in.read(); // maxNumberOfItems
@@ -375,7 +406,13 @@ public class PSTFile {
 				
 				for (int x = 0; x < numberOfItems; x++) {
 					long branchNodeItemStartIndex = (btreeStartOffset + (24*x));
-					long nextLevelStartsAt =  PSTObject.extractLEFileOffset(in, branchNodeItemStartIndex+16);
+					if (this.getPSTFileType() == PSTFile.PST_TYPE_ANSI) {
+						branchNodeItemStartIndex = (btreeStartOffset + (12*x));
+					}
+					long nextLevelStartsAt =  this.extractLEFileOffset(branchNodeItemStartIndex+16);
+					if (this.getPSTFileType() == PSTFile.PST_TYPE_ANSI) {
+						nextLevelStartsAt =  this.extractLEFileOffset(branchNodeItemStartIndex+8);
+					}
 					processTree(in, nextLevelStartsAt);
 				}
 			}
@@ -384,11 +421,17 @@ public class PSTFile {
 				for (int x = 0; x < numberOfItems; x++) {
 					// The 64-bit descriptor index b-tree leaf node item
 					// give me the offset index please!
-					in.seek(btreeStartOffset + (x * 32));
-					temp = new byte[32];
-					in.read(temp);
+					if (this.getPSTFileType() == PST_TYPE_ANSI) {
+						in.seek(btreeStartOffset + (x * 16));
+						temp = new byte[16];
+						in.read(temp);
+					} else {
+						in.seek(btreeStartOffset + (x * 32));
+						temp = new byte[32];
+						in.read(temp);
+					}
 					
-					DescriptorIndexNode tempNode = new DescriptorIndexNode(temp);
+					DescriptorIndexNode tempNode = new DescriptorIndexNode(temp, this.getPSTFileType());
 					
 					// we don't want to be children of ourselves...
 					if (tempNode.parentDescriptorIndexIdentifier == tempNode.descriptorIdentifier) {
@@ -439,7 +482,7 @@ public class PSTFile {
 	public PSTMessageStore getMessageStore()
 		throws PSTException, IOException
 	{
-		DescriptorIndexNode messageStoreDescriptor = PSTObject.getDescriptorIndexNode(in, MESSAGE_STORE_DESCRIPTOR_IDENTIFIER);
+		DescriptorIndexNode messageStoreDescriptor = getDescriptorIndexNode(MESSAGE_STORE_DESCRIPTOR_IDENTIFIER);
 		return new PSTMessageStore(this, messageStoreDescriptor);
 	}
 
@@ -452,7 +495,7 @@ public class PSTFile {
 	public PSTFolder getRootFolder()
 		throws PSTException, IOException
 	{
-		DescriptorIndexNode rootFolderDescriptor = PSTObject.getDescriptorIndexNode(in, ROOT_FOLDER_DESCRIPTOR_IDENTIFIER);
+		DescriptorIndexNode rootFolderDescriptor = getDescriptorIndexNode(ROOT_FOLDER_DESCRIPTOR_IDENTIFIER);
 		PSTFolder output = new PSTFolder(this, rootFolderDescriptor);
 		return output;
 	}
@@ -469,7 +512,7 @@ public class PSTFile {
 		PSTFileBlock ret = null;
 
 		// get the index node for the descriptor index
-		OffsetIndexItem offsetItem = PSTObject.getOffsetIndexNode(in, bid);
+		OffsetIndexItem offsetItem = getOffsetIndexNode(bid);
 		boolean bInternal = (offsetItem.indexIdentifier & 0x02) != 0;
 
 		byte[] data = new byte[offsetItem.size];
@@ -489,7 +532,7 @@ public class PSTFile {
 					throw new PSTException("XXBLOCKS not supported yet!");
 				}
 
-				ret = PSTObject.processArray(in, data);
+				ret = this.processArray(in, data);
 				
 				// The resulting data isn't an internal block any more
 				bInternal = false;
@@ -520,7 +563,7 @@ public class PSTFile {
 	public int getLeafSize(long bid)
 		throws IOException, PSTException
 	{
-		OffsetIndexItem offsetItem = PSTObject.getOffsetIndexNode(in, bid);
+		OffsetIndexItem offsetItem = getOffsetIndexNode(bid);
 
 		// Internal block?
 		if ( (offsetItem.indexIdentifier & 0x02) == 0 ) {
@@ -535,6 +578,294 @@ public class PSTFile {
 	
 		// we are an array, get the sum of the sizes...
 		return (int)PSTObject.convertLittleEndianBytesToLong(data, 4, 8);
+	}
+
+	/**
+	 * Read a file offset from the file
+	 * PST Files have this tendency to store file offsets (pointers) in 8 little endian bytes.
+	 * Convert this to a long for seeking to.
+	 * @param in handle for PST file
+	 * @param startOffset where to read the 8 bytes from
+	 * @return long representing the read location
+	 * @throws IOException
+	 */
+	protected long extractLEFileOffset(long startOffset)
+		throws IOException
+	{
+		long offset = 0;
+		if (this.getPSTFileType() == PSTFile.PST_TYPE_ANSI) {
+			in.seek(startOffset);
+			byte[] temp = new byte[4];
+			in.read(temp);
+			offset |= temp[3] & 0xff;
+			offset <<= 8;
+			offset |= temp[2] & 0xff;
+			offset <<= 8;
+			offset |= temp[1] & 0xff;
+			offset <<= 8;
+			offset |= temp[0] & 0xff;
+		} else {
+			in.seek(startOffset);
+			byte[] temp = new byte[8];
+			in.read(temp);
+			offset = temp[7] & 0xff;
+			long tmpLongValue;
+			for (int x = 6; x >= 0; x--) {
+				offset = offset << 8;
+				tmpLongValue = (long)temp[x] & 0xff;
+				offset |= tmpLongValue;
+			}
+		}
+
+		return offset;
+	}
+
+	/**
+	 * Generic function used by getOffsetIndexNode and getDescriptorIndexNode for navigating the PST B-Trees
+	 * @param in
+	 * @param index
+	 * @param descTree
+	 * @return
+	 * @throws IOException
+	 * @throws PSTException
+	 */
+	private byte[] findBtreeItem(RandomAccessFile in, long index, boolean descTree)
+		throws IOException, PSTException
+	{
+
+		long btreeStartOffset;
+		// first find the starting point for the offset index
+		if (this.getPSTFileType() == PST_TYPE_ANSI) {
+			btreeStartOffset = this.extractLEFileOffset(196);
+			if (descTree) {
+				btreeStartOffset = this.extractLEFileOffset(188);
+			}
+		} else {
+			btreeStartOffset = this.extractLEFileOffset(240);
+			if (descTree) {
+				btreeStartOffset = this.extractLEFileOffset(224);
+			}
+		}
+
+		// okay, what we want to do is navigate the tree until you reach the bottom....
+		// try and read the index b-tree
+		byte[] temp = new byte[2];
+		if (this.getPSTFileType() == PST_TYPE_ANSI) {
+			in.seek(btreeStartOffset+500);
+		} else {
+			in.seek(btreeStartOffset+496);
+		}
+		in.read(temp);
+		while	((temp[0] == 0xffffff80 && temp[1] == 0xffffff80 && !descTree) ||
+				 (temp[0] == 0xffffff81 && temp[1] == 0xffffff81 && descTree))
+		{
+
+			// get the rest of the data....
+			byte[] branchNodeItems;
+			if (this.getPSTFileType() == PST_TYPE_ANSI) {
+				branchNodeItems = new byte[496];
+			} else {
+				branchNodeItems = new byte[488];
+			}
+			in.seek(btreeStartOffset);
+			in.read(branchNodeItems);
+
+			int numberOfItems = in.read();
+			in.read(); // maxNumberOfItems
+			in.read(); // itemSize
+			int levelsToLeaf = in.read();
+
+			if (levelsToLeaf > 0) {
+				boolean found = false;
+				for (int x = 0; x < numberOfItems; x++) {
+					if (this.getPSTFileType() == PST_TYPE_ANSI) {
+						long indexIdOfFirstChildNode = extractLEFileOffset(btreeStartOffset + (x * 12));
+						if (indexIdOfFirstChildNode > index) {
+							// get the address for the child first node in this group
+							btreeStartOffset = extractLEFileOffset(btreeStartOffset+((x-1) * 12)+8);
+							in.seek(btreeStartOffset+500);
+							in.read(temp);
+							found = true;
+							break;
+						}
+					} else {
+						long indexIdOfFirstChildNode = extractLEFileOffset(btreeStartOffset + (x * 24));
+						if (indexIdOfFirstChildNode > index) {
+							// get the address for the child first node in this group
+							btreeStartOffset = extractLEFileOffset(btreeStartOffset+((x-1) * 24)+16);
+							in.seek(btreeStartOffset+496);
+							in.read(temp);
+							found = true;
+							break;
+						}
+					}
+				}
+				if (!found) {
+					// it must be in the very last branch...
+					if (this.getPSTFileType() == PST_TYPE_ANSI) {
+						btreeStartOffset = extractLEFileOffset(btreeStartOffset+((numberOfItems-1) * 12)+8);
+						in.seek(btreeStartOffset+500);
+						in.read(temp);
+					} else {
+						btreeStartOffset = extractLEFileOffset(btreeStartOffset+((numberOfItems-1) * 24)+16);
+						in.seek(btreeStartOffset+496);
+						in.read(temp);
+					}
+				}
+			}
+			else
+			{
+				// we are at the bottom of the tree...
+				// we want to get our file offset!
+				for (int x = 0; x < numberOfItems; x++) {
+
+					if (this.getPSTFileType() == PSTFile.PST_TYPE_ANSI) {
+						if (descTree)
+						{
+							// The 32-bit descriptor index b-tree leaf node item
+							in.seek(btreeStartOffset + (x * 16));
+							temp = new byte[4];
+							in.read(temp);
+							if (PSTObject.convertLittleEndianBytesToLong(temp) == index) {
+								// give me the offset index please!
+								in.seek(btreeStartOffset + (x * 16));
+								temp = new byte[16];
+								in.read(temp);
+								return temp;
+							}
+						}
+						else
+						{
+							// The 32-bit (file) offset index item
+							long indexIdOfFirstChildNode = extractLEFileOffset(btreeStartOffset + (x * 12));
+
+							if (indexIdOfFirstChildNode == index) {
+								// we found it!!!! OMG
+								//System.out.println("item found as item #"+x);
+								in.seek(btreeStartOffset + (x * 12));
+
+								temp = new byte[12];
+								in.read(temp);
+								return temp;
+							}
+						}
+					} else {
+						if (descTree)
+						{
+							// The 64-bit descriptor index b-tree leaf node item
+							in.seek(btreeStartOffset + (x * 32));
+
+							temp = new byte[4];
+							in.read(temp);
+							if (PSTObject.convertLittleEndianBytesToLong(temp) == index) {
+								// give me the offset index please!
+								in.seek(btreeStartOffset + (x * 32));
+								temp = new byte[32];
+								in.read(temp);
+								return temp;
+							}
+						}
+						else
+						{
+							// The 64-bit (file) offset index item
+							long indexIdOfFirstChildNode = extractLEFileOffset(btreeStartOffset + (x * 24));
+
+							if (indexIdOfFirstChildNode == index) {
+								// we found it!!!! OMG
+								//System.out.println("item found as item #"+x);
+								in.seek(btreeStartOffset + (x * 24));
+
+								temp = new byte[24];
+								in.read(temp);
+								return temp;
+							}
+						}
+					}
+				}
+				throw new PSTException("Unable to find "+index);
+			}
+		}
+
+		throw new PSTException("Unable to find node: "+index);
+	}
+
+	/**
+	 * navigate the internal descriptor B-Tree and find a specific item
+	 * @param in
+	 * @param identifier
+	 * @return the descriptor node for the item
+	 * @throws IOException
+	 * @throws PSTException
+	 */
+	DescriptorIndexNode getDescriptorIndexNode(long identifier)
+		throws IOException, PSTException
+	{
+		return new DescriptorIndexNode(findBtreeItem(in, identifier, true), this.getPSTFileType());
+	}
+
+	/**
+	 * navigate the internal index B-Tree and find a specific item
+	 * @param in
+	 * @param identifier
+	 * @return the offset index item
+	 * @throws IOException
+	 * @throws PSTException
+	 */
+	OffsetIndexItem getOffsetIndexNode(long identifier)
+		throws IOException, PSTException
+	{
+		return new OffsetIndexItem(findBtreeItem(in, identifier, false), this.getPSTFileType());
+	}
+
+	protected PSTFileBlock processArray(RandomAccessFile in, byte[] data)
+		throws IOException, PSTException
+	{
+		// is the data an array?
+		if (!(data[0] == 1 && data[1] == 1))
+		{
+			throw new PSTException("Unable to process array, does not appear to be one!");
+		}
+
+		// we are an array!
+		// get the array items and merge them together
+		int numberOfEntries = (int)PSTObject.convertLittleEndianBytesToLong(data, 2, 4);
+		int dataSize = (int)PSTObject.convertLittleEndianBytesToLong(data, 4, 8);
+		PSTFileBlock dataBlock = new PSTFileBlock();
+		dataBlock.data = new byte[dataSize];
+		dataBlock.blockOffsets = new int[numberOfEntries];
+		int blockOffset = 0;
+		int tableOffset = 8;
+		for (int y = 0; y < numberOfEntries; y++) {
+			// get the offset identifier
+			long tableOffsetIdentifierIndex;
+			if (this.getPSTFileType() == PSTFile.PST_TYPE_ANSI) {
+				tableOffsetIdentifierIndex = PSTObject.convertLittleEndianBytesToLong(data, tableOffset, tableOffset+4);
+			} else {
+				tableOffsetIdentifierIndex = PSTObject.convertLittleEndianBytesToLong(data, tableOffset, tableOffset+8);
+			}
+
+			// clear the last bit of the identifier.  Why so hard?
+			tableOffsetIdentifierIndex = (tableOffsetIdentifierIndex & 0xfffffffe);
+
+			OffsetIndexItem tableOffsetIdentifier = this.getOffsetIndexNode(tableOffsetIdentifierIndex);
+
+			// Paranoia...
+			if ( blockOffset + tableOffsetIdentifier.size > dataBlock.data.length ) {
+				throw new PSTException("Invalid XBLOCK entry!");
+			}
+
+			in.seek(tableOffsetIdentifier.fileOffset);
+			in.read(dataBlock.data, blockOffset, tableOffsetIdentifier.size);
+			blockOffset += tableOffsetIdentifier.size;
+			dataBlock.blockOffsets[y] = blockOffset;
+			if (this.getPSTFileType() == PSTFile.PST_TYPE_ANSI) {
+				tableOffset += 4;
+			} else {
+				tableOffset += 8;
+			}
+		}
+
+		return dataBlock;
 	}
 
 }

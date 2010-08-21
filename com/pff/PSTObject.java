@@ -32,7 +32,7 @@ public class PSTObject {
 	{
 		this.pstFile = theFile;
 		this.descriptorIndexNode = descriptorIndexNode;
-		
+
 		descriptorIndexNode.readData(theFile);
 		PSTTableBC table = new PSTTableBC(descriptorIndexNode.dataBlock.data, descriptorIndexNode.dataBlock.blockOffsets);
 		//System.out.println(table);
@@ -374,134 +374,6 @@ public class PSTObject {
 	}
 	
 
-	/**
-	 * navigate the internal descriptor B-Tree and find a specific item
-	 * @param in
-	 * @param identifier
-	 * @return the descriptor node for the item
-	 * @throws IOException
-	 * @throws PSTException
-	 */
-	protected static DescriptorIndexNode getDescriptorIndexNode(RandomAccessFile in, long identifier)
-		throws IOException, PSTException
-	{
-		return new DescriptorIndexNode(findBtreeItem(in, identifier, true));
-	}
-	
-	/**
-	 * navigate the internal index B-Tree and find a specific item
-	 * @param in
-	 * @param identifier
-	 * @return the offset index item
-	 * @throws IOException
-	 * @throws PSTException
-	 */
-	protected static OffsetIndexItem getOffsetIndexNode(RandomAccessFile in, long identifier)
-		throws IOException, PSTException
-	{
-		return new OffsetIndexItem(findBtreeItem(in, identifier, false));
-	}
-	
-	/**
-	 * Generic function used by getOffsetIndexNode and getDescriptorIndexNode for navigating the PST B-Trees
-	 * @param in
-	 * @param index
-	 * @param descTree
-	 * @return
-	 * @throws IOException
-	 * @throws PSTException
-	 */
-	private static byte[] findBtreeItem(RandomAccessFile in, long index, boolean descTree)
-		throws IOException, PSTException
-	{
-		
-		// first find the starting point for the offset index
-		long btreeStartOffset = extractLEFileOffset(in, 240);
-		if (descTree) {
-			btreeStartOffset = extractLEFileOffset(in, 224);
-		}
-		
-		// okay, what we want to do is navigate the tree until you reach the bottom....
-		// try and read the index b-tree
-		byte[] temp = new byte[2];
-		in.seek(btreeStartOffset+496);
-		in.read(temp);
-		while	((temp[0] == 0xffffff80 && temp[1] == 0xffffff80 && !descTree) ||
-				 (temp[0] == 0xffffff81 && temp[1] == 0xffffff81 && descTree))
-		{
-			
-			// get the rest of the data....
-			byte[] branchNodeItems = new byte[488];
-			in.seek(btreeStartOffset);
-			in.read(branchNodeItems);
-			
-			int numberOfItems = in.read();
-			in.read(); // maxNumberOfItems
-			in.read(); // itemSize
-			int levelsToLeaf = in.read();
-			
-			if (levelsToLeaf > 0) {
-				boolean found = false;
-				for (int x = 0; x < numberOfItems; x++) {
-					long indexIdOfFirstChildNode = extractLEFileOffset(in, btreeStartOffset + (x * 24));
-					if (indexIdOfFirstChildNode > index) {
-						// get the address for the child first node in this group
-						btreeStartOffset = extractLEFileOffset(in, btreeStartOffset+((x-1) * 24)+16);
-						in.seek(btreeStartOffset+496);
-						in.read(temp);
-						found = true;
-						break;
-					}
-				}
-				if (!found) {
-					// it must be in the very last branch...
-					btreeStartOffset = extractLEFileOffset(in, btreeStartOffset+((numberOfItems-1) * 24)+16);
-					in.seek(btreeStartOffset+496);
-					in.read(temp);
-				}
-			}
-			else
-			{
-				// we are at the bottom of the tree...
-				// we want to get our file offset!
-				for (int x = 0; x < numberOfItems; x++) {
-					if (descTree)
-					{
-						// The 64-bit descriptor index b-tree leaf node item
-						in.seek(btreeStartOffset + (x * 32));
-						
-						temp = new byte[4];
-						in.read(temp);
-						if (convertLittleEndianBytesToLong(temp) == index) {
-							// give me the offset index please!
-							in.seek(btreeStartOffset + (x * 32));
-							temp = new byte[32];
-							in.read(temp);
-							return temp;			
-						}
-					}
-					else
-					{
-						// The 64-bit (file) offset index item
-						long indexIdOfFirstChildNode = extractLEFileOffset(in, btreeStartOffset + (x * 24));
-						
-						if (indexIdOfFirstChildNode == index) {
-							// we found it!!!! OMG
-							//System.out.println("item found as item #"+x);
-							in.seek(btreeStartOffset + (x * 24));
-
-							temp = new byte[24];
-							in.read(temp);
-							return temp;
-						}
-					}
-				}
-				throw new PSTException("Unable to find "+index);
-			}
-		}
-		
-		throw new PSTException("Unable to find node: "+index);
-	}
 	
 	/**
 	 * decode a lump of data that has been encrypted with the compressible encryption
@@ -536,31 +408,6 @@ public class PSTObject {
 		return data;
 	}
 
-	/**
-	 * Read a file offset from the file
-	 * PST Files have this tendency to store file offsets (pointers) in 8 little endian bytes.
-	 * Convert this to a long for seeking to.
-	 * @param in handle for PST file
-	 * @param startOffset where to read the 8 bytes from
-	 * @return long representing the read location
-	 * @throws IOException
-	 */
-	protected static long extractLEFileOffset(RandomAccessFile in, long startOffset)
-		throws IOException
-	{
-		in.seek(startOffset);
-		byte[] temp = new byte[8];
-		in.read(temp);
-		long offset = temp[7] & 0xff;
-		long tmpLongValue;
-		for (int x = 6; x >= 0; x--) {
-			offset = offset << 8;
-			tmpLongValue = (long)temp[x] & 0xff;
-			offset |= tmpLongValue;
-		}
-		
-		return offset;
-	}
 	
 	/**
 	 * Utility function for converting little endian bytes into a usable java long
@@ -612,47 +459,6 @@ public class PSTObject {
 		return (data[0] == 1 && data[1] == 1);
 	}
 /**/	
-	protected static PSTFileBlock processArray(RandomAccessFile in, byte[] data)
-		throws IOException, PSTException
-	{
-		// is the data an array?
-		if (!(data[0] == 1 && data[1] == 1))
-		{
-			throw new PSTException("Unable to process array, does not appear to be one!");
-		}
-
-		// we are an array!
-		// get the array items and merge them together
-		int numberOfEntries = (int)PSTObject.convertLittleEndianBytesToLong(data, 2, 4);
-		int dataSize = (int)PSTObject.convertLittleEndianBytesToLong(data, 4, 8);
-		PSTFileBlock dataBlock = new PSTFileBlock();
-		dataBlock.data = new byte[dataSize];
-		dataBlock.blockOffsets = new int[numberOfEntries];
-		int blockOffset = 0;
-		int tableOffset = 8;
-		for (int y = 0; y < numberOfEntries; y++) {
-			// get the offset identifier
-			long tableOffsetIdentifierIndex = PSTObject.convertLittleEndianBytesToLong(data, tableOffset, tableOffset+8);
-			
-			// clear the last bit of the identifier.  Why so hard?
-			tableOffsetIdentifierIndex = (tableOffsetIdentifierIndex & 0xfffffffe);
-			
-			OffsetIndexItem tableOffsetIdentifier = PSTObject.getOffsetIndexNode(in, tableOffsetIdentifierIndex);
-			
-			// Paranoia...
-			if ( blockOffset + tableOffsetIdentifier.size > dataBlock.data.length ) {
-				throw new PSTException("Invalid XBLOCK entry!");
-			}
-
-			in.seek(tableOffsetIdentifier.fileOffset);
-			in.read(dataBlock.data, blockOffset, tableOffsetIdentifier.size);
-			blockOffset += tableOffsetIdentifier.size;
-			dataBlock.blockOffsets[y] = blockOffset;
-			tableOffset += 8;
-		}
-
-		return dataBlock;
-	}
 /*	
 	protected static int[] getBlockOffsets(RandomAccessFile in, byte[] data)
 		throws IOException, PSTException
@@ -695,7 +501,7 @@ public class PSTObject {
 	public static PSTObject detectAndLoadPSTObject(PSTFile theFile, long descriptorIndex)
 		throws IOException, PSTException
 	{
-		return PSTObject.detectAndLoadPSTObject(theFile, PSTObject.getDescriptorIndexNode(theFile.getFileHandle(), descriptorIndex));
+		return PSTObject.detectAndLoadPSTObject(theFile, theFile.getDescriptorIndexNode(descriptorIndex));
 	}
 	
 	static PSTObject detectAndLoadPSTObject(PSTFile theFile, DescriptorIndexNode folderIndexNode)

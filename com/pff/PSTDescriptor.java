@@ -45,26 +45,39 @@ class PSTDescriptor {
 		if (data[0] != 0x2) {
 			throw new PSTException("Unable to process descriptor node, bad signature: "+data[0]);
 		}
-		
+
 		HashMap<Integer, PSTDescriptorItem> output = new HashMap<Integer, PSTDescriptorItem>();
 		
 		int numberOfItems = (int)PSTObject.convertLittleEndianBytesToLong(data, 2, 4);
-		int offset = 8;
+		int offset;
+		if (this.pstFile.getPSTFileType() == PSTFile.PST_TYPE_ANSI) {
+			offset = 4;
+		} else {
+			offset = 8;
+		}
 		
 		for (int x = 0; x < numberOfItems; x++) {
 			
 			PSTDescriptorItem item = new PSTDescriptorItem(data, offset, pstFile);
 
 			byte[] subNodeData = item.getSubNodeData();
-			if ( subNodeData != null ) {
-				// recurse baby
-				item.setSubNodeDescriptorItems(processDescriptor(subNodeData));
-				output.putAll(item.getSubNodeDescriptorItems());
+			if ( subNodeData != null) {
+				if (subNodeData[0] == 0x2) {
+					// recurse baby
+					item.setSubNodeDescriptorItems(processDescriptor(subNodeData));
+					output.putAll(item.getSubNodeDescriptorItems());
+				} else {
+					// this isn't normal :/
+				}
 			}
-			
+
 			output.put(item.descriptorIdentifier, item);
-			
-			offset += 24;
+
+			if (this.pstFile.getPSTFileType() == PSTFile.PST_TYPE_ANSI) {
+				offset += 12;
+			} else {
+				offset += 24;
+			}
 		}
 		
 		return output;

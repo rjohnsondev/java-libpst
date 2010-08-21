@@ -37,7 +37,7 @@ public class PSTAttachmentInputStream extends InputStream {
 		this.pstFile = pstFile;
 
 		// we want to get the first block of data and see what we are dealing with
-		OffsetIndexItem offsetItem = PSTObject.getOffsetIndexNode(in, descriptorItem.offsetIndexIdentifier);
+		OffsetIndexItem offsetItem = pstFile.getOffsetIndexNode(descriptorItem.offsetIndexIdentifier);
 		in.seek(offsetItem.fileOffset);
 		byte[] data = new byte[offsetItem.size];
 		in.read(data);
@@ -65,32 +65,36 @@ public class PSTAttachmentInputStream extends InputStream {
 
 		int numberOfEntries = (int)PSTObject.convertLittleEndianBytesToLong(data, 2, 4);
 
+		int arraySize = 8;
+		if (this.pstFile.getPSTFileType() == PSTFile.PST_TYPE_ANSI) {
+			arraySize = 4;
+		}
 		if (data[1] == 0x2) {
 			// XXBlock
 			int offset = 8;
 			for (int x = 0; x < numberOfEntries; x++) {
-				long bid = PSTObject.convertLittleEndianBytesToLong(data, offset, offset+8);
+				long bid = PSTObject.convertLittleEndianBytesToLong(data, offset, offset+arraySize);
 				bid &= 0xfffffffe;
 				// get the details in this block and
-				OffsetIndexItem offsetItem = PSTObject.getOffsetIndexNode(in, bid);
+				OffsetIndexItem offsetItem = this.pstFile.getOffsetIndexNode(bid);
 				in.seek(offsetItem.fileOffset);
 				byte[] blockData = new byte[offsetItem.size];
 				in.read(blockData);
 				this.getBlockSkipPoints(blockData);
-				offset += 8;
+				offset += arraySize;
 			}
 		} else if (data[1] == 0x1) {
 			// normal XBlock
 			int offset = 8;
 			for (int x = 0; x < numberOfEntries; x++) {
-				long bid = PSTObject.convertLittleEndianBytesToLong(data, offset, offset+8);
+				long bid = PSTObject.convertLittleEndianBytesToLong(data, offset, offset+arraySize);
 				bid &= 0xfffffffe;
 				// get the details in this block and add it to the list
-				OffsetIndexItem offsetItem = PSTObject.getOffsetIndexNode(in, bid);
+				OffsetIndexItem offsetItem = pstFile.getOffsetIndexNode(bid);
 				this.indexItems.add(offsetItem);
 				this.skipPoints.add(this.currentLocation);
 				this.currentLocation += offsetItem.size;
-				offset += 8;
+				offset += arraySize;
 			}
 		}
 	}

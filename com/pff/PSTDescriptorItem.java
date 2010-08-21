@@ -14,11 +14,19 @@ class PSTDescriptorItem
 	{
 		this.pstFile = pstFile;
 
-		descriptorIdentifier = (int)PSTObject.convertLittleEndianBytesToLong(data, offset, offset+4);
-		offsetIndexIdentifier = ((int)PSTObject.convertLittleEndianBytesToLong(data, offset+8, offset+16))
-									& 0xfffffffe;
-		subNodeOffsetIndexIdentifier = (int)PSTObject.convertLittleEndianBytesToLong(data, offset+16, offset+24)
-									& 0xfffffffe;
+		if (pstFile.getPSTFileType() == PSTFile.PST_TYPE_ANSI) {
+			descriptorIdentifier = (int)PSTObject.convertLittleEndianBytesToLong(data, offset, offset+4);
+			offsetIndexIdentifier = ((int)PSTObject.convertLittleEndianBytesToLong(data, offset+4, offset+8))
+										& 0xfffffffe;
+			subNodeOffsetIndexIdentifier = (int)PSTObject.convertLittleEndianBytesToLong(data, offset+8, offset+12)
+										& 0xfffffffe;
+		} else {
+			descriptorIdentifier = (int)PSTObject.convertLittleEndianBytesToLong(data, offset, offset+4);
+			offsetIndexIdentifier = ((int)PSTObject.convertLittleEndianBytesToLong(data, offset+8, offset+16))
+										& 0xfffffffe;
+			subNodeOffsetIndexIdentifier = (int)PSTObject.convertLittleEndianBytesToLong(data, offset+16, offset+24)
+										& 0xfffffffe;
+		}
 	}
 
 	public byte[] getData()
@@ -77,6 +85,7 @@ class PSTDescriptorItem
 	private PSTFile.PSTFileBlock dataBlock = null;
 	private PSTFile pstFile;
 
+	@Override
 	public String toString() {
 		return 
 			"PSTDescriptorItem\n"+

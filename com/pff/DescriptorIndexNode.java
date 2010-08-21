@@ -23,15 +23,22 @@ public class DescriptorIndexNode {
 	 * parse the data out into something meaningful
 	 * @param data
 	 */
-	DescriptorIndexNode(byte[] data) {
+	DescriptorIndexNode(byte[] data, int pstFileType) {
 		// parse it out
 		// first 4 bytes
-		
-		descriptorIdentifier = (int)PSTObject.convertLittleEndianBytesToLong(data, 0, 4);		
-		dataOffsetIndexIdentifier = (int)PSTObject.convertLittleEndianBytesToLong(data, 8, 16);
-		localDescriptorsOffsetIndexIdentifier = (int)PSTObject.convertLittleEndianBytesToLong(data, 16, 24);
-		parentDescriptorIndexIdentifier = (int)PSTObject.convertLittleEndianBytesToLong(data, 24, 28);
-		itemType = (int)PSTObject.convertLittleEndianBytesToLong(data, 28, 32);
+		if (pstFileType == PSTFile.PST_TYPE_ANSI) {
+			descriptorIdentifier = (int)PSTObject.convertLittleEndianBytesToLong(data, 0, 4);
+			dataOffsetIndexIdentifier = (int)PSTObject.convertLittleEndianBytesToLong(data, 4, 8);
+			localDescriptorsOffsetIndexIdentifier = (int)PSTObject.convertLittleEndianBytesToLong(data, 8, 12);
+			parentDescriptorIndexIdentifier = (int)PSTObject.convertLittleEndianBytesToLong(data, 12, 16);
+			//itemType = (int)PSTObject.convertLittleEndianBytesToLong(data, 28, 32);
+		} else {
+			descriptorIdentifier = (int)PSTObject.convertLittleEndianBytesToLong(data, 0, 4);
+			dataOffsetIndexIdentifier = (int)PSTObject.convertLittleEndianBytesToLong(data, 8, 16);
+			localDescriptorsOffsetIndexIdentifier = (int)PSTObject.convertLittleEndianBytesToLong(data, 16, 24);
+			parentDescriptorIndexIdentifier = (int)PSTObject.convertLittleEndianBytesToLong(data, 24, 28);
+			itemType = (int)PSTObject.convertLittleEndianBytesToLong(data, 28, 32);
+		}
 	}
 	
 	void readData(PSTFile file)

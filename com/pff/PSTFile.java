@@ -269,6 +269,36 @@ public class PSTFile {
 		return i;
 	}
 
+
+
+	static private Properties propertyInternetCodePages = null;
+	static private boolean bCPFirstTime = true;
+	static String getInternetCodePageCharset(int propertyId) {
+		if ( bCPFirstTime ) {
+			bCPFirstTime = false;
+			propertyInternetCodePages = new Properties();
+			try {
+				InputStream propertyStream = PSTFile.class.getResourceAsStream("/InternetCodepages.txt");
+				if ( propertyStream != null ) {
+					propertyInternetCodePages.load(propertyStream);
+				} else {
+					propertyInternetCodePages = null;
+				}
+			} catch (FileNotFoundException e) {
+				propertyInternetCodePages = null;
+				e.printStackTrace();
+			} catch (IOException e) {
+				propertyInternetCodePages = null;
+				e.printStackTrace();
+			}
+		}
+		if ( propertyInternetCodePages != null ) {
+			return propertyInternetCodePages.getProperty(propertyId+"");
+		}
+		return null;
+	}
+
+
 	static private Properties propertyNames = null;
 	static private boolean bFirstTime = true;
 	

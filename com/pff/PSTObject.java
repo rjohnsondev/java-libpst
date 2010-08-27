@@ -4,8 +4,10 @@ import java.io.IOException;
 import java.io.RandomAccessFile;
 import java.nio.charset.Charset;
 import java.util.*;
+import java.io.*;
 
 import com.pff.PSTFile.PSTFileBlock;
+import java.io.ByteArrayInputStream;
 
 /**
  * PST Object is the root class of all PST Items.
@@ -143,9 +145,17 @@ public class PSTObject {
 		PSTTableBCItem item = (PSTTableBCItem)this.items.get(identifier);
 		if ( item != null ) {
 			
+			String cp = this.getStringCodepage();
+
+			// get the string type from the item if not explicitly set
+			if ( stringType == 0 ) {
+				stringType = item.entryValueType;
+			}
+
 			// see if there is a descriptor entry
 			if ( !item.isExternalValueReference ) {
-				return item.getStringValue();
+				//System.out.println("here: "+new String(item.data)+this.descriptorIndexNode.descriptorIdentifier);
+				return PSTObject.createJavaString(item.data, stringType, cp);
 			}
 			if (this.localDescriptorItems != null &&
 				this.localDescriptorItems.containsKey(item.entryValueReference))
@@ -153,25 +163,13 @@ public class PSTObject {
 				// we have a hit!
 				PSTDescriptorItem descItem = (PSTDescriptorItem)this.localDescriptorItems.get(item.entryValueReference);
 				
-				// We want a string.
-				if ( stringType == 0 ) {
-					stringType = item.entryValueType;
-				}
-
 				try {
 					byte[] data = descItem.getData();
 					if ( data == null ) {
 						return "";
 					}
 
-					if ( stringType == 0x1F ) {
-						return new String(data, "UTF-16LE");
-					}
-					//if (stringType == 0x1E )
-					{
-						// Hope for the best...
-						return new String(data, Charset.defaultCharset());
-					}
+					return PSTObject.createJavaString(data, stringType, cp);
 				} catch (Exception e) {
 					System.out.printf("Exception %s decoding string %s: %s\n",
 							e.toString(),
@@ -181,10 +179,50 @@ public class PSTObject {
 				//System.out.printf("PSTObject.getStringItem - item isn't a string: 0x%08X\n", identifier);
 				//return "";
 			}
-			
-			return item.getStringValue();
+
+			return PSTObject.createJavaString(data, stringType, cp);
 		}
 		return "";
+	}
+
+	static String createJavaString(byte[] data, int stringType, String codepage)
+	{
+		try {
+			if ( stringType == 0x1F ) {
+				return new String(data, "UTF-16LE");
+			}
+
+			if (codepage == null || codepage.toUpperCase().equals("UTF-8") || codepage.toUpperCase().equals("UTF-7")) {
+				// PST UTF-8 strings are not... really UTF-8
+				// it seems that they just don't use multibyte chars at all.
+				// indeed, with some crylic chars in there, the difficult chars are just converted to %3F(?)
+				// I suspect that outlook actually uses RTF to store these problematic strings.
+				StringBuffer sbOut = new StringBuffer();
+				for (int x = 0; x < data.length; x++) {
+					sbOut.append((char)(data[x] & 0xFF)); // just blindly accept the byte as a UTF char, seems right half the time
+				}
+				return new String(sbOut);
+			} else {
+				codepage = codepage.toUpperCase();
+				return new String(data, codepage);
+			}
+		} catch (Exception err) {
+			System.out.println("Unable to decode string");
+			err.printStackTrace();
+			return "";
+		}
+	}
+
+	private String getStringCodepage() {
+		// try and get the codepage
+		PSTTableBCItem cpItem = (PSTTableBCItem)this.items.get(0x3FFD); // PidTagMessageCodepage
+		if (cpItem == null) {
+			cpItem = (PSTTableBCItem)this.items.get(0x3FDE); // PidTagInternetCodepage
+		}
+		if (cpItem != null) {
+			return PSTFile.getInternetCodePageCharset(cpItem.entryValueReference);
+		}
+		return null;
 	}
 	
 	public Date getDateItem(int identifier) {

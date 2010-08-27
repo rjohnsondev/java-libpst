@@ -62,8 +62,9 @@ public class PSTMessageStore extends PSTObject {
 		// attempt to find in the table.
 		int displayNameEntryType = 0x3001;
 		if (this.items.containsKey(displayNameEntryType)) {
-			PSTTableBCItem item = (PSTTableBCItem)this.items.get(displayNameEntryType);
-			return new String(item.getStringValue());
+			return this.getStringItem(displayNameEntryType);
+			//PSTTableBCItem item = (PSTTableBCItem)this.items.get(displayNameEntryType);
+			//return new String(item.getStringValue());
 		}
 		return "";
 	}

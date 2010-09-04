@@ -17,7 +17,7 @@ public class DescriptorIndexNode {
 	public int parentDescriptorIndexIdentifier;
 	public int itemType;
 
-	PSTFile.PSTFileBlock dataBlock = null;
+	//PSTFile.PSTFileBlock dataBlock = null;
 	
 	/**
 	 * parse the data out into something meaningful
@@ -40,7 +40,8 @@ public class DescriptorIndexNode {
 			itemType = (int)PSTObject.convertLittleEndianBytesToLong(data, 28, 32);
 		}
 	}
-	
+
+	/*
 	void readData(PSTFile file)
 		throws IOException, PSTException
 	{
@@ -48,7 +49,14 @@ public class DescriptorIndexNode {
 			dataBlock = file.readLeaf(dataOffsetIndexIdentifier);
 		}
 	}
+	 *
+	 */
 
+	PSTNodeInputStream getNodeInputStream(PSTFile pstFile)
+			throws IOException, PSTException
+	{
+		return new PSTNodeInputStream(pstFile,pstFile.getOffsetIndexNode(dataOffsetIndexIdentifier));
+	}
 	
 	public String toString() {
 		

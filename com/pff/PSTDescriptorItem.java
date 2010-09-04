@@ -32,22 +32,30 @@ class PSTDescriptorItem
 	public byte[] getData()
 		throws IOException, PSTException
 	{
-		if ( dataBlock != null ) {
-			return dataBlock.data;
+		if ( dataBlockData != null ) {
+			return dataBlockData;
 		}
 
-		dataBlock = pstFile.readLeaf(offsetIndexIdentifier);
-		return dataBlock.data;
+		PSTNodeInputStream in = pstFile.readLeaf(offsetIndexIdentifier);
+		byte[] out = new byte[(int)in.length()];
+		in.read(out);
+		dataBlockData = out;
+		return dataBlockData;
 	}
 	
 	public int[] getBlockOffsets()
 		throws IOException, PSTException
 	{
-		if ( dataBlock != null ) {
-			return dataBlock.blockOffsets;
+		if ( dataBlockOffsets != null ) {
+
+			return dataBlockOffsets;
 		}
-		dataBlock = pstFile.readLeaf(offsetIndexIdentifier);
-		return dataBlock.blockOffsets;
+		Long[] offsets = pstFile.readLeaf(offsetIndexIdentifier).getBlockOffsets();
+		int[] offsetsOut = new int[offsets.length];
+		for (int x = 0; x < offsets.length; x++) {
+			offsetsOut[x] = offsets[x].intValue();
+		}
+		return offsetsOut;
 	}
 	
 	public int getDataSize()
@@ -60,16 +68,20 @@ class PSTDescriptorItem
 		return subNodeDescriptorItems;
 	}
 
-	public byte[] getSubNodeData()
+	public PSTNodeInputStream getSubNodeData()
 		throws IOException, PSTException
 	{
 		if (subNodeOffsetIndexIdentifier != 0) {
+			return pstFile.readLeaf(subNodeOffsetIndexIdentifier);
+			/*
 			PSTFile.PSTFileBlock subNodeDataBlock = pstFile.readLeaf(subNodeOffsetIndexIdentifier);
 			if ( subNodeDataBlock.blockOffsets != null &&
 					subNodeDataBlock.blockOffsets.length > 1 ) {
 				System.out.printf("SubNode (0x%08X) has more than one data block!", subNodeOffsetIndexIdentifier);
 			}
 			return subNodeDataBlock.data;
+			 *
+			 */
 		}
 		
 		return null;
@@ -82,7 +94,9 @@ class PSTDescriptorItem
 	private HashMap<Integer, PSTDescriptorItem> subNodeDescriptorItems;
 
 	// These are private to ensure that getData()/getBlockOffets() are used 
-	private PSTFile.PSTFileBlock dataBlock = null;
+	//private PSTFile.PSTFileBlock dataBlock = null;
+	byte[] dataBlockData = null;
+	int[] dataBlockOffsets = null;
 	private PSTFile pstFile;
 
 	@Override

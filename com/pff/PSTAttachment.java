@@ -29,7 +29,10 @@ public class PSTAttachment extends PSTObject {
 		return this.getDateItem(0x3008);
 	}
 	
-	public PSTMessage getEmbeddedPSTMessage() {
+	public PSTMessage getEmbeddedPSTMessage()
+			throws IOException, PSTException
+	{
+		PSTNodeInputStream in = null;
 		if ( getIntItem(0x3705) == PSTAttachment.ATTACHMENT_METHOD_EMBEDDED ) {
 			byte[] data = null;
 			int[] blockOffsets = null;
@@ -37,7 +40,7 @@ public class PSTAttachment extends PSTObject {
 			if ( item.entryValueType == 0x0102 ) {
 				if ( !item.isExternalValueReference )
 				{
-					data = item.data;
+					in = new PSTNodeInputStream(this.pstFile, item.data);
 				} else {
 					// We are in trouble!
 					System.out.printf("External reference in getEmbeddedPSTMessage()!\n");
@@ -45,6 +48,8 @@ public class PSTAttachment extends PSTObject {
 			} else if ( item.entryValueType == 0x000D ) {
 				int descriptorItem = (int)PSTObject.convertLittleEndianBytesToLong(item.data, 0, 4);
 				PSTDescriptorItem descriptorItemNested = this.localDescriptorItems.get(descriptorItem);
+				in = new PSTNodeInputStream(this.pstFile, descriptorItemNested);
+				/*
 				if ( descriptorItemNested != null ) {
 					try {
 						data = descriptorItemNested.getData();
@@ -56,6 +61,8 @@ public class PSTAttachment extends PSTObject {
 						blockOffsets = null;
 					}
 				}
+				 *
+				 */
 			}
 			
 			if ( data == null ) {
@@ -63,7 +70,7 @@ public class PSTAttachment extends PSTObject {
 			}
 
 			try {
-				PSTTableBC attachmentTable = new PSTTableBC(data, blockOffsets);
+				PSTTableBC attachmentTable = new PSTTableBC(in);
 				return PSTObject.createAppropriatePSTMessageObject(pstFile, this.descriptorIndexNode, attachmentTable, localDescriptorItems);
 			} catch ( PSTException e ) {
 				e.printStackTrace();
@@ -85,9 +92,9 @@ public class PSTAttachment extends PSTObject {
 
 		if (attachmentDataObject.isExternalValueReference) {
 			PSTDescriptorItem descriptorItemNested = this.localDescriptorItems.get(attachmentDataObject.entryValueReference);
-			return new PSTAttachmentInputStream(this.pstFile, descriptorItemNested);
+			return new PSTNodeInputStream(this.pstFile, descriptorItemNested);
 		} else {
-			return new PSTAttachmentInputStream(this.pstFile, attachmentDataObject.data);
+			return new PSTNodeInputStream(this.pstFile, attachmentDataObject.data);
 		}
 
 	}

@@ -5,12 +5,11 @@
 package example;
 
 import java.awt.*;
-import java.io.IOException;
 
 import javax.swing.*;
 import javax.swing.event.*;
 import javax.swing.table.AbstractTableModel;
-import javax.swing.table.TableModel;
+import java.io.*;
 import javax.swing.tree.*;
 
 import com.pff.*;
@@ -27,18 +26,136 @@ public class TestGui {
 	private JTextPane emailText;
 	
 	public TestGui() throws PSTException, IOException {
+
+		// setup the basic window
+        JFrame f = new JFrame("PST Browser");
 		
 		// attempt to open the pst file
 		try {
-			pstFile = new PSTFile("Outlook-new.pst");
+			/*
+			JFileChooser chooser = new JFileChooser();
+			if (chooser.showOpenDialog(f) == JFileChooser.APPROVE_OPTION) {
+			} else {
+				System.exit(0);
+			}
+
+			String filename = chooser.getSelectedFile().getCanonicalPath();
+			 */
+			String filename = "Outlook-new.pst";
+			filename = "G:\\From old Tower\\pff\\java\\Old Email.pst";
+			//filename = "RichardJohnson@sumac.uk.com - exchange.ost";
+			//String filename = "Outlook 32bit.pst";
+			//String russian = "Узеи́р Абду́л-Гусе́йн оглы́ Гаджибе́ков (азерб. Üzeyir bəy Əbdülhüseyn oğlu Hacıbəyov; 18 сентября 1885, Агджабеди, Шушинский уезд, Елизаветпольская губерния, Российская империя — 23 ноября 1948, Баку, Азербайджанская ССР, СССР) — азербайджанский композитор, дирижёр, публицист, фельетонист, драматург и педагог, народный артист СССР (1938), дважды лауреат Сталинских премий (1941, 1946). Действительный член АН Азербайджана (1945), профессор (1940), ректор Азербайджанской государственной ";
+
+			//System.out.println(java.nio.charset.Charset.availableCharsets());
+
+			//byte[] russianBytes = russian.getBytes("UTF-8");
+			//PSTObject.printHexFormatted(russianBytes, true);
+
+			//String filename = "Outlook 32bit.pst";
+			//filename = "RichardJohnson@sumac.uk.com - exchange.ost";
+			pstFile = new PSTFile(filename);
+			//pstFile = new PSTFile("RichardJohnson@sumac.uk.com - exchange.ost");
+
+
+			//PSTFolder folder = (PSTFolder)PSTObject.detectAndLoadPSTObject(pstFile, 32898);
+			//System.out.println(folder.getEmailCount());
+			//System.exit(0);
+
+
+			//"г ь ы";
+			//System.out.println(java.nio.charset.Charset.availableCharsets().keySet());
+			//PSTMessage msg = (PSTMessage)PSTObject.detectAndLoadPSTObject(pstFile, 2097604);
+			//System.out.println(msg);
+
+			//PSTObject.printHexFormatted("г ь ы".getBytes("koi8-r"), true);
+			//System.exit(0);
+			//PSTMessage msg = (PSTMessage)PSTObject.detectAndLoadPSTObject(pstFile, 2097668);
+			//System.out.println(msg.getRTFBody());
+			//System.exit(0);
+
+			//PSTAppointment msg = (PSTAppointment)PSTObject.detectAndLoadPSTObject(pstFile, 2097252);
+			////System.out.println(msg.getStartTime());
+			//System.exit(0);
+
+			//int[] emails = {
+				//2098180
+				/*
+				2097348,
+				2097380,
+				2097412,
+				2097444,
+				2097476,
+				2097508,
+				2097540,
+				2097572
+				 *
+				 */
+			//};
+
+			/*
+
+			RandomAccessFile tmpIn = new RandomAccessFile("test - httpdocs.tar.gz", "r");
+			PSTMessage msg = (PSTMessage)PSTObject.detectAndLoadPSTObject(pstFile, emails[0]);
+			PSTAttachmentInputStream attachmentStream = msg.getAttachment(0).getFileInputStream();
+
+			byte[] tmp = new byte[1024];
+			byte[] tmp2 = new byte[1024];
+
+			for (int y = 1; y < 2000; y++) {
+				tmpIn.seek(760*y-50);
+				tmpIn.read(tmp);
+
+				attachmentStream.seek(760*y-50);
+				attachmentStream.read(tmp2);
+
+				for (int x = 0; x< tmp2.length; x++) {
+					if (tmp[x] != tmp2[x]) {
+
+
+						PSTObject.printHexFormatted(tmp, true);
+						PSTObject.printHexFormatted(tmp2, true);
+
+						System.out.println(y);
+						System.out.println("Error");
+						System.exit(0);
+					}
+				}
+				System.out.println("Worked");
+			}
+			 *
+			 */
+
+			/*
+			for (int x = 0; x < emails.length; x++) {
+				PSTMessage msg = (PSTMessage)PSTObject.detectAndLoadPSTObject(pstFile, emails[x]);
+				PSTAttachment attach = msg.getAttachment(0);
+				//System.out.println(attach);
+				InputStream attachmentStream = msg.getAttachment(0).getFileInputStream();
+				FileOutputStream out = new FileOutputStream("test - "+attach.getLongFilename());
+
+				int bufferSize = 8176;
+
+				byte[] buffer = new byte[bufferSize];
+				int count = attachmentStream.read(buffer, 0, 8176);
+				while (count == bufferSize) {
+					out.write(buffer);
+					count = attachmentStream.read(buffer, 0, 8176);
+				}
+				byte[] endBuffer = new byte[count];
+				System.arraycopy(buffer, 0, endBuffer, 0, count);
+				out.write(endBuffer);
+				out.close();
+			}
+			 *
+			 */
+			//System.exit(0);
 
 		} catch (Exception err) {
 			err.printStackTrace();
 			System.exit(1);
 		}
 		
-		// setup the basic window
-        JFrame f = new JFrame("PST Browser");
         
         // do the tree thing
         DefaultMutableTreeNode top = new DefaultMutableTreeNode(pstFile.getMessageStore()); 
@@ -110,8 +227,9 @@ public class TestGui {
 						emailText.setText(rss.toString());
 					} else if (selectedMessage != null) {
 //						System.out.println(selectedMessage.getMessageClass());
-//						emailText.setText(selectedMessage.getBody());
-						emailText.setText(selectedMessage.getBodyHTML());
+						emailText.setText(selectedMessage.getBody());
+						//System.out.println(selectedMessage);
+						//emailText.setText(selectedMessage.toString());
 						//emailText.setText(selectedMessage.toString());
 //						PSTTask task = selectedMessage.toTask();
 //						emailText.setText(task.toString());
@@ -129,6 +247,7 @@ public class TestGui {
         // the email
         emailText = new JTextPane();
         emailText.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 12));
+        //emailText.setFont(new Font("Arial Unicode MS", Font.PLAIN, 12));
         
         JSplitPane emailSplitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, emailTablePanel, new JScrollPane(emailText));
         emailSplitPane.setOneTouchExpandable(true);

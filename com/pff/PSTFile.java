@@ -118,7 +118,7 @@ public class PSTFile {
 			}
 			
 			// process the descriptor tree and create our children
-			buildDescriptorTree(in);
+			//buildDescriptorTree(in);
 			
 			// build out name to id map.
 			if (this.getPSTFileType() == PST_TYPE_ANSI) {
@@ -159,7 +159,7 @@ public class PSTFile {
 		
 		// process the name to id map
 		DescriptorIndexNode nameToIdMapDescriptorNode = (getDescriptorIndexNode(97));
-		nameToIdMapDescriptorNode.readData(this);
+		//nameToIdMapDescriptorNode.readData(this);
 
 		// get the descriptors if we have them
 		HashMap<Integer, PSTDescriptorItem> localDescriptorItems = null;
@@ -169,11 +169,23 @@ public class PSTFile {
 		}
 
 		// process the map
-		PSTTableBC bcTable = new PSTTableBC(nameToIdMapDescriptorNode.dataBlock.data, nameToIdMapDescriptorNode.dataBlock.blockOffsets);
+		//PSTTableBC bcTable = new PSTTableBC(nameToIdMapDescriptorNode.dataBlock.data, nameToIdMapDescriptorNode.dataBlock.blockOffsets);
+		OffsetIndexItem off = this.getOffsetIndexNode(nameToIdMapDescriptorNode.dataOffsetIndexIdentifier);
+		PSTNodeInputStream nodein = new PSTNodeInputStream(this, off);
+		byte[] tmp = new byte[1024];
+		nodein.read(tmp);
+		//PSTObject.printHexFormatted(tmp, true);
+		PSTTableBC bcTable = new PSTTableBC(nodein);
+
 		HashMap<Integer, PSTTableBCItem> tableItems = (bcTable.getItems());
-		
+		//System.out.println(nodein.length());
+		//System.out.println(bcTable);
+		//System.out.println(tableItems);
+		//System.exit(0);
 		// Get the guids
 		PSTTableBCItem guidEntry = tableItems.get(2);	// PidTagNameidStreamGuid
+		//System.out.println(tableItems);
+		//System.exit(0);
 		guids = getData(guidEntry, localDescriptorItems);
 		int nGuids = guids.length / 16;
 		UUID[] uuidArray = new UUID[nGuids];
@@ -225,7 +237,8 @@ public class PSTFile {
 			// else the identifier is a string
 		}
 	}
-	
+
+
 	private byte [] getData(PSTTableItem item, HashMap<Integer, PSTDescriptorItem> localDescriptorItems)
 		throws IOException, PSTException
 	{
@@ -242,6 +255,10 @@ public class PSTFile {
 		}
 
 		PSTDescriptorItem mapDescriptorItem = localDescriptorItems.get(item.entryValueReference);
+		if (mapDescriptorItem == null) {
+			System.out.println("not here "+item.entryValueReference);
+			System.out.println(localDescriptorItems.keySet());
+		}
 		return mapDescriptorItem.getData();
 	}
 	
@@ -530,19 +547,26 @@ public class PSTFile {
 		return output;
 	}
 	
-	
+
+	/*
 	static class PSTFileBlock {
 		byte[]	data = null;
 		int[]	blockOffsets = null;
 	}
+	 *
+	 */
 	
-	public PSTFileBlock readLeaf(long bid)
+	PSTNodeInputStream readLeaf(long bid)
 		throws IOException, PSTException
 	{
-		PSTFileBlock ret = null;
+		//PSTFileBlock ret = null;
+		PSTNodeInputStream ret = null;
 
 		// get the index node for the descriptor index
 		OffsetIndexItem offsetItem = getOffsetIndexNode(bid);
+		return new PSTNodeInputStream(this, offsetItem);
+
+		/*
 		boolean bInternal = (offsetItem.indexIdentifier & 0x02) != 0;
 
 		byte[] data = new byte[offsetItem.size];
@@ -558,11 +582,12 @@ public class PSTFile {
 			if ( data[0] == 1 )
 			{
 				// (X)XBLOCK
-				if ( data[1] == 2 ) {
-					throw new PSTException("XXBLOCKS not supported yet!");
-				}
+				//if ( data[1] == 2 ) {
+					//throw new PSTException("XXBLOCKS not supported yet!");
+				//}
 
-				ret = this.processArray(in, data);
+				ret = new PSTNodeInputStream(this, offsetItem);
+				//ret = this.processArray(in, data);
 				
 				// The resulting data isn't an internal block any more
 				bInternal = false;
@@ -574,7 +599,7 @@ public class PSTFile {
 		
 		if ( ret == null ) {
 			// non-array block
-			ret = new PSTFileBlock();
+			ret = new PSTFileBlock(this.fi);
 			ret.data = data;
 			// (Callers must be able to handle ret.blockOffsets == null)
 		}
@@ -587,6 +612,8 @@ public class PSTFile {
 		}
 		
 		return ret;
+		 *
+		 */
 	}
 	
 	
@@ -847,6 +874,7 @@ public class PSTFile {
 		return new OffsetIndexItem(findBtreeItem(in, identifier, false), this.getPSTFileType());
 	}
 
+	/*
 	protected PSTFileBlock processArray(RandomAccessFile in, byte[] data)
 		throws IOException, PSTException
 	{
@@ -897,5 +925,7 @@ public class PSTFile {
 
 		return dataBlock;
 	}
+	 *
+	 */
 
 }

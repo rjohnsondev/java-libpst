@@ -7,6 +7,7 @@ package com.pff;
 import java.io.UnsupportedEncodingException;
 /**/
 import java.util.*;
+import java.io.*;
 
 /**
  * Specific functions for the 7c table type ("Table Context").
@@ -16,12 +17,17 @@ import java.util.*;
 class PSTTable7C extends PSTTable {
 
 	private List<HashMap<Integer, PSTTable7CItem>> items = new ArrayList<HashMap<Integer, PSTTable7CItem>>();
-	private int numberOfDataSets = 0;
+	//private int numberOfDataSets = 0;
 	
-	protected PSTTable7C(byte[] Data, int[] blockOffsets, HashMap<Integer, PSTDescriptorItem> subNodeDescriptorItems)
-		throws PSTException
+	protected PSTTable7C(PSTNodeInputStream in, HashMap<Integer, PSTDescriptorItem> subNodeDescriptorItems)
+		throws PSTException, java.io.IOException
 	{
-		super(Data, blockOffsets, subNodeDescriptorItems);
+		this(in, subNodeDescriptorItems, -1);
+	}
+	protected PSTTable7C(PSTNodeInputStream in, HashMap<Integer, PSTDescriptorItem> subNodeDescriptorItems, int entityToExtract)
+		throws PSTException, java.io.IOException
+	{
+		super(in, subNodeDescriptorItems);
 		
 		if (tableTypeByte != 0x7c)
 		{
@@ -30,41 +36,63 @@ class PSTTable7C extends PSTTable {
 		}
 		
 		// TCINFO header is in the hidUserRoot node
+		//byte[] tcHeaderNode = getNodeInfo(hidUserRoot);
 		NodeInfo tcHeaderNode = getNodeInfo(hidUserRoot);
-		int offset = tcHeaderNode.startOffset;
+		int offset = 0;
 		
 		// get the TCINFO header information
-		int cCols = (int)PSTObject.convertLittleEndianBytesToLong(tcHeaderNode.data, offset+1, offset+2);
+		//int cCols = (int)PSTObject.convertLittleEndianBytesToLong(tcHeaderNode, offset+1, offset+2);
+		int cCols = (int)tcHeaderNode.seekAndReadLong(offset+1, 1);
 		@SuppressWarnings("unused")
-		int TCI_4b = (int)PSTObject.convertLittleEndianBytesToLong(tcHeaderNode.data, offset+2, offset+4);
+		//int TCI_4b = (int)PSTObject.convertLittleEndianBytesToLong(tcHeaderNode, offset+2, offset+4);
+		int TCI_4b = (int)tcHeaderNode.seekAndReadLong(offset+2, 2);
 		@SuppressWarnings("unused")
-		int TCI_2b = (int)PSTObject.convertLittleEndianBytesToLong(tcHeaderNode.data, offset+4, offset+6);
-		int TCI_1b = (int)PSTObject.convertLittleEndianBytesToLong(tcHeaderNode.data, offset+6, offset+8);
-		int TCI_bm = (int)PSTObject.convertLittleEndianBytesToLong(tcHeaderNode.data, offset+8, offset+10);
-		int hidRowIndex = (int)PSTObject.convertLittleEndianBytesToLong(tcHeaderNode.data, offset+10, offset+14);
-		int hnidRows = (int)PSTObject.convertLittleEndianBytesToLong(tcHeaderNode.data, offset+14, offset+18);// was 18
+		//int TCI_2b = (int)PSTObject.convertLittleEndianBytesToLong(tcHeaderNode, offset+4, offset+6);
+		int TCI_2b = (int)tcHeaderNode.seekAndReadLong(offset+4, 2);
+		//int TCI_1b = (int)PSTObject.convertLittleEndianBytesToLong(tcHeaderNode, offset+6, offset+8);
+		int TCI_1b = (int)tcHeaderNode.seekAndReadLong(offset+6, 2);
+		//int TCI_bm = (int)PSTObject.convertLittleEndianBytesToLong(tcHeaderNode, offset+8, offset+10);
+		int TCI_bm = (int)tcHeaderNode.seekAndReadLong(offset+8, 2);
+		//int hidRowIndex = (int)PSTObject.convertLittleEndianBytesToLong(tcHeaderNode, offset+10, offset+14);
+		int hidRowIndex = (int)tcHeaderNode.seekAndReadLong(offset+10, 4);
+		//int hnidRows = (int)PSTObject.convertLittleEndianBytesToLong(tcHeaderNode, offset+14, offset+18);// was 18
+		int hnidRows = (int)tcHeaderNode.seekAndReadLong(offset+14, 4);
 		// 18..22 hidIndex - deprecated
 
 		// 22... column descriptors
 		offset += 22;
+		int overrideCol = -1;
 		if ( cCols != 0 ) {
 			columnDescriptors = new ColumnDescriptor[cCols];
 			
 			for ( int col = 0; col < cCols; ++col ) {
-				columnDescriptors[col] = new ColumnDescriptor(tcHeaderNode.data, offset);
+				//columnDescriptors[col] = new ColumnDescriptor(tcHeaderNode, offset);
+				columnDescriptors[col] = new ColumnDescriptor(tcHeaderNode, offset);
+				//System.out.println("iBit: "+col+" " +columnDescriptors[col].iBit);
+				if (columnDescriptors[col].id == entityToExtract) {
+					overrideCol = col;
+				}
 				offset += 8;
 			}
+		}
+
+		// if we are asking for a specific column, only get that!
+		if (overrideCol > -1) {
+			cCols = overrideCol +1;
 		}
 
 		// Read the key table
 /*		System.out.printf("Key table:\n");	/**/
 		keyMap = new HashMap<Integer, Integer>();
+		//byte[] keyTableInfo = getNodeInfo(hidRoot);
 		NodeInfo keyTableInfo = getNodeInfo(hidRoot);
-		numberOfKeys = (keyTableInfo.endOffset - keyTableInfo.startOffset) / (sizeOfItemKey+sizeOfItemValue);
-		offset = keyTableInfo.startOffset;
+		numberOfKeys = keyTableInfo.length() / (sizeOfItemKey+sizeOfItemValue);
+		offset = 0;
 		for (int x = 0; x < numberOfKeys; x++) {
-			int Context = (int)PSTObject.convertLittleEndianBytesToLong(keyTableInfo.data, offset, offset+4);
-			int RowIndex = (int)PSTObject.convertLittleEndianBytesToLong(keyTableInfo.data, offset+4, offset+8);
+			//int Context = (int)PSTObject.convertLittleEndianBytesToLong(keyTableInfo, offset, offset+4);
+			int Context = (int)keyTableInfo.seekAndReadLong(offset, 4);
+			//int RowIndex = (int)PSTObject.convertLittleEndianBytesToLong(keyTableInfo, offset+4, offset+8);
+			int RowIndex = (int)keyTableInfo.seekAndReadLong(offset+4, 4);
 			keyMap.put(Context, RowIndex);
 /*			System.out.printf("\t0x%08X, 0x%08X\n", Context, RowIndex);	/**/
 			offset += 8;
@@ -72,28 +100,36 @@ class PSTTable7C extends PSTTable {
 		
 		// Read the Row Matrix
 		NodeInfo rowNodeInfo = getNodeInfo(hnidRows);
-		numberOfDataSets = (rowNodeInfo.endOffset - rowNodeInfo.startOffset) / TCI_bm;
+		//numberOfDataSets = (rowNodeInfo.endOffset - rowNodeInfo.startOffset) / TCI_bm;
 
 		description += 
 			"Number of keys: "+numberOfKeys+"\n"+
 			"Number of columns: "+cCols+"\n"+
 			"Row Size: "+TCI_bm+"\n"+
 			"hidRowIndex: "+hidRowIndex+"\n"+
-			"hnidRows: "+hnidRows+"\n"+
-			"rowArrayStart: "+rowNodeInfo.startOffset+"\n"+
-			"rowArrayEnd: "+rowNodeInfo.endOffset+"\n"+
-			"Number of rows: "+numberOfDataSets+"\n";
-		
+			"hnidRows: "+hnidRows+"\n";
+
 		// repeat the reading process for every dataset
-		for ( int dataSetNumber = 0; dataSetNumber < numberOfDataSets; dataSetNumber++ )
+		int currentValueArrayStart = 0;
+		int dataSetNumber = 0;
+		while ( currentValueArrayStart + ((cCols+7)/8) + TCI_1b <= rowNodeInfo.length())
 		{
 			HashMap<Integer, PSTTable7CItem> currentItem = new HashMap<Integer, PSTTable7CItem>();
-			int currentValueArrayStart = rowNodeInfo.startOffset + (dataSetNumber*TCI_bm);
+			// add on some padding for block boundries?
+			if ((currentValueArrayStart % 8176) > 8176 - TCI_bm) {
+				// adjust!
+				currentValueArrayStart += 8176 - (currentValueArrayStart % 8176);
+				if (currentValueArrayStart + TCI_bm < rowNodeInfo.length()) {
+					continue;
+				}
+			}
 			byte[] bitmap = new byte[(cCols+7)/8];
-			System.arraycopy(rowNodeInfo.data, currentValueArrayStart+TCI_1b, bitmap, 0, bitmap.length);
+			//System.arraycopy(rowNodeInfo, currentValueArrayStart+TCI_1b, bitmap, 0, bitmap.length);
+			rowNodeInfo.in.seek(rowNodeInfo.startOffset+ currentValueArrayStart + TCI_1b);
+			rowNodeInfo.in.read(bitmap);
 
-			int id = (int)PSTObject.convertLittleEndianBytesToLong(rowNodeInfo.data, currentValueArrayStart, currentValueArrayStart+4);
-/*			System.out.printf("Row %d, id 0x%08X:\n", dataSetNumber, id);	/**/
+			//int id = (int)PSTObject.convertLittleEndianBytesToLong(rowNodeInfo, currentValueArrayStart, currentValueArrayStart+4);
+			int id = (int)rowNodeInfo.seekAndReadLong(currentValueArrayStart, 4);
 
 			// Put into the item map as PidTagLtpRowId (0x67F2)
 			PSTTable7CItem item = new PSTTable7CItem();
@@ -103,14 +139,12 @@ class PSTTable7C extends PSTTable {
 			item.entryValueReference = id;
 			item.isExternalValueReference = true;
 			currentItem.put(item.entryType, item);
-/*
-			String bitmapString = "";
-			for ( int b = 0; b < bitmap.length; ++b ) {
-				bitmapString += String.format(" %02X", bitmap[b]&0xFF);
+
+			int col = 0;
+			if (overrideCol > -1) {
+				col = overrideCol;
 			}
-			System.out.printf("Bitmap: %s\n", bitmapString);
-/**/		
-			for ( int col = 0; col < cCols; ++col )
+			for ( ; col < cCols; ++col )
 			{
 				// Does this column exist for this row?
 				int bitIndex = columnDescriptors[col].iBit / 8;
@@ -118,7 +152,8 @@ class PSTTable7C extends PSTTable {
 				if ( (bitmap[bitIndex] & (1<<bit)) == 0 )
 				{
 					// Column doesn't exist
-/*					System.out.printf("Col %d (0x%04X) not present\n", col, columnDescriptors[col].id);	/**/
+					//System.out.printf("Col %d (0x%04X) not present\n", col, columnDescriptors[col].id);	/**/
+
 					continue;
 				}
 
@@ -128,10 +163,12 @@ class PSTTable7C extends PSTTable {
 				item.entryValueType = columnDescriptors[col].type;
 				item.entryType = columnDescriptors[col].id;
 				item.entryValueReference = 0;
+
 				
 				switch ( columnDescriptors[col].cbData ) {
 				case 1:	// Single byte data
-					item.entryValueReference = rowNodeInfo.data[currentValueArrayStart+columnDescriptors[col].ibData] & 0xFF;
+					//item.entryValueReference = rowNodeInfo[currentValueArrayStart+columnDescriptors[col].ibData] & 0xFF;
+					item.entryValueReference = (int)rowNodeInfo.seekAndReadLong(currentValueArrayStart+columnDescriptors[col].ibData, 1) & 0xFF;
 					item.isExternalValueReference = true;
 /*
 					System.out.printf("\tboolean: %s %s\n",
@@ -141,8 +178,11 @@ class PSTTable7C extends PSTTable {
 					break;
 
 				case 2:	// Two byte data
-					item.entryValueReference = (rowNodeInfo.data[currentValueArrayStart+columnDescriptors[col].ibData] & 0xFF) |
-												  ((rowNodeInfo.data[currentValueArrayStart+columnDescriptors[col].ibData+1] & 0xFF) << 8);
+					/*
+					item.entryValueReference = (rowNodeInfo[currentValueArrayStart+columnDescriptors[col].ibData] & 0xFF) |
+												  ((rowNodeInfo[currentValueArrayStart+columnDescriptors[col].ibData+1] & 0xFF) << 8);
+					 */
+					item.entryValueReference = (int)rowNodeInfo.seekAndReadLong(currentValueArrayStart+columnDescriptors[col].ibData, 2) & 0xFFFF;
 					item.isExternalValueReference = true;
 /*
 					short i16 = (short)item.entryValueReference;
@@ -154,15 +194,26 @@ class PSTTable7C extends PSTTable {
 
 				case 8:	// 8 byte data
 					item.data = new byte[8];
-					System.arraycopy(rowNodeInfo.data, currentValueArrayStart+columnDescriptors[col].ibData, item.data, 0, 8);
+					//System.arraycopy(rowNodeInfo, currentValueArrayStart+columnDescriptors[col].ibData, item.data, 0, 8);
+					rowNodeInfo.in.seek(rowNodeInfo.startOffset +currentValueArrayStart+columnDescriptors[col].ibData);
+					rowNodeInfo.in.read(item.data);
 /*					System.out.printf("\tInteger64: %s\n",
 							PSTFile.getPropertyDescription(item.entryType, item.entryValueType));	/**/
 					break;
 
 				default:// Four byte data
-					item.entryValueReference = (int)PSTObject.convertLittleEndianBytesToLong(rowNodeInfo.data,
-							currentValueArrayStart+columnDescriptors[col].ibData,
-							currentValueArrayStart+columnDescriptors[col].ibData+4);
+
+					/*
+					if (numberOfIndexLevels > 0 ) {
+						System.out.println("here");
+						System.out.println(rowNodeInfo.length());
+						PSTObject.printHexFormatted(rowNodeInfo, true);
+						System.exit(0);
+					}
+					 */
+
+					//item.entryValueReference = (int)PSTObject.convertLittleEndianBytesToLong(rowNodeInfo, currentValueArrayStart+columnDescriptors[col].ibData, currentValueArrayStart+columnDescriptors[col].ibData+4);
+					item.entryValueReference = (int)rowNodeInfo.seekAndReadLong(currentValueArrayStart+columnDescriptors[col].ibData, 4);
 					if ( columnDescriptors[col].type == 0x0003 ||
 						 columnDescriptors[col].type == 0x0004 ||
 						 columnDescriptors[col].type == 0x000A ) {
@@ -188,10 +239,18 @@ class PSTTable7C extends PSTTable {
 								PSTFile.getPropertyDescription(item.entryType, item.entryValueType));	/**/
 						item.data = new byte[0];
 						break;
-					} else {					
+					} else {
 						NodeInfo entryInfo = getNodeInfo(item.entryValueReference);
+						if (entryInfo == null) {
+							System.out.println(dataSetNumber);
+							System.out.println(this);
+							System.exit(0);
+
+						}
 						item.data = new byte[entryInfo.length()];
-						System.arraycopy(entryInfo.data, entryInfo.startOffset, item.data, 0, item.data.length);
+						//System.arraycopy(entryInfo, 0, item.data, 0, item.data.length);
+						entryInfo.in.seek(entryInfo.startOffset);
+						entryInfo.in.read(item.data);
 					}
 /*
 					if ( item.entryValueType != 0x001F ) {
@@ -211,12 +270,14 @@ class PSTTable7C extends PSTTable {
 /**/
 					break;
 				}
-				
+
 				currentItem.put(item.entryType, item);
 				
 				description += item.toString()+"\n\n";
 			}
 			items.add(dataSetNumber, currentItem);
+			dataSetNumber++;
+			currentValueArrayStart += TCI_bm;
 		}
 		
 //		System.out.println(description);
@@ -225,12 +286,19 @@ class PSTTable7C extends PSTTable {
 	}
 	
 	class ColumnDescriptor {
-		ColumnDescriptor(byte[] data, int offset) {
-			type = (int)(PSTObject.convertLittleEndianBytesToLong(data, offset, offset+2) & 0xFFFF);
-			id = (int)(PSTObject.convertLittleEndianBytesToLong(data, offset+2, offset+4) & 0xFFFF);
-			ibData = (int)(PSTObject.convertLittleEndianBytesToLong(data, offset+4, offset+6) & 0xFFFF);
-			cbData = (int)data[offset+6] & 0xFF;
-			iBit = (int)data[offset+7] & 0xFF;
+		ColumnDescriptor(NodeInfo nodeInfo, int offset)
+				throws PSTException, IOException
+		{
+			//type = (int)(PSTObject.convertLittleEndianBytesToLong(data, offset, offset+2) & 0xFFFF);
+			type = ((int)nodeInfo.seekAndReadLong(offset, 2) & 0xFFFF);
+			//id = (int)(PSTObject.convertLittleEndianBytesToLong(data, offset+2, offset+4) & 0xFFFF);
+			id = (int)(nodeInfo.seekAndReadLong(offset+2, 2) & 0xFFFF);
+			//ibData = (int)(PSTObject.convertLittleEndianBytesToLong(data, offset+4, offset+6) & 0xFFFF);
+			ibData = (int)(nodeInfo.seekAndReadLong(offset+4, 2) & 0xFFFF);
+			//cbData = (int)data[offset+6] & 0xFF;
+			cbData = (int)nodeInfo.in.read() & 0xFF;
+			//iBit = (int)data[offset+7] & 0xFF;
+			iBit = (int)nodeInfo.in.read() & 0xFF;
 		}
 
 		int		type;
@@ -239,7 +307,8 @@ class PSTTable7C extends PSTTable {
 		int		cbData;
 		int		iBit;
 	}
-	
+
+	@Override
 	public int getRowCount() {
 		return items.size();
 	}
@@ -259,7 +328,8 @@ class PSTTable7C extends PSTTable {
 		
 		return items.get(itemNumber);
 	}
-	
+
+	@Override
 	public String toString() {
 		return this.description;
 	}

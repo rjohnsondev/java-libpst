@@ -29,26 +29,32 @@ class PSTDescriptor {
 		pstFile = theFile;
 		
 		// we need to get out the local descriptor which will give us descriptor node lookups for the file location of larger blobs of data
-		PSTFile.PSTFileBlock dataBlock = pstFile.readLeaf(localDescriptorsOffsetIndexIdentifier);
-		this.children = processDescriptor(dataBlock.data);
+		PSTNodeInputStream dataBlock = pstFile.readLeaf(localDescriptorsOffsetIndexIdentifier);
+		//byte[] tmp = new byte[1024];
+		//dataBlock.read(tmp);
+		//PSTObject.printHexFormatted(tmp, true);
+		this.children = processDescriptor(dataBlock);
 	}
 	
 	HashMap<Integer, PSTDescriptorItem> getChildren() {
 		return this.children;
 	}
 	
-	private HashMap<Integer, PSTDescriptorItem> processDescriptor(byte[] data)
+	private HashMap<Integer, PSTDescriptorItem> processDescriptor(PSTNodeInputStream in)
 		throws PSTException, IOException
 	{
 		
 		// make sure the signature is correct
-		if (data[0] != 0x2) {
-			throw new PSTException("Unable to process descriptor node, bad signature: "+data[0]);
+		in.seek(0);
+		int sig = in.read();
+		if (sig != 0x2) {
+			throw new PSTException("Unable to process descriptor node, bad signature: "+sig);
 		}
 
 		HashMap<Integer, PSTDescriptorItem> output = new HashMap<Integer, PSTDescriptorItem>();
 		
-		int numberOfItems = (int)PSTObject.convertLittleEndianBytesToLong(data, 2, 4);
+		//int numberOfItems = (int)PSTObject.convertLittleEndianBytesToLong(data, 2, 4);
+		int numberOfItems = (int)in.seekAndReadLong(2, 2);
 		int offset;
 		if (this.pstFile.getPSTFileType() == PSTFile.PST_TYPE_ANSI) {
 			offset = 4;
@@ -56,13 +62,19 @@ class PSTDescriptor {
 			offset = 8;
 		}
 		
+		byte[] data = new byte[(int)in.length()];
+		in.seek(0);
+		in.read(data);
+
 		for (int x = 0; x < numberOfItems; x++) {
-			
+
+
 			PSTDescriptorItem item = new PSTDescriptorItem(data, offset, pstFile);
 
-			byte[] subNodeData = item.getSubNodeData();
+			PSTNodeInputStream subNodeData = item.getSubNodeData();
+
 			if ( subNodeData != null) {
-				if (subNodeData[0] == 0x2) {
+				if (subNodeData.read() == 0x2) {
 					// recurse baby
 					item.setSubNodeDescriptorItems(processDescriptor(subNodeData));
 					output.putAll(item.getSubNodeDescriptorItems());

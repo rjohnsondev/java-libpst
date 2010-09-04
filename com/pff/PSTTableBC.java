@@ -15,11 +15,11 @@ class PSTTableBC extends PSTTable {
 	
 	private HashMap<Integer, PSTTableBCItem> items = new HashMap<Integer, PSTTableBCItem>();
 	
-	PSTTableBC(byte[] data, int[] offsets)
-		throws PSTException
+	PSTTableBC(PSTNodeInputStream in)
+		throws PSTException, java.io.IOException
 	{
-		super(data, offsets, new HashMap<Integer, PSTDescriptorItem>());
-		data = null;	// No direct access to data!
+		super(in, new HashMap<Integer, PSTDescriptorItem>());
+		//data = null;	// No direct access to data!
 		
 
 		if (tableTypeByte != 0xffffffbc)
@@ -29,20 +29,31 @@ class PSTTableBC extends PSTTable {
 		}
 
 		// go through each of the entries.
-		NodeInfo keyTableInfo = getNodeInfo(hidRoot);
-		numberOfKeys = (keyTableInfo.endOffset - keyTableInfo.startOffset) / (sizeOfItemKey+sizeOfItemValue);
+		//byte[] keyTableInfo = getNodeInfo(hidRoot);
+		NodeInfo keyTableInfoNodeInfo = getNodeInfo(hidRoot);
+		byte[] keyTableInfo = new byte[keyTableInfoNodeInfo.length()];
+		keyTableInfoNodeInfo.in.seek(keyTableInfoNodeInfo.startOffset);
+		keyTableInfoNodeInfo.in.read(keyTableInfo);
+
+		//PSTObject.printHexFormatted(keyTableInfo, true);
+		//System.out.println(in.length());
+		//System.exit(0);
+		numberOfKeys = keyTableInfo.length / (sizeOfItemKey+sizeOfItemValue);
 
 		description += ("Number of entries: "+numberOfKeys+"\n");
 
 		// Read the key table
-		int offset = keyTableInfo.startOffset;
+		int offset = 0;
 		for (int x = 0; x < numberOfKeys; x++) {
 			
 			PSTTableBCItem item = new PSTTableBCItem();
 			item.itemIndex = x;
-			item.entryType =(int)PSTObject.convertLittleEndianBytesToLong(keyTableInfo.data, offset+0, offset+2);
-			item.entryValueType = (int)PSTObject.convertLittleEndianBytesToLong(keyTableInfo.data, offset+2, offset+4);
-			item.entryValueReference = (int)PSTObject.convertLittleEndianBytesToLong(keyTableInfo.data, offset+4, offset+8);
+			item.entryType =(int)PSTObject.convertLittleEndianBytesToLong(keyTableInfo, offset+0, offset+2);
+			//item.entryType =(int)in.seekAndReadLong(offset, 2);
+			item.entryValueType = (int)PSTObject.convertLittleEndianBytesToLong(keyTableInfo, offset+2, offset+4);
+			//item.entryValueType = (int)in.seekAndReadLong(offset+2, 2);
+			item.entryValueReference = (int)PSTObject.convertLittleEndianBytesToLong(keyTableInfo, offset+4, offset+8);
+			//item.entryValueReference = (int)in.seekAndReadLong(offset+4, 4);
 
 			// Data is in entryValueReference for all types <= 4 bytes long
 			switch ( item.entryValueType ) {
@@ -76,8 +87,10 @@ class PSTTableBC extends PSTTable {
 			default:
 				// Is it in the local heap?
 				item.isExternalValueReference = true; // Assume not
-				NodeInfo nodeInfo = getNodeInfo(item.entryValueReference);
-				if ( nodeInfo == null ) {
+				//System.out.println(item.entryValueReference);
+				//byte[] nodeInfo = getNodeInfo(item.entryValueReference);
+				NodeInfo nodeInfoNodeInfo = getNodeInfo(item.entryValueReference);
+				if ( nodeInfoNodeInfo == null ) {
 					// It's an external reference that we don't deal with here.
 /*
 					System.out.printf("%s: %shid 0x%08X\n",
@@ -87,8 +100,12 @@ class PSTTableBC extends PSTTable {
 /**/
 				} else {
 					// Make a copy of the data
-					item.data = new byte[nodeInfo.endOffset-nodeInfo.startOffset];
-					System.arraycopy(nodeInfo.data, nodeInfo.startOffset, item.data, 0, item.data.length);
+					//item.data = new byte[nodeInfo.endOffset-nodeInfo.startOffset];
+					byte[] nodeInfo = new byte[nodeInfoNodeInfo.length()];
+					nodeInfoNodeInfo.in.seek(nodeInfoNodeInfo.startOffset);
+					nodeInfoNodeInfo.in.read(nodeInfo);
+					item.data = nodeInfo; // should be new array, so just use it
+					//System.arraycopy(nodeInfo.data, nodeInfo.startOffset, item.data, 0, item.data.length);
 					item.isExternalValueReference = false;
 /*				
 					if ( item.entryValueType == 0x1f ||

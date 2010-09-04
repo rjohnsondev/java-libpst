@@ -712,10 +712,11 @@ public class PSTMessage extends PSTObject {
 				this.localDescriptorItems.containsKey(recipientTableKey))
 			{
 				PSTDescriptorItem item = this.localDescriptorItems.get(recipientTableKey);
-				byte[] data = item.getData();
-				if (data != null && data.length > 0) {
-					recipientTable = new PSTTable7C(data, item.getBlockOffsets(), item.getSubNodeDescriptorItems());
-				}
+				recipientTable = new PSTTable7C(new PSTNodeInputStream(pstFile, item), item.getSubNodeDescriptorItems());
+				//byte[] data = item.getData();
+				//if (data != null && data.length > 0) {
+					//recipientTable = new PSTTable7C(data, item.getBlockOffsets(), item.getSubNodeDescriptorItems());
+				//}
 			}
 		} catch ( Exception e ) {
 			e.printStackTrace();
@@ -763,10 +764,11 @@ public class PSTMessage extends PSTObject {
 			this.localDescriptorItems.containsKey(attachmentTableKey))
 		{
 			PSTDescriptorItem item = this.localDescriptorItems.get(attachmentTableKey);
-			byte[] data = item.getData();
-			if (data != null && data.length > 0) {
-				attachmentTable = new PSTTable7C(data, item.getBlockOffsets(), item.getSubNodeDescriptorItems());
-			}		
+			attachmentTable = new PSTTable7C(new PSTNodeInputStream(pstFile, item), item.getSubNodeDescriptorItems());
+			//byte[] data = item.getData();
+			//if (data != null && data.length > 0) {
+				//attachmentTable = new PSTTable7C(data, item.getBlockOffsets(), item.getSubNodeDescriptorItems());
+			//}
 		}
 	}
 	
@@ -821,6 +823,7 @@ public class PSTMessage extends PSTObject {
 			return 0;
 		}
 
+
 		// still nothing? must be no attachments...
 		if ( this.attachmentTable == null ) {
 			return 0;
@@ -839,6 +842,8 @@ public class PSTMessage extends PSTObject {
 		throws PSTException, IOException
 	{
 		this.processAttachments();
+		//System.out.println(this.attachmentTable.getRowCount());
+		//System.out.println(this.attachmentTable);
 		
 		int attachmentCount = 0;
 		if ( this.attachmentTable != null ) {
@@ -860,7 +865,8 @@ public class PSTMessage extends PSTObject {
 		// try and decode it
 		byte[] attachmentData = descriptorItem.getData();
 		if ( attachmentData != null && attachmentData.length > 0 ) {
-			PSTTableBC attachmentDetailsTable = new PSTTableBC(descriptorItem.getData(), descriptorItem.getBlockOffsets());
+			//PSTTableBC attachmentDetailsTable = new PSTTableBC(descriptorItem.getData(), descriptorItem.getBlockOffsets());
+			PSTTableBC attachmentDetailsTable = new PSTTableBC(new PSTNodeInputStream(pstFile, descriptorItem));
 		
 			// create our all-precious attachment object.
 			// note that all the information that was in the c7 table is repeated in the eb table in attachment data.

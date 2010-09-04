@@ -68,4 +68,10 @@ public class PSTMessageStore extends PSTObject {
 		}
 		return "";
 	}
+
+
+	public void getDetails() {
+		System.out.println(this.items);
+	}
+
 }

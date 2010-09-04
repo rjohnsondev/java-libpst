@@ -6,7 +6,7 @@ import java.nio.charset.Charset;
 import java.util.*;
 import java.io.*;
 
-import com.pff.PSTFile.PSTFileBlock;
+//import com.pff.PSTFile.PSTFileBlock;
 import java.io.ByteArrayInputStream;
 
 /**
@@ -35,8 +35,9 @@ public class PSTObject {
 		this.pstFile = theFile;
 		this.descriptorIndexNode = descriptorIndexNode;
 
-		descriptorIndexNode.readData(theFile);
-		PSTTableBC table = new PSTTableBC(descriptorIndexNode.dataBlock.data, descriptorIndexNode.dataBlock.blockOffsets);
+		//descriptorIndexNode.readData(theFile);
+		//PSTTableBC table = new PSTTableBC(descriptorIndexNode.dataBlock.data, descriptorIndexNode.dataBlock.blockOffsets);
+		PSTTableBC table = new PSTTableBC(new PSTNodeInputStream(pstFile, pstFile.getOffsetIndexNode(descriptorIndexNode.dataOffsetIndexIdentifier)));
 		//System.out.println(table);
 		this.items = table.getItems();
 		
@@ -452,7 +453,7 @@ public class PSTObject {
 	 * @param data
 	 * @return long version of the data
 	 */
-	protected static long convertLittleEndianBytesToLong(byte[] data) {
+	public static long convertLittleEndianBytesToLong(byte[] data) {
 		return convertLittleEndianBytesToLong(data, 0, data.length);
 	}
 	/**
@@ -545,8 +546,9 @@ public class PSTObject {
 	static PSTObject detectAndLoadPSTObject(PSTFile theFile, DescriptorIndexNode folderIndexNode)
 		throws IOException, PSTException
 	{
-		folderIndexNode.readData(theFile);
-		PSTTableBC table = new PSTTableBC(folderIndexNode.dataBlock.data, folderIndexNode.dataBlock.blockOffsets);
+		//folderIndexNode.readData(theFile);
+		//PSTTableBC table = new PSTTableBC(folderIndexNode.dataBlock.data, folderIndexNode.dataBlock.blockOffsets);
+		PSTTableBC table = new PSTTableBC(new PSTNodeInputStream(theFile, theFile.getOffsetIndexNode(folderIndexNode.dataOffsetIndexIdentifier)));
 
 		// get the table items and look at the types we are dealing with
 		Set<Integer> keySet = table.getItems().keySet();

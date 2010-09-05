@@ -195,7 +195,12 @@ public class TestGui {
         		}
         		if (node.getUserObject() instanceof PSTFolder) {
 	        		PSTFolder folderValue = (PSTFolder)node.getUserObject();
+					try {
 	        		selectFolder(folderValue);
+					} catch(Exception err) {
+						System.out.println("unable to change folder");
+						err.printStackTrace();
+					}
         		}
         	}
         });
@@ -292,7 +297,9 @@ public class TestGui {
 		}
 	}
 
-	void selectFolder(PSTFolder folder) {
+	void selectFolder(PSTFolder folder)
+			throws IOException, PSTException
+	{
 		// load up the non-folder children.
 		
 		emailTableModel.setFolder(folder);
@@ -341,7 +348,8 @@ class EmailTableModel extends AbstractTableModel {
     
     public int getRowCount() { 
     	try {
-    		return theFolder.getEmailCount();
+			//System.out.println("Email count: "+theFolder.getEmailCount());
+    		return theFolder.getContentCount();
     	} catch (Exception err) {
     		err.printStackTrace();
     		System.exit(0);
@@ -370,6 +378,10 @@ class EmailTableModel extends AbstractTableModel {
     	// get the child at...
     	try {
 			PSTMessage next = getMessageAtRow(row);
+
+			if (next == null) {
+				return null;
+			}
     		
 			switch (col) {
 				case 0:
@@ -399,7 +411,9 @@ class EmailTableModel extends AbstractTableModel {
     }
     public boolean isCellEditable(int row, int col) { return false; }
     
-    public void setFolder(PSTFolder theFolder) {
+    public void setFolder(PSTFolder theFolder)
+			throws PSTException, IOException
+	{
     	theFolder.moveChildCursorTo(0);
     	this.theFolder = theFolder;
     	cache = new HashMap();

@@ -17,7 +17,12 @@ import java.io.*;
 class PSTTable7C extends PSTTable {
 
 	private List<HashMap<Integer, PSTTable7CItem>> items = new ArrayList<HashMap<Integer, PSTTable7CItem>>();
-	//private int numberOfDataSets = 0;
+	private int numberOfDataSets = 0;
+	private int cCols = 0;
+	private int TCI_bm = 0;
+	private NodeInfo rowNodeInfo = null;
+	private int TCI_1b = 0;
+	private int overrideCol = -1;
 	
 	protected PSTTable7C(PSTNodeInputStream in, HashMap<Integer, PSTDescriptorItem> subNodeDescriptorItems)
 		throws PSTException, java.io.IOException
@@ -28,7 +33,7 @@ class PSTTable7C extends PSTTable {
 		throws PSTException, java.io.IOException
 	{
 		super(in, subNodeDescriptorItems);
-		
+
 		if (tableTypeByte != 0x7c)
 		{
 			System.out.println(Long.toHexString(this.tableTypeByte));
@@ -42,7 +47,7 @@ class PSTTable7C extends PSTTable {
 		
 		// get the TCINFO header information
 		//int cCols = (int)PSTObject.convertLittleEndianBytesToLong(tcHeaderNode, offset+1, offset+2);
-		int cCols = (int)tcHeaderNode.seekAndReadLong(offset+1, 1);
+		cCols = (int)tcHeaderNode.seekAndReadLong(offset+1, 1);
 		@SuppressWarnings("unused")
 		//int TCI_4b = (int)PSTObject.convertLittleEndianBytesToLong(tcHeaderNode, offset+2, offset+4);
 		int TCI_4b = (int)tcHeaderNode.seekAndReadLong(offset+2, 2);
@@ -50,9 +55,9 @@ class PSTTable7C extends PSTTable {
 		//int TCI_2b = (int)PSTObject.convertLittleEndianBytesToLong(tcHeaderNode, offset+4, offset+6);
 		int TCI_2b = (int)tcHeaderNode.seekAndReadLong(offset+4, 2);
 		//int TCI_1b = (int)PSTObject.convertLittleEndianBytesToLong(tcHeaderNode, offset+6, offset+8);
-		int TCI_1b = (int)tcHeaderNode.seekAndReadLong(offset+6, 2);
+		TCI_1b = (int)tcHeaderNode.seekAndReadLong(offset+6, 2);
 		//int TCI_bm = (int)PSTObject.convertLittleEndianBytesToLong(tcHeaderNode, offset+8, offset+10);
-		int TCI_bm = (int)tcHeaderNode.seekAndReadLong(offset+8, 2);
+		TCI_bm = (int)tcHeaderNode.seekAndReadLong(offset+8, 2);
 		//int hidRowIndex = (int)PSTObject.convertLittleEndianBytesToLong(tcHeaderNode, offset+10, offset+14);
 		int hidRowIndex = (int)tcHeaderNode.seekAndReadLong(offset+10, 4);
 		//int hnidRows = (int)PSTObject.convertLittleEndianBytesToLong(tcHeaderNode, offset+14, offset+18);// was 18
@@ -61,7 +66,6 @@ class PSTTable7C extends PSTTable {
 
 		// 22... column descriptors
 		offset += 22;
-		int overrideCol = -1;
 		if ( cCols != 0 ) {
 			columnDescriptors = new ColumnDescriptor[cCols];
 			
@@ -99,7 +103,7 @@ class PSTTable7C extends PSTTable {
 		}
 		
 		// Read the Row Matrix
-		NodeInfo rowNodeInfo = getNodeInfo(hnidRows);
+		rowNodeInfo = getNodeInfo(hnidRows);
 		//numberOfDataSets = (rowNodeInfo.endOffset - rowNodeInfo.startOffset) / TCI_bm;
 
 		description += 
@@ -109,16 +113,58 @@ class PSTTable7C extends PSTTable {
 			"hidRowIndex: "+hidRowIndex+"\n"+
 			"hnidRows: "+hnidRows+"\n";
 
+		int blockSize = 8176;
+		int numberOfBlocks = rowNodeInfo.length() / blockSize;
+		int numberOfRowsPerBlock = blockSize / TCI_bm;
+		int blockPadding = blockSize - (numberOfRowsPerBlock * TCI_bm);
+		numberOfDataSets = (numberOfBlocks * numberOfRowsPerBlock) + ((rowNodeInfo.length() % blockSize) / TCI_bm);
+	}
+
+	/**
+	 * get the items parsed out of this table.
+	 * @return
+	 */
+	List<HashMap<Integer, PSTTable7CItem>> getItems()
+			throws PSTException, IOException
+	{
+		return getItems(-1, -1);
+	}
+	List<HashMap<Integer, PSTTable7CItem>> getItems(int startAtRecord, int numberOfRecordsToReturn)
+			throws PSTException, IOException
+	{
+		items = new ArrayList<HashMap<Integer, PSTTable7CItem>>();
+
+		// okay, work out the number of records we have
+		int blockSize = 8176;
+		int numberOfBlocks = rowNodeInfo.length() / blockSize;
+		int numberOfRowsPerBlock = blockSize / TCI_bm;
+		int blockPadding = blockSize - (numberOfRowsPerBlock * TCI_bm);
+		numberOfDataSets = (numberOfBlocks * numberOfRowsPerBlock) + ((rowNodeInfo.length() % blockSize) / TCI_bm);
+
+		if (startAtRecord == -1) {
+			numberOfRecordsToReturn = numberOfDataSets;
+			startAtRecord = 0;
+		}
+
 		// repeat the reading process for every dataset
-		int currentValueArrayStart = 0;
+		int currentValueArrayStart =
+				((startAtRecord / numberOfRowsPerBlock) * blockSize) +
+				((startAtRecord % numberOfRowsPerBlock) * TCI_bm);
+
+		if (numberOfRecordsToReturn > this.getRowCount() - startAtRecord) {
+			numberOfRecordsToReturn = this.getRowCount() - startAtRecord;
+		}
+
 		int dataSetNumber = 0;
-		while ( currentValueArrayStart + ((cCols+7)/8) + TCI_1b <= rowNodeInfo.length())
+		//while ( currentValueArrayStart + ((cCols+7)/8) + TCI_1b <= rowNodeInfo.length())
+		for (int rowCounter = 0; rowCounter < numberOfRecordsToReturn; rowCounter++)
 		{
 			HashMap<Integer, PSTTable7CItem> currentItem = new HashMap<Integer, PSTTable7CItem>();
 			// add on some padding for block boundries?
 			if ((currentValueArrayStart % 8176) > 8176 - TCI_bm) {
 				// adjust!
-				currentValueArrayStart += 8176 - (currentValueArrayStart % 8176);
+				//currentValueArrayStart += 8176 - (currentValueArrayStart % 8176);
+				currentValueArrayStart += blockPadding;
 				if (currentValueArrayStart + TCI_bm < rowNodeInfo.length()) {
 					continue;
 				}
@@ -282,7 +328,7 @@ class PSTTable7C extends PSTTable {
 		
 //		System.out.println(description);
 
-		ReleaseRawData();
+		return items;
 	}
 	
 	class ColumnDescriptor {
@@ -310,15 +356,7 @@ class PSTTable7C extends PSTTable {
 
 	@Override
 	public int getRowCount() {
-		return items.size();
-	}
-
-	/**
-	 * get the items parsed out of this table.
-	 * @return
-	 */
-	public List<HashMap<Integer, PSTTable7CItem>> getItems() {
-		return items;
+		return this.numberOfDataSets;
 	}
 	
 	public HashMap<Integer, PSTTable7CItem> getItem(int itemNumber) {

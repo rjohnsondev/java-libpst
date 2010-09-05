@@ -48,19 +48,11 @@ public class PSTFolder extends PSTObject {
 	public Vector<PSTFolder> getSubFolders()
 		throws PSTException, IOException
 	{
+		initSubfoldersTable();
 		Vector<PSTFolder> output = new Vector<PSTFolder>();
-
-		// try and get subfolders?
 		if (this.hasSubfolders()) {
-			long folderDescriptorIndex = this.descriptorIndexNode.descriptorIdentifier + 11;
 			try {
-				DescriptorIndexNode folderDescriptor = this.pstFile.getDescriptorIndexNode(folderDescriptorIndex);
-				HashMap<Integer, PSTDescriptorItem> tmp = null;
-				if (folderDescriptor.localDescriptorsOffsetIndexIdentifier > 0) {
-					tmp = new PSTDescriptor(pstFile, folderDescriptor.localDescriptorsOffsetIndexIdentifier).getChildren();
-				}
-				PSTTable7C folderDescriptorTable = new PSTTable7C(new PSTNodeInputStream(pstFile, pstFile.getOffsetIndexNode(folderDescriptor.dataOffsetIndexIdentifier)), tmp);
-				List<HashMap<Integer, PSTTable7CItem>> itemMapSet = folderDescriptorTable.getItems();
+				List<HashMap<Integer, PSTTable7CItem>> itemMapSet = subfoldersTable.getItems();
 				for (HashMap<Integer, PSTTable7CItem> itemMap : itemMapSet) {
 					PSTTable7CItem item = itemMap.get(26610);
 					PSTFolder folder = (PSTFolder)PSTObject.detectAndLoadPSTObject(pstFile, item.entryValueReference);
@@ -71,99 +63,71 @@ public class PSTFolder extends PSTObject {
 				System.out.println("Can't get child folders for folder "+this.getDisplayName()+"("+this.getDescriptorNodeId()+") child count: "+this.getContentCount()+ " - "+err.toString());
 			}
 		}
-
+		// try and get subfolders?
 		return output;
+	}
+
+	private void initSubfoldersTable()
+			throws IOException, PSTException
+	{
+		if (subfoldersTable != null) {
+			return;
+		}
+
+		if (this.hasSubfolders()) {
+			long folderDescriptorIndex = this.descriptorIndexNode.descriptorIdentifier + 11;
+			try {
+				DescriptorIndexNode folderDescriptor = this.pstFile.getDescriptorIndexNode(folderDescriptorIndex);
+				HashMap<Integer, PSTDescriptorItem> tmp = null;
+				if (folderDescriptor.localDescriptorsOffsetIndexIdentifier > 0) {
+					tmp = new PSTDescriptor(pstFile, folderDescriptor.localDescriptorsOffsetIndexIdentifier).getChildren();
+				}
+				subfoldersTable = new PSTTable7C(new PSTNodeInputStream(pstFile, pstFile.getOffsetIndexNode(folderDescriptor.dataOffsetIndexIdentifier)), tmp);
+			} catch (PSTException err) {
+				// hierachy node doesn't exist
+				System.out.println("Can't get child folders for folder "+this.getDisplayName()+"("+this.getDescriptorNodeId()+") child count: "+this.getContentCount()+ " - "+err.toString());
+			}
+		}
+
 	}
 
 	/**
 	 * internal vars for the tracking of things..
 	 */
-	private LinkedHashSet<DescriptorIndexNode> subFolders = null;
-	private LinkedHashSet<DescriptorIndexNode> emails = null;
-	private Iterator<DescriptorIndexNode> emailIterator = null;
-	private int emailIteratorPosition = 0;
+	private int currentEmailIndex = 0;
 	private LinkedHashSet<DescriptorIndexNode> otherItems = null;
+
+	private PSTTable7C emailsTable = null;
+	private PSTTable7C subfoldersTable = null;
 	
 	/**
 	 * this method goes through all of the children and sorts them into one of the three hash sets.
 	 * @throws PSTException
 	 * @throws IOException
 	 */
-	private void processChildren()
+	private void initEmailsTable()
 		throws PSTException, IOException
 	{
-		//System.out.println("start processing: "+this.getDisplayName());
-
-		if (this.emailIterator != null) {
-			// we have already processed
+		if (this.emailsTable != null) {
 			return;
 		}
-
-		// create out our sets
-		subFolders = new LinkedHashSet<DescriptorIndexNode>();
-		emails = new LinkedHashSet<DescriptorIndexNode>();
-		otherItems = new LinkedHashSet<DescriptorIndexNode>();
 
 		try {
 			long folderDescriptorIndex = this.descriptorIndexNode.descriptorIdentifier + 12; // +12 lists emails! :D
 			DescriptorIndexNode folderDescriptor = this.pstFile.getDescriptorIndexNode(folderDescriptorIndex);
-			//folderDescriptor.readData(pstFile);
 			HashMap<Integer, PSTDescriptorItem> tmp = null;
 			if (folderDescriptor.localDescriptorsOffsetIndexIdentifier > 0) {
 				 tmp = new PSTDescriptor(pstFile, folderDescriptor.localDescriptorsOffsetIndexIdentifier).getChildren();
 			}
 			//PSTTable7CForFolder folderDescriptorTable = new PSTTable7CForFolder(folderDescriptor.dataBlock.data, folderDescriptor.dataBlock.blockOffsets,tmp, 0x67F2);
-			PSTTable7C folderDescriptorTable = new PSTTable7C(
+			emailsTable = new PSTTable7C(
 					new PSTNodeInputStream(pstFile, pstFile.getOffsetIndexNode(folderDescriptor.dataOffsetIndexIdentifier)),
 					tmp,
 					0x67F2
 			);
-			//PSTObject.printHexFormatted(folderDescriptor.dataBlock.data, true);
-
-			List<HashMap<Integer, PSTTable7CItem>> itemMapSet = folderDescriptorTable.getItems();
-			for (HashMap<Integer, PSTTable7CItem> itemMap : itemMapSet) {
-				PSTTable7CItem item = itemMap.get(0x67F2);
-				//System.out.println(item);
-				if (item.entryValueReference > 5) {
-					//try {
-						DescriptorIndexNode node = pstFile.getDescriptorIndexNode(item.entryValueReference );
-						emails.add(node);
-					//} catch (Exception err ) {
-
-						//System.out.println(folderDescriptorTable);
-						//PSTObject.printHexFormatted(folderDescriptor.dataBlock.data, true);
-					//}
-						//System.out.println("here");
-				}
-			}
 		} catch (Exception err) {
 			System.out.println("Can't get children for folder "+this.getDisplayName()+"("+this.getDescriptorNodeId()+") child count: "+this.getContentCount()+ " - "+err.toString());
-			//err.printStackTrace();
 		}
-
-		/*
-		LinkedHashMap<Integer, DescriptorIndexNode> childDescriptors = pstFile.getChildrenDescriptors(this.descriptorIndexNode.descriptorIdentifier);
-		Iterator<DescriptorIndexNode> iterator = childDescriptors.values().iterator();
-		while (iterator.hasNext()) {
-			DescriptorIndexNode childDescriptor = (DescriptorIndexNode)iterator.next();
-
-			// just kinda assuming that all folders are less than this magic number.
-			if (childDescriptor.descriptorIdentifier < 0x100000) {
-				subFolders.add(childDescriptor);
-			} else if (childDescriptor.descriptorIdentifier < 0x200000) {
-				// we are something else...
-				// like a wunderBar or FolderDesign, or named view or whatever
-				otherItems.add(childDescriptor);
-//				System.out.println("unknown child type: " + childDescriptor.descriptorIdentifier);
-			} else if (childDescriptor.descriptorIdentifier > 0x200000) {
-				emails.add(childDescriptor);
-			}
-		}
-		 *
-		 */
-		emailIterator = emails.iterator();
-		//System.out.println("Done processing: "+this.getDisplayName());
-		//System.out.println("done");
 	}
 	
 	/**
@@ -178,20 +142,26 @@ public class PSTFolder extends PSTObject {
 	public Vector<PSTObject> getChildren(int numberToReturn)
 		throws PSTException, IOException
 	{
-		processChildren();
+		initEmailsTable();
 		
 		Vector<PSTObject> output = new Vector<PSTObject>();
+		if (this.emailsTable == null) {
+			return output;
+		}
+		List<HashMap<Integer, PSTTable7CItem>> rows = this.emailsTable.getItems(currentEmailIndex, numberToReturn);
 		
-		for (int x = 0; x < numberToReturn; x++) {
-			if (!emailIterator.hasNext())
+		for (int x = 0; x < rows.size(); x++) {
+			if (this.currentEmailIndex == this.getContentCount())
 			{
 				// no more!
 				break;
 			}
-			DescriptorIndexNode childDescriptor = (DescriptorIndexNode)emailIterator.next();
+			// get the emails from the rows
+			PSTTable7CItem emailRow = rows.get(x).get(0x67F2);
+			DescriptorIndexNode childDescriptor = pstFile.getDescriptorIndexNode(emailRow.entryValueReference);
 			PSTObject child = PSTObject.detectAndLoadPSTObject(pstFile, childDescriptor);
 			output.add(child);
-			emailIteratorPosition++;
+			currentEmailIndex++;
 		}
 
 		return output;
@@ -207,21 +177,24 @@ public class PSTFolder extends PSTObject {
 	public PSTObject getNextChild()
 		throws PSTException, IOException
 	{
-		processChildren();
-		
-		if (!emailIterator.hasNext()) {
-			// we have no more!!
+		initEmailsTable();
+
+		if (this.emailsTable == null) {
 			return null;
 		}
-		
-		DescriptorIndexNode childDescriptor = (DescriptorIndexNode)emailIterator.next();
-		PSTObject child = PSTObject.detectAndLoadPSTObject(pstFile, childDescriptor);
-		if (child instanceof PSTFolder) {
-			System.out.println("ERROR: "+child.getDisplayName() + " - " + childDescriptor.descriptorIdentifier);
-			System.exit(0);
+		List<HashMap<Integer, PSTTable7CItem>> rows = this.emailsTable.getItems(currentEmailIndex, 1);
+
+		if (this.currentEmailIndex == this.getContentCount())
+		{
+			// no more!
+			return null;
 		}
-		emailIteratorPosition++;
-		
+		// get the emails from the rows
+		PSTTable7CItem emailRow = rows.get(0).get(0x67F2);
+		DescriptorIndexNode childDescriptor = pstFile.getDescriptorIndexNode(emailRow.entryValueReference);
+		PSTObject child = PSTObject.detectAndLoadPSTObject(pstFile, childDescriptor);
+		currentEmailIndex++;
+
 		return child;
 	}
 	
@@ -233,26 +206,16 @@ public class PSTFolder extends PSTObject {
 	public void moveChildCursorTo(int newIndex)
 			throws IOException, PSTException
 	{
-		// this really needs to be made more efficient...
-		this.processChildren();
+		initEmailsTable();
+
 		if (newIndex < 1) {
-			emailIteratorPosition = 0;
-			emailIterator = emails.iterator();
+			currentEmailIndex = 0;
 			return;
 		}
-		if (newIndex < emailIteratorPosition) {
-			// bah! we need to go backwards :(
-			emailIteratorPosition = 0;
-			emailIterator = emails.iterator();
+		if (newIndex > this.getContentCount()) {
+			newIndex = this.getContentCount();
 		}
-		
-		// move the iterator along until we get to the record.
-		// this really sucks, a bit of forethought would have helped here
-		for (int x = emailIteratorPosition; x < newIndex && emailIterator.hasNext(); x++) {
-//			DescriptorIndexNode childDescriptor = (DescriptorIndexNode)emailIterator.next();
-			emailIterator.next();
-		}
-		emailIteratorPosition = newIndex;
+		currentEmailIndex = newIndex;
 	}
 	
 	/**
@@ -264,8 +227,8 @@ public class PSTFolder extends PSTObject {
 	public int getSubFolderCount()
 		throws IOException, PSTException
 	{
-		processChildren();
-		return this.subFolders.size();
+		this.initSubfoldersTable();
+		return this.subfoldersTable.getRowCount();
 	}
 	
 	/**
@@ -274,13 +237,13 @@ public class PSTFolder extends PSTObject {
 	 * @return number of emails in this folder (as counted)
 	 * @throws IOException
 	 * @throws PSTException
-	 */
 	public int getEmailCount()
 		throws IOException, PSTException
 	{
-		processChildren();
-		return this.emails.size();
+		this.initEmailsTable();
+		return this.emailsTable.getRowCount();
 	}
+	 */
 
 	
 	public int getFolderType() {

@@ -126,7 +126,7 @@ public class PSTFolder extends PSTObject {
 					0x67F2
 			);
 		} catch (Exception err) {
-			System.out.println("Can't get children for folder "+this.getDisplayName()+"("+this.getDescriptorNodeId()+") child count: "+this.getContentCount()+ " - "+err.toString());
+			//System.out.println("Can't get children for folder "+this.getDisplayName()+"("+this.getDescriptorNodeId()+") child count: "+this.getContentCount()+ " - "+err.toString());
 		}
 	}
 	

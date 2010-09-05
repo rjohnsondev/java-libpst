@@ -140,7 +140,7 @@ class PSTTableBC extends PSTTable {
 			description += item.toString()+"\n\n";
 		}
 
-		ReleaseRawData();
+		releaseRawData();
 	}
 	
 	

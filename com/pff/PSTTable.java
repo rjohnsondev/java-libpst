@@ -18,6 +18,8 @@ class PSTTable {
 	protected String tableType;
 	protected byte tableTypeByte;
 	protected int hidUserRoot;
+
+	protected Long[] arrayBlocks = null;
 	
 	// info from the b5 header
 	protected int sizeOfItemKey;
@@ -28,7 +30,7 @@ class PSTTable {
 
 	private PSTNodeInputStream in;
 	
-	private int[][]	rgbiAlloc = null;
+	//private int[][]	rgbiAlloc = null;
 	//private byte[]	data = null;
 	private HashMap<Integer, PSTDescriptorItem> subNodeDescriptorItems = null;
 	
@@ -40,7 +42,7 @@ class PSTTable {
 		this.subNodeDescriptorItems = subNodeDescriptorItems;
 		this.in = in;
 
-		Long[] arrayBlocks = in.getBlockOffsets();
+		arrayBlocks = in.getBlockOffsets();
 
 		// the next two bytes should be the table type (bSig)
 		// 0xEC is HN (Heap-on-Node)
@@ -82,42 +84,12 @@ class PSTTable {
 				throw new PSTException("Unable to parse table, bad table type.  Unknown identifier: 0x"+Long.toHexString(headdata[3]));
 		}
 		
-		// process the page maps
-		rgbiAlloc = new int[arrayBlocks.length][];
-		int blockOffset = 0;
-		for ( int block = 0; block < arrayBlocks.length; ++block ) {
-			// Get offset of HN page map
-			//System.out.println("block: "+blockOffset);
-			int iHeapNodePageMap = (int)in.seekAndReadLong(blockOffset, 2) + blockOffset;
-			int cAlloc = (int)in.seekAndReadLong(iHeapNodePageMap, 2);
-			//int cFree = (int)PSTObject.convertLittleEndianBytesToLong(data, iHeapNodePageMap+2, iHeapNodePageMap+4);
-			iHeapNodePageMap += 4;
-			//description += "Block["+block+"] number of items: "+cAlloc+" allocated, "+cFree+" freed\n";
-			rgbiAlloc[block] = new int[cAlloc+1];	// There are actually cAlloc+1 entries in the array
-			//description += "Page map:\n";
-			//System.out.println("blcok");
-			for (int x = 0; x < cAlloc+1; x++) {
-				rgbiAlloc[block][x] = (int)in.seekAndReadLong(iHeapNodePageMap, 2)
-										+ blockOffset;
-				//System.out.println(rgbiAlloc[block][x]);
-				iHeapNodePageMap += 2;
-				//if (x > 1) {
-				//	description += " "+(rgbiAlloc[block][x] - rgbiAlloc[block][x-1])+"\n";
-				//}
-				//description += "   index"+x+": "+ rgbiAlloc[block][x]+" ("+Long.toHexString(rgbiAlloc[block][x])+")";
-			}
-			//description += "\n";
-
-			// Get offset of next block in data[]
-			blockOffset = arrayBlocks[block].intValue();
-		}
-
-		//System.exit(0);
 
 		hidUserRoot = (int)in.seekAndReadLong(4, 4);		// hidUserRoot
 /*
 		System.out.printf("Table %s: hidUserRoot 0x%08X\n", tableType, hidUserRoot);
 /**/
+
 
 		// all tables should have a BTHHEADER at hnid == 0x20
 		NodeInfo headerNodeInfo = getNodeInfo(0x20);
@@ -157,10 +129,7 @@ class PSTTable {
 	}
 
 
-	protected void ReleaseRawData() {
-		rgbiAlloc = null;
-		//data = null;
-//		arrayBlocks = null;
+	protected void releaseRawData() {
 		subNodeDescriptorItems = null;
 	}
 
@@ -201,17 +170,9 @@ class PSTTable {
 	protected NodeInfo getNodeInfo(int hnid)
 		throws PSTException, IOException
 	{
-		////if ( data == null ) {
-			////throw new PSTException("Accessing PSTTable heap after release!");
-		//}
 
 		// Zero-length node?
 		if ( hnid == 0 ) {
-			//return new NodeInfo(0, 0, data);
-			//throw new PSTException("accessing a hnid of 0??");
-			//byte[] data = new byte[(int)this.in.length()];
-			//in.seek(0);
-			//return data;
 			return new NodeInfo(0, 0, this.in);
 		}
 
@@ -241,25 +202,33 @@ class PSTTable {
 		}
 
 		int whichBlock = (hnid >>> 16);
-		if ( whichBlock > rgbiAlloc.length ) {
+		if ( whichBlock > this.arrayBlocks.length ) {
 			// Block doesn't exist!
 			System.out.printf("getNodeInfo: block doesn't exist! hnid = 0x%08X\n", hnid);
 			System.out.printf("getNodeInfo: block doesn't exist! whichBlock = 0x%08X\n", whichBlock);
-			System.out.println(rgbiAlloc.length);
+			System.out.println(this.arrayBlocks.length);
 			throw new PSTException("wigging out");
 			//return null;
 		}
 
 		// A normal node in a local heap
 		int index = (hnid & 0xFFFF) >> 5;
-		if ( index >= rgbiAlloc[whichBlock].length ) {
+		int blockOffset = 0;
+		if (whichBlock > 0) {
+			blockOffset = arrayBlocks[whichBlock-1].intValue();
+		}
+		// Get offset of HN page map
+		int iHeapNodePageMap = (int)in.seekAndReadLong(blockOffset, 2) + blockOffset;
+		int cAlloc = (int)in.seekAndReadLong(iHeapNodePageMap, 2);
+		if ( index >= cAlloc+1 ) {
 			System.out.printf("getNodeInfo: node index doesn't exist! nid = 0x%08X\n", hnid);
 			return null;
 		}
+		iHeapNodePageMap += (2 * index)+2;
+		int start = (int)in.seekAndReadLong(iHeapNodePageMap, 2) + blockOffset;
+		int end = (int)in.seekAndReadLong(iHeapNodePageMap + 2, 2) + blockOffset;
 
-
-		NodeInfo out = new NodeInfo(rgbiAlloc[whichBlock][index-1], rgbiAlloc[whichBlock][index], in);
-		//System.out.println(hnid+ " - "+out.startOffset);
+		NodeInfo out = new NodeInfo(start, end, in);
 		return out;
 	}
 

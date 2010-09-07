@@ -892,7 +892,7 @@ public class PSTMessage extends PSTObject {
 			throw new PSTException("unable to fetch recipient number "+recipientNumber);
 		}
 
-		HashMap<Integer, PSTTable7CItem> recipientDetails = recipientTable.getItem(recipientNumber);
+		HashMap<Integer, PSTTable7CItem> recipientDetails = recipientTable.getItems().get(recipientNumber);
 		
 		if ( recipientDetails != null ) {
 			return new PSTRecipient(recipientDetails);

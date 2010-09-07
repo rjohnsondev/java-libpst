@@ -34,8 +34,6 @@ public class PSTAttachment extends PSTObject {
 	{
 		PSTNodeInputStream in = null;
 		if ( getIntItem(0x3705) == PSTAttachment.ATTACHMENT_METHOD_EMBEDDED ) {
-			byte[] data = null;
-			int[] blockOffsets = null;
 			PSTTableBCItem item = items.get(0x3701);
 			if ( item.entryValueType == 0x0102 ) {
 				if ( !item.isExternalValueReference )
@@ -65,7 +63,7 @@ public class PSTAttachment extends PSTObject {
 				 */
 			}
 			
-			if ( data == null ) {
+			if ( in == null ) {
 				return null;
 			}
 

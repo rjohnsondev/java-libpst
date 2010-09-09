@@ -16,7 +16,7 @@ import java.io.*;
  */
 class PSTTable7C extends PSTTable {
 
-	private List<HashMap<Integer, PSTTable7CItem>> items = new ArrayList<HashMap<Integer, PSTTable7CItem>>();
+	private List<HashMap<Integer, PSTTable7CItem>> items = null;
 	private int numberOfDataSets = 0;
 	private int cCols = 0;
 	private int TCI_bm = 0;
@@ -116,23 +116,28 @@ class PSTTable7C extends PSTTable {
 		int blockSize = 8176;
 		int numberOfBlocks = rowNodeInfo.length() / blockSize;
 		int numberOfRowsPerBlock = blockSize / TCI_bm;
+		@SuppressWarnings("unused")
 		int blockPadding = blockSize - (numberOfRowsPerBlock * TCI_bm);
 		numberOfDataSets = (numberOfBlocks * numberOfRowsPerBlock) + ((rowNodeInfo.length() % blockSize) / TCI_bm);
 	}
 
 	/**
-	 * get the items parsed out of this table.
+	 * get all the items parsed out of this table.
 	 * @return
 	 */
 	List<HashMap<Integer, PSTTable7CItem>> getItems()
 			throws PSTException, IOException
 	{
-		return getItems(-1, -1);
+		if ( items == null ) {
+			items = getItems(-1, -1);
+		}
+		return items;
 	}
+
 	List<HashMap<Integer, PSTTable7CItem>> getItems(int startAtRecord, int numberOfRecordsToReturn)
 			throws PSTException, IOException
 	{
-		items = new ArrayList<HashMap<Integer, PSTTable7CItem>>();
+		List<HashMap<Integer, PSTTable7CItem>> itemList = new ArrayList<HashMap<Integer, PSTTable7CItem>>();
 
 		// okay, work out the number of records we have
 		int blockSize = 8176;
@@ -321,14 +326,14 @@ class PSTTable7C extends PSTTable {
 				
 				description += item.toString()+"\n\n";
 			}
-			items.add(dataSetNumber, currentItem);
+			itemList.add(dataSetNumber, currentItem);
 			dataSetNumber++;
 			currentValueArrayStart += TCI_bm;
 		}
 		
 //		System.out.println(description);
 
-		return items;
+		return itemList;
 	}
 	
 	class ColumnDescriptor {
@@ -358,15 +363,15 @@ class PSTTable7C extends PSTTable {
 	public int getRowCount() {
 		return this.numberOfDataSets;
 	}
-	
+/* Not used...	
 	public HashMap<Integer, PSTTable7CItem> getItem(int itemNumber) {
 		if ( items == null || itemNumber >= items.size() ) {
 			return null;
 		}
-		
+
 		return items.get(itemNumber);
 	}
-
+/**/
 	@Override
 	public String toString() {
 		return this.description;

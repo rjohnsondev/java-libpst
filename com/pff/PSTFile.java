@@ -18,7 +18,8 @@ public class PSTFile {
 	private static final int MESSAGE_STORE_DESCRIPTOR_IDENTIFIER = 33;
 	private static final int ROOT_FOLDER_DESCRIPTOR_IDENTIFIER = 290;
 
-	public static final int PST_TYPE_ANSI = 14; // MS docs says this should be 15 :/
+	public static final int PST_TYPE_ANSI = 14;
+	protected static final int PST_TYPE_ANSI_2 = 15;
 	public static final int PST_TYPE_UNICODE = 23;
 	
 	// Known GUIDs
@@ -99,6 +100,10 @@ public class PSTFile {
 			byte[] fileTypeBytes = new byte[2];
 			in.seek(10);
 			in.read(fileTypeBytes);
+			// ANSI file types can be 14 or 15:
+			if (fileTypeBytes[0] == PSTFile.PST_TYPE_ANSI_2) {
+				fileTypeBytes[0] = PSTFile.PST_TYPE_ANSI;
+			}
 			if (fileTypeBytes[0] != PSTFile.PST_TYPE_ANSI &&
 				fileTypeBytes[0] != PSTFile.PST_TYPE_UNICODE)
 			{
@@ -117,16 +122,8 @@ public class PSTFile {
 				throw new PSTException("Only unencrypted and compressable PST files are supported at this time"); 
 			}
 			
-			// process the descriptor tree and create our children
-			//buildDescriptorTree(in);
-			
 			// build out name to id map.
-			if (this.getPSTFileType() == PST_TYPE_ANSI) {
-				// TODO: name to id maps!
-				processNameToIdMap(in);
-			} else {
-				processNameToIdMap(in);
-			}
+			processNameToIdMap(in);
 			
 		}  catch (IOException err) {
 			throw new PSTException("Unable to read PST Sig", err);
@@ -174,18 +171,11 @@ public class PSTFile {
 		PSTNodeInputStream nodein = new PSTNodeInputStream(this, off);
 		byte[] tmp = new byte[1024];
 		nodein.read(tmp);
-		//PSTObject.printHexFormatted(tmp, true);
 		PSTTableBC bcTable = new PSTTableBC(nodein);
 
 		HashMap<Integer, PSTTableBCItem> tableItems = (bcTable.getItems());
-		//System.out.println(nodein.length());
-		//System.out.println(bcTable);
-		//System.out.println(tableItems);
-		//System.exit(0);
 		// Get the guids
 		PSTTableBCItem guidEntry = tableItems.get(2);	// PidTagNameidStreamGuid
-		//System.out.println(tableItems);
-		//System.exit(0);
 		guids = getData(guidEntry, localDescriptorItems);
 		int nGuids = guids.length / 16;
 		UUID[] uuidArray = new UUID[nGuids];
@@ -427,13 +417,6 @@ public class PSTFile {
 	}
 	
 
-	/*
-	static class PSTFileBlock {
-		byte[]	data = null;
-		int[]	blockOffsets = null;
-	}
-	 *
-	 */
 	
 	PSTNodeInputStream readLeaf(long bid)
 		throws IOException, PSTException
@@ -445,54 +428,6 @@ public class PSTFile {
 		OffsetIndexItem offsetItem = getOffsetIndexNode(bid);
 		return new PSTNodeInputStream(this, offsetItem);
 
-		/*
-		boolean bInternal = (offsetItem.indexIdentifier & 0x02) != 0;
-
-		byte[] data = new byte[offsetItem.size];
-		in.seek(offsetItem.fileOffset);
-		in.read(data);
-		
-		if ( bInternal ) {
-			// All internal blocks are at least 8 bytes long...
-			if ( offsetItem.size < 8 ) {
-				throw new PSTException("Invalid internal block size");
-			}
-
-			if ( data[0] == 1 )
-			{
-				// (X)XBLOCK
-				//if ( data[1] == 2 ) {
-					//throw new PSTException("XXBLOCKS not supported yet!");
-				//}
-
-				ret = new PSTNodeInputStream(this, offsetItem);
-				//ret = this.processArray(in, data);
-				
-				// The resulting data isn't an internal block any more
-				bInternal = false;
-			}
-			
-			// data[0] == 2 SLBLOCK or SIBLOCK
-			// let the caller deal with them
-		}
-		
-		if ( ret == null ) {
-			// non-array block
-			ret = new PSTFileBlock(this.fi);
-			ret.data = data;
-			// (Callers must be able to handle ret.blockOffsets == null)
-		}
-
-		// (Internal blocks aren't compressed)
-		if ( !bInternal &&
-			 encryptionType == PSTFile.ENCRYPTION_TYPE_COMPRESSIBLE)
-		{
-			ret.data = PSTObject.decode(ret.data);
-		}
-		
-		return ret;
-		 *
-		 */
 	}
 	
 	
@@ -753,58 +688,5 @@ public class PSTFile {
 		return new OffsetIndexItem(findBtreeItem(in, identifier, false), this.getPSTFileType());
 	}
 
-	/*
-	protected PSTFileBlock processArray(RandomAccessFile in, byte[] data)
-		throws IOException, PSTException
-	{
-		// is the data an array?
-		if (!(data[0] == 1 && data[1] == 1))
-		{
-			throw new PSTException("Unable to process array, does not appear to be one!");
-		}
-
-		// we are an array!
-		// get the array items and merge them together
-		int numberOfEntries = (int)PSTObject.convertLittleEndianBytesToLong(data, 2, 4);
-		int dataSize = (int)PSTObject.convertLittleEndianBytesToLong(data, 4, 8);
-		PSTFileBlock dataBlock = new PSTFileBlock();
-		dataBlock.data = new byte[dataSize];
-		dataBlock.blockOffsets = new int[numberOfEntries];
-		int blockOffset = 0;
-		int tableOffset = 8;
-		for (int y = 0; y < numberOfEntries; y++) {
-			// get the offset identifier
-			long tableOffsetIdentifierIndex;
-			if (this.getPSTFileType() == PSTFile.PST_TYPE_ANSI) {
-				tableOffsetIdentifierIndex = PSTObject.convertLittleEndianBytesToLong(data, tableOffset, tableOffset+4);
-			} else {
-				tableOffsetIdentifierIndex = PSTObject.convertLittleEndianBytesToLong(data, tableOffset, tableOffset+8);
-			}
-
-			// clear the last bit of the identifier.  Why so hard?
-			tableOffsetIdentifierIndex = (tableOffsetIdentifierIndex & 0xfffffffe);
-
-			OffsetIndexItem tableOffsetIdentifier = this.getOffsetIndexNode(tableOffsetIdentifierIndex);
-
-			// Paranoia...
-			if ( blockOffset + tableOffsetIdentifier.size > dataBlock.data.length ) {
-				throw new PSTException("Invalid XBLOCK entry!");
-			}
-
-			in.seek(tableOffsetIdentifier.fileOffset);
-			in.read(dataBlock.data, blockOffset, tableOffsetIdentifier.size);
-			blockOffset += tableOffsetIdentifier.size;
-			dataBlock.blockOffsets[y] = blockOffset;
-			if (this.getPSTFileType() == PSTFile.PST_TYPE_ANSI) {
-				tableOffset += 4;
-			} else {
-				tableOffset += 8;
-			}
-		}
-
-		return dataBlock;
-	}
-	 *
-	 */
 
 }

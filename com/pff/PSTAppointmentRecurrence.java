@@ -173,8 +173,10 @@ public class PSTAppointmentRecurrence {
 			offset += Exceptions[i].getLength();
 		}
 		
-		int ReservedBlock1Size = (int)PSTObject.convertLittleEndianBytesToLong(recurrencePattern, offset, offset+4);
-		offset += 4 + (ReservedBlock1Size * 4);
+		if ( (offset + 4) <= recurrencePattern.length ) {
+			int ReservedBlock1Size = (int)PSTObject.convertLittleEndianBytesToLong(recurrencePattern, offset, offset+4);
+			offset += 4 + (ReservedBlock1Size * 4);
+		}
 		
 		// Read extended exception info
 		for ( int i = 0; i < ExceptionCount; ++i ) {

@@ -60,7 +60,7 @@ class PSTTableItem {
 		
 		if (stringType == VALUE_TYPE_PT_STRING8 ) {
 			//System.out.println("Warning! decoding string8 without charset: "+this.entryType + " - "+ Integer.toHexString(this.entryType));
-			return new String(data, Charset.defaultCharset());
+			return new String(data, Charset.forName("UTF-8"));
 		}
 		
 		StringBuffer outputBuffer = new StringBuffer();

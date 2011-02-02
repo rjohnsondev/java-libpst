@@ -161,8 +161,9 @@ public class PSTFile {
 		// get the descriptors if we have them
 		HashMap<Integer, PSTDescriptorItem> localDescriptorItems = null;
 		if (nameToIdMapDescriptorNode.localDescriptorsOffsetIndexIdentifier != 0) {
-			PSTDescriptor descriptor = new PSTDescriptor(this, nameToIdMapDescriptorNode.localDescriptorsOffsetIndexIdentifier);
-			localDescriptorItems = descriptor.getChildren();
+			//PSTDescriptor descriptor = new PSTDescriptor(this, nameToIdMapDescriptorNode.localDescriptorsOffsetIndexIdentifier);
+			//localDescriptorItems = descriptor.getChildren();
+			localDescriptorItems = this.getPSTDescriptorItems(nameToIdMapDescriptorNode.localDescriptorsOffsetIndexIdentifier);
 		}
 
 		// process the map
@@ -688,5 +689,49 @@ public class PSTFile {
 		return new OffsetIndexItem(findBtreeItem(in, identifier, false), this.getPSTFileType());
 	}
 
+
+	/**
+	 * parse a PSTDescriptor and get all of its items
+	 */
+	HashMap<Integer, PSTDescriptorItem> getPSTDescriptorItems(long localDescriptorsOffsetIndexIdentifier)
+		throws PSTException, IOException
+	{
+		return this.getPSTDescriptorItems(this.readLeaf(localDescriptorsOffsetIndexIdentifier));
+	}
+	HashMap<Integer, PSTDescriptorItem> getPSTDescriptorItems(PSTNodeInputStream in)
+		throws PSTException, IOException
+	{
+		// make sure the signature is correct
+		in.seek(0);
+		int sig = in.read();
+		if (sig != 0x2) {
+			throw new PSTException("Unable to process descriptor node, bad signature: "+sig);
+		}
+
+		HashMap<Integer, PSTDescriptorItem> output = new HashMap<Integer, PSTDescriptorItem>();
+		int numberOfItems = (int)in.seekAndReadLong(2, 2);
+		int offset;
+		if (this.getPSTFileType() == PSTFile.PST_TYPE_ANSI) {
+			offset = 4;
+		} else {
+			offset = 8;
+		}
+
+		byte[] data = new byte[(int)in.length()];
+		in.seek(0);
+		in.read(data);
+
+		for (int x = 0; x < numberOfItems; x++) {
+			PSTDescriptorItem item = new PSTDescriptorItem(data, offset, this);
+			output.put(item.descriptorIdentifier, item);
+			if (this.getPSTFileType() == PSTFile.PST_TYPE_ANSI) {
+				offset += 12;
+			} else {
+				offset += 24;
+			}
+		}
+
+		return output;
+	}
 
 }

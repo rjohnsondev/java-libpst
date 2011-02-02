@@ -80,7 +80,8 @@ public class PSTFolder extends PSTObject {
 				DescriptorIndexNode folderDescriptor = this.pstFile.getDescriptorIndexNode(folderDescriptorIndex);
 				HashMap<Integer, PSTDescriptorItem> tmp = null;
 				if (folderDescriptor.localDescriptorsOffsetIndexIdentifier > 0) {
-					tmp = new PSTDescriptor(pstFile, folderDescriptor.localDescriptorsOffsetIndexIdentifier).getChildren();
+					//tmp = new PSTDescriptor(pstFile, folderDescriptor.localDescriptorsOffsetIndexIdentifier).getChildren();
+					tmp = pstFile.getPSTDescriptorItems(folderDescriptor.localDescriptorsOffsetIndexIdentifier);
 				}
 				subfoldersTable = new PSTTable7C(new PSTNodeInputStream(pstFile, pstFile.getOffsetIndexNode(folderDescriptor.dataOffsetIndexIdentifier)), tmp);
 			} catch (PSTException err) {
@@ -117,7 +118,8 @@ public class PSTFolder extends PSTObject {
 			DescriptorIndexNode folderDescriptor = this.pstFile.getDescriptorIndexNode(folderDescriptorIndex);
 			HashMap<Integer, PSTDescriptorItem> tmp = null;
 			if (folderDescriptor.localDescriptorsOffsetIndexIdentifier > 0) {
-				 tmp = new PSTDescriptor(pstFile, folderDescriptor.localDescriptorsOffsetIndexIdentifier).getChildren();
+				//tmp = new PSTDescriptor(pstFile, folderDescriptor.localDescriptorsOffsetIndexIdentifier).getChildren();
+				tmp = pstFile.getPSTDescriptorItems(folderDescriptor.localDescriptorsOffsetIndexIdentifier);
 			}
 			//PSTTable7CForFolder folderDescriptorTable = new PSTTable7CForFolder(folderDescriptor.dataBlock.data, folderDescriptor.dataBlock.blockOffsets,tmp, 0x67F2);
 			emailsTable = new PSTTable7C(

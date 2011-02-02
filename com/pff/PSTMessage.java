@@ -765,13 +765,15 @@ public class PSTMessage extends PSTObject {
 		{
 			PSTDescriptorItem item = this.localDescriptorItems.get(attachmentTableKey);
 			attachmentTable = new PSTTable7C(new PSTNodeInputStream(pstFile, item), item.getSubNodeDescriptorItems());
+			//PSTObject.printHexFormatted(item.getData(), true);
+			//System.out.println(attachmentTable);
 			//byte[] data = item.getData();
 			//if (data != null && data.length > 0) {
 				//attachmentTable = new PSTTable7C(data, item.getBlockOffsets(), item.getSubNodeDescriptorItems());
 			//}
 		}
 	}
-	
+
 	public String displayTo() {
 		return this.getStringItem(0x0e04);
 	}
@@ -842,8 +844,6 @@ public class PSTMessage extends PSTObject {
 		throws PSTException, IOException
 	{
 		this.processAttachments();
-		//System.out.println(this.attachmentTable.getRowCount());
-		//System.out.println(this.attachmentTable);
 		
 		int attachmentCount = 0;
 		if ( this.attachmentTable != null ) {
@@ -860,18 +860,19 @@ public class PSTMessage extends PSTObject {
 		int descriptorItemId = attachmentTableItem.entryValueReference;
 
 		// get the local descriptor for the attachmentDetails table.
-		PSTDescriptorItem descriptorItem = this.localDescriptorItems.get(descriptorItemId); 
+		PSTDescriptorItem descriptorItem = this.localDescriptorItems.get(descriptorItemId);
 
 		// try and decode it
 		byte[] attachmentData = descriptorItem.getData();
 		if ( attachmentData != null && attachmentData.length > 0 ) {
 			//PSTTableBC attachmentDetailsTable = new PSTTableBC(descriptorItem.getData(), descriptorItem.getBlockOffsets());
 			PSTTableBC attachmentDetailsTable = new PSTTableBC(new PSTNodeInputStream(pstFile, descriptorItem));
-		
+
 			// create our all-precious attachment object.
 			// note that all the information that was in the c7 table is repeated in the eb table in attachment data.
 			// so no need to pass it...
-			return new PSTAttachment(this.pstFile, attachmentDetailsTable, this.localDescriptorItems);
+			HashMap<Integer, PSTDescriptorItem> attachmentDescriptorItems = pstFile.getPSTDescriptorItems(descriptorItem.subNodeOffsetIndexIdentifier);
+			return new PSTAttachment(this.pstFile, attachmentDetailsTable, attachmentDescriptorItems);
 		}
 
 		throw new PSTException("unable to fetch attachment number "+attachmentNumber+", unable to read attachment details table");
@@ -920,7 +921,8 @@ public class PSTMessage extends PSTObject {
 			"Importance: "+this.getImportance()+"\n"+
 			"Message Class: "+this.getMessageClass() + "\n\n" +
 			this.getTransportMessageHeaders()+"\n\n\n"+
-			this.items;
+			this.items+
+			this.localDescriptorItems;
 	}
 	
 }

@@ -45,8 +45,10 @@ public class PSTAttachment extends PSTObject {
 				}
 			} else if ( item.entryValueType == 0x000D ) {
 				int descriptorItem = (int)PSTObject.convertLittleEndianBytesToLong(item.data, 0, 4);
+				//PSTObject.printHexFormatted(item.data, true);
 				PSTDescriptorItem descriptorItemNested = this.localDescriptorItems.get(descriptorItem);
 				in = new PSTNodeInputStream(this.pstFile, descriptorItemNested);
+				this.localDescriptorItems.putAll(pstFile.getPSTDescriptorItems(descriptorItemNested.subNodeOffsetIndexIdentifier));
 				/*
 				if ( descriptorItemNested != null ) {
 					try {

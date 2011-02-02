@@ -68,24 +68,6 @@ class PSTDescriptorItem
 		return subNodeDescriptorItems;
 	}
 
-	public PSTNodeInputStream getSubNodeData()
-		throws IOException, PSTException
-	{
-		if (subNodeOffsetIndexIdentifier != 0) {
-			return pstFile.readLeaf(subNodeOffsetIndexIdentifier);
-			/*
-			PSTFile.PSTFileBlock subNodeDataBlock = pstFile.readLeaf(subNodeOffsetIndexIdentifier);
-			if ( subNodeDataBlock.blockOffsets != null &&
-					subNodeDataBlock.blockOffsets.length > 1 ) {
-				System.out.printf("SubNode (0x%08X) has more than one data block!", subNodeOffsetIndexIdentifier);
-			}
-			return subNodeDataBlock.data;
-			 *
-			 */
-		}
-		
-		return null;
-	}
 
 	// Public data
 	int descriptorIdentifier;
@@ -108,12 +90,6 @@ class PSTDescriptorItem
 			"   subNodeOffsetIndexIdentifier: "+subNodeOffsetIndexIdentifier+"\n";
 			
 		
-	}
-
-	// For use by PSTDescriptor
-	void setSubNodeDescriptorItems(
-			HashMap<Integer, PSTDescriptorItem> subNodeDescriptorItems) {
-		this.subNodeDescriptorItems = subNodeDescriptorItems;
 	}
 
 }

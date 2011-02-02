@@ -42,8 +42,9 @@ public class PSTObject {
 		this.items = table.getItems();
 		
 		if (descriptorIndexNode.localDescriptorsOffsetIndexIdentifier != 0) {
-			PSTDescriptor descriptor = new PSTDescriptor(theFile, descriptorIndexNode.localDescriptorsOffsetIndexIdentifier);
-			localDescriptorItems = descriptor.getChildren();
+			//PSTDescriptor descriptor = new PSTDescriptor(theFile, descriptorIndexNode.localDescriptorsOffsetIndexIdentifier);
+			//localDescriptorItems = descriptor.getChildren();
+			this.localDescriptorItems = theFile.getPSTDescriptorItems(descriptorIndexNode.localDescriptorsOffsetIndexIdentifier);
 		}
 	}
 	
@@ -618,8 +619,8 @@ public class PSTObject {
 		HashMap<Integer, PSTDescriptorItem> localDescriptorItems = null;
 		
 		if (folderIndexNode.localDescriptorsOffsetIndexIdentifier != 0) {
-			PSTDescriptor descriptor = new PSTDescriptor(theFile, folderIndexNode.localDescriptorsOffsetIndexIdentifier);
-			localDescriptorItems = descriptor.getChildren();
+			//PSTDescriptor descriptor = new PSTDescriptor(theFile, folderIndexNode.localDescriptorsOffsetIndexIdentifier);
+			localDescriptorItems = theFile.getPSTDescriptorItems(folderIndexNode.localDescriptorsOffsetIndexIdentifier);
 		}
 		
 //		System.out.println(type);

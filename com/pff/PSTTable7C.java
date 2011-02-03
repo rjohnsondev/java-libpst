@@ -16,6 +16,8 @@ import java.io.*;
  */
 class PSTTable7C extends PSTTable {
 
+	private final int BLOCK_SIZE = 8176;
+
 	private List<HashMap<Integer, PSTTable7CItem>> items = null;
 	private int numberOfDataSets = 0;
 	private int cCols = 0;
@@ -113,12 +115,11 @@ class PSTTable7C extends PSTTable {
 			"hidRowIndex: "+hidRowIndex+"\n"+
 			"hnidRows: "+hnidRows+"\n";
 
-		int blockSize = 8176;
-		int numberOfBlocks = rowNodeInfo.length() / blockSize;
-		int numberOfRowsPerBlock = blockSize / TCI_bm;
+		int numberOfBlocks = rowNodeInfo.length() / BLOCK_SIZE;
+		int numberOfRowsPerBlock = BLOCK_SIZE / TCI_bm;
 		@SuppressWarnings("unused")
-		int blockPadding = blockSize - (numberOfRowsPerBlock * TCI_bm);
-		numberOfDataSets = (numberOfBlocks * numberOfRowsPerBlock) + ((rowNodeInfo.length() % blockSize) / TCI_bm);
+		int blockPadding = BLOCK_SIZE - (numberOfRowsPerBlock * TCI_bm);
+		numberOfDataSets = (numberOfBlocks * numberOfRowsPerBlock) + ((rowNodeInfo.length() % BLOCK_SIZE) / TCI_bm);
 	}
 
 	/**
@@ -140,11 +141,10 @@ class PSTTable7C extends PSTTable {
 		List<HashMap<Integer, PSTTable7CItem>> itemList = new ArrayList<HashMap<Integer, PSTTable7CItem>>();
 
 		// okay, work out the number of records we have
-		int blockSize = 8176;
-		int numberOfBlocks = rowNodeInfo.length() / blockSize;
-		int numberOfRowsPerBlock = blockSize / TCI_bm;
-		int blockPadding = blockSize - (numberOfRowsPerBlock * TCI_bm);
-		numberOfDataSets = (numberOfBlocks * numberOfRowsPerBlock) + ((rowNodeInfo.length() % blockSize) / TCI_bm);
+		int numberOfBlocks = rowNodeInfo.length() / BLOCK_SIZE;
+		int numberOfRowsPerBlock = BLOCK_SIZE / TCI_bm;
+		int blockPadding = BLOCK_SIZE - (numberOfRowsPerBlock * TCI_bm);
+		numberOfDataSets = (numberOfBlocks * numberOfRowsPerBlock) + ((rowNodeInfo.length() % BLOCK_SIZE) / TCI_bm);
 
 		if (startAtRecord == -1) {
 			numberOfRecordsToReturn = numberOfDataSets;
@@ -153,7 +153,7 @@ class PSTTable7C extends PSTTable {
 
 		// repeat the reading process for every dataset
 		int currentValueArrayStart =
-				((startAtRecord / numberOfRowsPerBlock) * blockSize) +
+				((startAtRecord / numberOfRowsPerBlock) * BLOCK_SIZE) +
 				((startAtRecord % numberOfRowsPerBlock) * TCI_bm);
 
 		if (numberOfRecordsToReturn > this.getRowCount() - startAtRecord) {
@@ -166,12 +166,21 @@ class PSTTable7C extends PSTTable {
 		{
 			HashMap<Integer, PSTTable7CItem> currentItem = new HashMap<Integer, PSTTable7CItem>();
 			// add on some padding for block boundries?
-			if ((currentValueArrayStart % 8176) > 8176 - TCI_bm) {
-				// adjust!
-				//currentValueArrayStart += 8176 - (currentValueArrayStart % 8176);
-				currentValueArrayStart += blockPadding;
-				if (currentValueArrayStart + TCI_bm < rowNodeInfo.length()) {
+			if (rowNodeInfo.in.getPSTFile().getPSTFileType() == PSTFile.PST_TYPE_ANSI) {
+				if (currentValueArrayStart >= BLOCK_SIZE) {
+					currentValueArrayStart = currentValueArrayStart + (4) * (currentValueArrayStart / BLOCK_SIZE);
+				}
+				if (rowNodeInfo.startOffset+ currentValueArrayStart + TCI_1b > rowNodeInfo.in.length()) {
 					continue;
+				}
+			} else {
+				if ((currentValueArrayStart % BLOCK_SIZE) > BLOCK_SIZE - TCI_bm) {
+					// adjust!
+					//currentValueArrayStart += 8176 - (currentValueArrayStart % 8176);
+					currentValueArrayStart += blockPadding;
+					if (currentValueArrayStart + TCI_bm < rowNodeInfo.length()) {
+						continue;
+					}
 				}
 			}
 			byte[] bitmap = new byte[(cCols+7)/8];

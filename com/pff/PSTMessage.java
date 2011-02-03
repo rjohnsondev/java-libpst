@@ -871,7 +871,10 @@ public class PSTMessage extends PSTObject {
 			// create our all-precious attachment object.
 			// note that all the information that was in the c7 table is repeated in the eb table in attachment data.
 			// so no need to pass it...
-			HashMap<Integer, PSTDescriptorItem> attachmentDescriptorItems = pstFile.getPSTDescriptorItems(descriptorItem.subNodeOffsetIndexIdentifier);
+			HashMap<Integer, PSTDescriptorItem> attachmentDescriptorItems = new HashMap<Integer, PSTDescriptorItem>();
+			if (descriptorItem.subNodeOffsetIndexIdentifier > 0) {
+				attachmentDescriptorItems = pstFile.getPSTDescriptorItems(descriptorItem.subNodeOffsetIndexIdentifier);
+			}
 			return new PSTAttachment(this.pstFile, attachmentDetailsTable, attachmentDescriptorItems);
 		}
 

@@ -11,6 +11,11 @@ import java.util.HashMap;
  */
 public class PSTRecipient {
 	private HashMap<Integer, PSTTable7CItem> details;
+
+
+	public static final int MAPI_TO = 1;
+	public static final int MAPI_CC = 2;
+	public static final int MAPI_BCC = 3;
 	
 	PSTRecipient(HashMap<Integer, PSTTable7CItem> recipientDetails)
 	{

@@ -84,6 +84,11 @@ public class PSTFile {
 	public PSTFile(String fileName)
 		throws FileNotFoundException, PSTException, IOException
 	{
+		this(new File(fileName));
+	}
+	public PSTFile(File fileName)
+		throws FileNotFoundException, PSTException, IOException
+	{
 		// attempt to open the file.
 		in = new RandomAccessFile(fileName, "r");
 

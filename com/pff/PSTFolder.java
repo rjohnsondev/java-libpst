@@ -168,6 +168,31 @@ public class PSTFolder extends PSTObject {
 
 		return output;
 	}
+
+	public LinkedList<Integer> getChildDescriptorNodes() throws PSTException, IOException {
+		initEmailsTable();
+		if (this.emailsTable == null) {
+			return new LinkedList<Integer>();
+		}
+		LinkedList<Integer> output = new LinkedList<Integer>();
+		List<HashMap<Integer, PSTTable7CItem>> rows = this.emailsTable.getItems();
+		for (HashMap<Integer, PSTTable7CItem> row : rows) {
+			// get the emails from the rows
+			if (this.currentEmailIndex == this.getContentCount())
+			{
+				// no more!
+				break;
+			}
+			PSTTable7CItem emailRow = row.get(0x67F2);
+			if (emailRow.entryValueReference == 0) {
+				break;
+			}
+			output.add(emailRow.entryValueReference);
+		}
+		return output;
+	}
+
+
 	
 	/**
 	 * Get the next child of this folder

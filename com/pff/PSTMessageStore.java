@@ -4,6 +4,7 @@
 package com.pff;
 
 import java.io.*;
+import java.util.*;
 
 
 /**
@@ -20,39 +21,22 @@ public class PSTMessageStore extends PSTObject {
 	}
 	
 	/**
-	 * Get the GUID
-	 * Note: I don't know if the endianess is correct!!! 
+	 * Get the tag record key, unique to this pst
 	 */
-	public String getGUID() {
+	public UUID getTagRecordKeyAsUUID() {
 		// attempt to find in the table.
-		int guidEntryType = 0x0e34;
+		int guidEntryType = 0x0ff9;
 		if (this.items.containsKey(guidEntryType)) {
 			PSTTableBCItem item = (PSTTableBCItem)this.items.get(guidEntryType);
-			byte[] guidBytes = item.data;
-			StringBuffer output = new StringBuffer();
-			String hexValue = "";
-			output.append("{");
-			for (int x = 0; x < 16; x++) {
-				hexValue = Integer.toHexString(guidBytes[x]);
-				if (hexValue.length() == 1) {
-					output.append(hexValue);
-				}
-				if (hexValue.length() > 2) {
-					hexValue = hexValue.substring(hexValue.length()-2);
-				}
-				output.append(hexValue);
-				if (x == 4 ||
-					x == 6 ||
-					x == 8 ||
-					x == 10)
-				{
-					output.append("-");
-				}
-			}
-			output.append("}");
-			return new String(output);
+			int offset = 0;
+			byte[] bytes = item.data;
+			long mostSigBits = (PSTObject.convertLittleEndianBytesToLong(bytes, offset, offset+4) << 32) |
+								(PSTObject.convertLittleEndianBytesToLong(bytes, offset+4, offset+6) << 16) |
+								PSTObject.convertLittleEndianBytesToLong(bytes, offset+6, offset+8);
+			long leastSigBits = PSTObject.convertBigEndianBytesToLong(bytes, offset+8, offset+16);
+			return new UUID(mostSigBits, leastSigBits);
 		}
-		return "";
+		return null;
 	}
 	
 	/**

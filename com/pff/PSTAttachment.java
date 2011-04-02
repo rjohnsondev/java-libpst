@@ -83,10 +83,6 @@ public class PSTAttachment extends PSTObject {
 	public InputStream getFileInputStream()
 		throws IOException, PSTException
 	{
-
-		if (this.getFilesize() == 0) {
-			throw new PSTException("Attachment is empty!");
-		}
 		
 		PSTTableBCItem attachmentDataObject = items.get(0x3701);
 
@@ -106,7 +102,7 @@ public class PSTAttachment extends PSTObject {
 		if (attachmentDataObject.isExternalValueReference) {
 			PSTDescriptorItem descriptorItemNested = this.localDescriptorItems.get(attachmentDataObject.entryValueReference);
 			if (descriptorItemNested == null) {
-				return 0;
+				throw new PSTException("missing attachment descriptor item for: "+attachmentDataObject.entryValueReference);
 			}
 			return descriptorItemNested.getDataSize();
 		} else {

@@ -64,16 +64,10 @@ class PSTDescriptorItem
 		return pstFile.getLeafSize(offsetIndexIdentifier);
 	}
 	
-	public HashMap<Integer, PSTDescriptorItem> getSubNodeDescriptorItems() {
-		return subNodeDescriptorItems;
-	}
-
-
 	// Public data
 	int descriptorIdentifier;
 	int offsetIndexIdentifier;
 	int subNodeOffsetIndexIdentifier;
-	private HashMap<Integer, PSTDescriptorItem> subNodeDescriptorItems;
 
 	// These are private to ensure that getData()/getBlockOffets() are used 
 	//private PSTFile.PSTFileBlock dataBlock = null;

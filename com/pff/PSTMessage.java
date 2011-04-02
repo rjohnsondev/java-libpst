@@ -712,11 +712,11 @@ public class PSTMessage extends PSTObject {
 				this.localDescriptorItems.containsKey(recipientTableKey))
 			{
 				PSTDescriptorItem item = this.localDescriptorItems.get(recipientTableKey);
-				recipientTable = new PSTTable7C(new PSTNodeInputStream(pstFile, item), item.getSubNodeDescriptorItems());
-				//byte[] data = item.getData();
-				//if (data != null && data.length > 0) {
-					//recipientTable = new PSTTable7C(data, item.getBlockOffsets(), item.getSubNodeDescriptorItems());
-				//}
+				HashMap<Integer, PSTDescriptorItem> descriptorItems = null;
+				if (item.subNodeOffsetIndexIdentifier > 0) {
+					descriptorItems =pstFile.getPSTDescriptorItems(item.subNodeOffsetIndexIdentifier);
+				}
+				recipientTable = new PSTTable7C(new PSTNodeInputStream(pstFile, item), descriptorItems);
 			}
 		} catch ( Exception e ) {
 			e.printStackTrace();
@@ -764,13 +764,11 @@ public class PSTMessage extends PSTObject {
 			this.localDescriptorItems.containsKey(attachmentTableKey))
 		{
 			PSTDescriptorItem item = this.localDescriptorItems.get(attachmentTableKey);
-			attachmentTable = new PSTTable7C(new PSTNodeInputStream(pstFile, item), item.getSubNodeDescriptorItems());
-			//PSTObject.printHexFormatted(item.getData(), true);
-			//System.out.println(attachmentTable);
-			//byte[] data = item.getData();
-			//if (data != null && data.length > 0) {
-				//attachmentTable = new PSTTable7C(data, item.getBlockOffsets(), item.getSubNodeDescriptorItems());
-			//}
+			HashMap<Integer, PSTDescriptorItem> descriptorItems = null;
+			if (item.subNodeOffsetIndexIdentifier > 0) {
+				descriptorItems =pstFile.getPSTDescriptorItems(item.subNodeOffsetIndexIdentifier);
+			}
+			attachmentTable = new PSTTable7C(new PSTNodeInputStream(pstFile, item), descriptorItems);
 		}
 	}
 

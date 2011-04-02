@@ -144,10 +144,15 @@ public class PSTObject {
 		return getStringItem(identifier, 0);
 	}
 	protected String getStringItem(int identifier, int stringType) {
+		return getStringItem(identifier, stringType, null);
+	}
+	protected String getStringItem(int identifier, int stringType, String codepage) {
 		PSTTableBCItem item = (PSTTableBCItem)this.items.get(identifier);
 		if ( item != null ) {
-			
-			String cp = this.getStringCodepage();
+
+			if (codepage == null) {
+				codepage = this.getStringCodepage();
+			}
 
 			// get the string type from the item if not explicitly set
 			if ( stringType == 0 ) {
@@ -157,7 +162,7 @@ public class PSTObject {
 			// see if there is a descriptor entry
 			if ( !item.isExternalValueReference ) {
 				//System.out.println("here: "+new String(item.data)+this.descriptorIndexNode.descriptorIdentifier);
-				return PSTObject.createJavaString(item.data, stringType, cp);
+				return PSTObject.createJavaString(item.data, stringType, codepage);
 			}
 			if (this.localDescriptorItems != null &&
 				this.localDescriptorItems.containsKey(item.entryValueReference))
@@ -171,7 +176,7 @@ public class PSTObject {
 						return "";
 					}
 
-					return PSTObject.createJavaString(data, stringType, cp);
+					return PSTObject.createJavaString(data, stringType, codepage);
 				} catch (Exception e) {
 					System.out.printf("Exception %s decoding string %s: %s\n",
 							e.toString(),
@@ -182,7 +187,7 @@ public class PSTObject {
 				//return "";
 			}
 
-			return PSTObject.createJavaString(data, stringType, cp);
+			return PSTObject.createJavaString(data, stringType, codepage);
 		}
 		return "";
 	}
@@ -194,6 +199,13 @@ public class PSTObject {
 				return new String(data, "UTF-16LE");
 			}
 
+			if (codepage == null) {
+				return new String(data);
+			} else {
+				codepage = codepage.toUpperCase();
+				return new String(data, codepage);
+			}
+			/*
 			if (codepage == null || codepage.toUpperCase().equals("UTF-8") || codepage.toUpperCase().equals("UTF-7")) {
 				// PST UTF-8 strings are not... really UTF-8
 				// it seems that they just don't use multibyte chars at all.
@@ -208,6 +220,7 @@ public class PSTObject {
 				codepage = codepage.toUpperCase();
 				return new String(data, codepage);
 			}
+			 */
 		} catch (Exception err) {
 			System.out.println("Unable to decode string");
 			err.printStackTrace();

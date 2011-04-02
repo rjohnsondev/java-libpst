@@ -563,7 +563,15 @@ public class PSTMessage extends PSTObject {
 	 * Plain text e-mail body
 	 */
 	public String getBody() {
-		return this.getStringItem(0x1000);
+		String cp = null;
+		PSTTableBCItem cpItem = (PSTTableBCItem)this.items.get(0x3FFD); // PidTagMessageCodepage
+		if (cpItem == null) {
+			cpItem = (PSTTableBCItem)this.items.get(0x3FDE); // PidTagInternetCodepage
+		}
+		if (cpItem != null) {
+			cp = PSTFile.getInternetCodePageCharset(cpItem.entryValueReference);
+		}
+		return this.getStringItem(0x1000, 0, cp);
 	}
 	/*
 	 * Plain text body prefix
@@ -605,8 +613,15 @@ public class PSTMessage extends PSTObject {
 	 * HTML e-mail body
 	 */
 	public String getBodyHTML() {
-//		return this.getStringItem(0x1013, PSTTableItem.VALUE_TYPE_PT_STRING8);
-		return this.getStringItem(0x1013);
+		String cp = null;
+		PSTTableBCItem cpItem = (PSTTableBCItem)this.items.get(0x3FDE); // PidTagInternetCodepage
+		if (cpItem == null) {
+			cpItem = (PSTTableBCItem)this.items.get(0x3FFD); // PidTagMessageCodepage
+		}
+		if (cpItem != null) {
+			cp = PSTFile.getInternetCodePageCharset(cpItem.entryValueReference);
+		}
+		return this.getStringItem(0x1013, 0, cp);
 	}
 	/**
 	 * Message identifier

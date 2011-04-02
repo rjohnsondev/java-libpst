@@ -54,7 +54,7 @@ class PSTTableBC extends PSTTable {
 
 		if (tableTypeByte != 0xffffffbc)
 		{
-			System.out.println(Long.toHexString(this.tableTypeByte));
+			//System.out.println(Long.toHexString(this.tableTypeByte));
 			throw new PSTException("unable to create PSTTableBC, table does not appear to be a bc!");
 		}
 

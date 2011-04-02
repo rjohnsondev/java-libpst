@@ -83,7 +83,8 @@ class PSTTableItem {
 				}
 				return new String(data, "UTF-16LE");
 			} catch (UnsupportedEncodingException e) {
-				System.out.println("Error decoding string: " + data.toString());
+
+				System.err.println("Error decoding string: " + data.toString());
 				return "";
 			}
 		}
@@ -175,7 +176,7 @@ class PSTTableItem {
 			try {
 				s = new String(data, "UTF-16LE");
 			} catch (UnsupportedEncodingException e) {
-				System.out.println("Error decoding string: " + data.toString());
+				System.err.println("Error decoding string: " + data.toString());
 				s = "";
 			}
 			

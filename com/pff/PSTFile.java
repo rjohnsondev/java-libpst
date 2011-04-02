@@ -282,8 +282,7 @@ public class PSTFile {
 
 		PSTDescriptorItem mapDescriptorItem = localDescriptorItems.get(item.entryValueReference);
 		if (mapDescriptorItem == null) {
-			System.out.println("not here "+item.entryValueReference);
-			System.out.println(localDescriptorItems.keySet());
+			throw new PSTException ("not here "+item.entryValueReference + "\n"+localDescriptorItems.keySet());
 		}
 		return mapDescriptorItem.getData();
 	}

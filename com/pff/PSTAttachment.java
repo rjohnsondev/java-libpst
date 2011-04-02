@@ -71,7 +71,7 @@ public class PSTAttachment extends PSTObject {
 					in = new PSTNodeInputStream(this.pstFile, item.data);
 				} else {
 					// We are in trouble!
-					System.out.printf("External reference in getEmbeddedPSTMessage()!\n");
+					throw new PSTException("External reference in getEmbeddedPSTMessage()!\n");
 				}
 			} else if ( item.entryValueType == 0x000D ) {
 				int descriptorItem = (int)PSTObject.convertLittleEndianBytesToLong(item.data, 0, 4);

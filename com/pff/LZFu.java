@@ -44,7 +44,9 @@ public class LZFu {
 
 	public static final String LZFU_HEADER = "{\\rtf1\\ansi\\mac\\deff0\\deftab720{\\fonttbl;}{\\f0\\fnil \\froman \\fswiss \\fmodern \\fscript \\fdecor MS Sans SerifSymbolArialTimes New RomanCourier{\\colortbl\\red0\\green0\\blue0\n\r\\par \\pard\\plain\\f0\\fs20\\b\\i\\u\\tab\\tx";
 
-	public static String decode(byte[] data) {
+	public static String decode(byte[] data)
+			throws PSTException
+	{
 
 		@SuppressWarnings("unused")
 		int compressedSize = (int)PSTObject.convertLittleEndianBytesToLong(data, 0, 4);
@@ -108,7 +110,7 @@ public class LZFu {
 			}
 
 			if ( outputPosition != uncompressedSize ) {
-				System.out.printf("Error decompressing RTF! Expected %d bytes, got %d bytes\n", uncompressedSize, outputPosition);
+				throw new PSTException(String.format("Error decompressing RTF! Expected %d bytes, got %d bytes\n", uncompressedSize, outputPosition));
 			}
 			return new String(output).trim();
 

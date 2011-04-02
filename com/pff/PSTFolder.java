@@ -90,7 +90,7 @@ public class PSTFolder extends PSTObject {
 				}
 			} catch (PSTException err) {
 				// hierachy node doesn't exist
-				System.out.println("Can't get child folders for folder "+this.getDisplayName()+"("+this.getDescriptorNodeId()+") child count: "+this.getContentCount()+ " - "+err.toString());
+				throw new PSTException("Can't get child folders for folder "+this.getDisplayName()+"("+this.getDescriptorNodeId()+") child count: "+this.getContentCount()+ " - "+err.toString());
 			}
 		}
 		// try and get subfolders?
@@ -116,7 +116,7 @@ public class PSTFolder extends PSTObject {
 				subfoldersTable = new PSTTable7C(new PSTNodeInputStream(pstFile, pstFile.getOffsetIndexNode(folderDescriptor.dataOffsetIndexIdentifier)), tmp);
 			} catch (PSTException err) {
 				// hierachy node doesn't exist
-				System.out.println("Can't get child folders for folder "+this.getDisplayName()+"("+this.getDescriptorNodeId()+") child count: "+this.getContentCount()+ " - "+err.toString());
+				throw new PSTException("Can't get child folders for folder "+this.getDisplayName()+"("+this.getDescriptorNodeId()+") child count: "+this.getContentCount()+ " - "+err.toString());
 			}
 		}
 
@@ -158,7 +158,7 @@ public class PSTFolder extends PSTObject {
 					0x67F2
 			);
 		} catch (Exception err) {
-			//System.out.println("Can't get children for folder "+this.getDisplayName()+"("+this.getDescriptorNodeId()+") child count: "+this.getContentCount()+ " - "+err.toString());
+			throw new PSTException("Can't get children for folder "+this.getDisplayName()+"("+this.getDescriptorNodeId()+") child count: "+this.getContentCount()+ " - "+err.toString(), err);
 		}
 	}
 	

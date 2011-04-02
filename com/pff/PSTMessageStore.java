@@ -84,8 +84,8 @@ public class PSTMessageStore extends PSTObject {
 	}
 
 
-	public void getDetails() {
-		System.out.println(this.items);
+	public String getDetails() {
+		return this.items.toString();
 	}
 
 }

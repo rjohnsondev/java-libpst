@@ -165,7 +165,7 @@ public class PSTObject {
 				if ( item.data != null && item.data.length == 8 ) {
 					return PSTObject.convertLittleEndianBytesToLong(item.data, 0, 8);
 				} else {
-					System.out.printf("Invalid data length for long id 0x%04X\n", identifier);
+					System.err.printf("Invalid data length for long id 0x%04X\n", identifier);
 					// Return the default value for now...
 				}
 			}
@@ -211,7 +211,7 @@ public class PSTObject {
 
 					return PSTObject.createJavaString(data, stringType, codepage);
 				} catch (Exception e) {
-					System.out.printf("Exception %s decoding string %s: %s\n",
+					System.err.printf("Exception %s decoding string %s: %s\n",
 							e.toString(),
 							PSTFile.getPropertyDescription(identifier, stringType), data.toString());
 					return "";
@@ -255,7 +255,7 @@ public class PSTObject {
 			}
 			 */
 		} catch (Exception err) {
-			System.out.println("Unable to decode string");
+			System.err.println("Unable to decode string");
 			err.printStackTrace();
 			return "";
 		}
@@ -302,13 +302,13 @@ public class PSTObject {
 					try {
 						return descItem.getData();
 					} catch (Exception e) {
-						System.out.printf("Exception reading binary item: reference 0x%08X\n", item.entryValueReference);
+						System.err.printf("Exception reading binary item: reference 0x%08X\n", item.entryValueReference);
 						
 						return null;
 					}
 				}
 				
-				System.out.println("External reference!!!\n");
+				//System.out.println("External reference!!!\n");
 			}
 		}
 		return null;
@@ -611,7 +611,7 @@ public class PSTObject {
 			{
 				type = "Message envelope";
 				if ( nidType != 4 ) {
-					System.out.printf("nidType 0x%02X for message envelope\n", nidType);
+					// System.out.printf("nidType 0x%02X for message envelope\n", nidType);
 				}
 				break;
 			}
@@ -632,7 +632,7 @@ public class PSTObject {
 			{
 				type = "Folder and address book";
 				if ( nidType != 2 && nidType != 3 ) {
-					System.out.printf("nidType: 0x%02X\n", nidType);
+					// System.out.printf("nidType: 0x%02X\n", nidType);
 				}
 				break;
 			}
@@ -682,13 +682,14 @@ public class PSTObject {
 		}
 		else
 		{			
-			System.out.println("Unknown child type: "+type);
+			// System.out.println("Unknown child type: "+type);
 			throw new PSTException("Unknown child type: "+type+" - "+folderIndexNode.localDescriptorsOffsetIndexIdentifier);
 		}
 		
 	}
 
-	static PSTMessage createAppropriatePSTMessageObject(PSTFile theFile, DescriptorIndexNode folderIndexNode, PSTTableBC table, HashMap<Integer, PSTDescriptorItem> localDescriptorItems) {
+	static PSTMessage createAppropriatePSTMessageObject(PSTFile theFile, DescriptorIndexNode folderIndexNode, PSTTableBC table, HashMap<Integer, PSTDescriptorItem> localDescriptorItems)
+	{
 
 		PSTTableBCItem item = table.getItems().get(0x001a);
 		String messageClass = "";
@@ -712,7 +713,7 @@ public class PSTObject {
 		} else if (messageClass.equals("IPM.Post.Rss")) {
 			return new PSTRss(theFile, folderIndexNode, table, localDescriptorItems);
 		} else {
-			System.out.println("Unknown message type: "+messageClass);
+			System.err.println("Unknown message type: "+messageClass);
 		}
 
 		return new PSTMessage(theFile, folderIndexNode, table, localDescriptorItems);

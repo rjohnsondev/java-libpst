@@ -80,7 +80,7 @@ class PSTTable {
 		byte[] headdata = new byte[4];
 		in.read(headdata);
 		if ((int)headdata[2] != 0xffffffec) {
-			System.out.println(in.isEncrypted());
+			//System.out.println(in.isEncrypted());
 			PSTObject.decode(headdata);
 			PSTObject.printHexFormatted(headdata, true);
 			throw new PSTException("Unable to parse table, bad table type...");
@@ -132,7 +132,7 @@ class PSTTable {
 			byte[] tmp = new byte[1024];
 			headerNodeInfo.in.read(tmp);
 			PSTObject.printHexFormatted(tmp, true);
-			System.out.println(PSTObject.compEnc[headerByte]);
+			//System.out.println(PSTObject.compEnc[headerByte]);
 			throw new PSTException("Unable to parse table, can't find BTHHEADER header information: "+headerByte);
 		}
 		
@@ -234,10 +234,10 @@ class PSTTable {
 		int whichBlock = (hnid >>> 16);
 		if ( whichBlock > this.arrayBlocks.length ) {
 			// Block doesn't exist!
-			System.out.printf("getNodeInfo: block doesn't exist! hnid = 0x%08X\n", hnid);
-			System.out.printf("getNodeInfo: block doesn't exist! whichBlock = 0x%08X\n", whichBlock);
-			System.out.println(this.arrayBlocks.length);
-			throw new PSTException("wigging out");
+			String err = String.format("getNodeInfo: block doesn't exist! hnid = 0x%08X\n", hnid);
+			err += String.format("getNodeInfo: block doesn't exist! whichBlock = 0x%08X\n", whichBlock);
+			err += "\n"+(this.arrayBlocks.length);
+			throw new PSTException(err);
 			//return null;
 		}
 
@@ -251,8 +251,8 @@ class PSTTable {
 		int iHeapNodePageMap = (int)in.seekAndReadLong(blockOffset, 2) + blockOffset;
 		int cAlloc = (int)in.seekAndReadLong(iHeapNodePageMap, 2);
 		if ( index >= cAlloc+1 ) {
-			System.out.printf("getNodeInfo: node index doesn't exist! nid = 0x%08X\n", hnid);
-			return null;
+			throw new PSTException(String.format("getNodeInfo: node index doesn't exist! nid = 0x%08X\n", hnid));
+			//return null;
 		}
 		iHeapNodePageMap += (2 * index)+2;
 		int start = (int)in.seekAndReadLong(iHeapNodePageMap, 2) + blockOffset;

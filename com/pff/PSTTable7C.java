@@ -68,7 +68,7 @@ class PSTTable7C extends PSTTable {
 
 		if (tableTypeByte != 0x7c)
 		{
-			System.out.println(Long.toHexString(this.tableTypeByte));
+			//System.out.println(Long.toHexString(this.tableTypeByte));
 			throw new PSTException("unable to create PSTTable7C, table does not appear to be a 7c!");
 		}
 		
@@ -331,12 +331,6 @@ class PSTTable7C extends PSTTable {
 						break;
 					} else {
 						NodeInfo entryInfo = getNodeInfo(item.entryValueReference);
-						if (entryInfo == null) {
-							System.out.println(dataSetNumber);
-							System.out.println(this);
-							System.exit(0);
-
-						}
 						item.data = new byte[entryInfo.length()];
 						//System.arraycopy(entryInfo, 0, item.data, 0, item.data.length);
 						entryInfo.in.seek(entryInfo.startOffset);

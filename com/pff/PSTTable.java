@@ -111,8 +111,8 @@ class PSTTable {
 
 		numberOfIndexLevels = (int)headerNodeInfo.in.read() & 0xFF;
 		if ( numberOfIndexLevels != 0 ) {
-			System.out.println(this.tableType);
-			System.out.printf("Table with %d index levels\n", numberOfIndexLevels);
+			// System.out.println(this.tableType);
+			// System.out.printf("Table with %d index levels\n", numberOfIndexLevels);
 		}
 		//hidRoot = (int)PSTObject.convertLittleEndianBytesToLong(nodeInfo, 4, 8);	// hidRoot
 		hidRoot = (int)headerNodeInfo.seekAndReadLong(4, 4);

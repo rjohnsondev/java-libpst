@@ -185,6 +185,40 @@ public class PSTAttachment extends PSTObject {
 		return this.getIntItem(0x3710);
 	}
 
+	/**
+	 * Attachment Content ID
+	 */
+	public String getContentId() {
+		return this.getStringItem(0x3712);
+	}
 
+	/**
+	 * Attachment not available in HTML
+	 */
+	public boolean isAttachmentInvisibleInHtml() {
+		int actionFlag = this.getIntItem(0x3714);
+		return ((actionFlag & 0x1) > 0);
+	}
+	/**
+	 * Attachment not available in RTF
+	 */
+	public boolean isAttachmentInvisibleInRTF() {
+		int actionFlag = this.getIntItem(0x3714);
+		return ((actionFlag & 0x2) > 0);
+	}
+	/**
+	 * Attachment is MHTML REF
+	 */
+	public boolean isAttachmentMhtmlRef() {
+		int actionFlag = this.getIntItem(0x3714);
+		return ((actionFlag & 0x4) > 0);
+	}
+
+	/**
+	 * Attachment content disposition
+	 */
+	public String getAttachmentContentDisposition() {
+		return this.getStringItem(0x3716);
+	}
 	
 }

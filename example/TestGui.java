@@ -41,11 +41,8 @@ public class TestGui {
 
 			String filename = chooser.getSelectedFile().getCanonicalPath();
 			 */
-			String filename = "RichardJohnson@sumac.uk.com - exchange.ost";
-
-			//filename = "richard@test.com.pst";
-			//filename = "G:\\From old Tower\\pff\\java\\Outlook.pst";
-			//filename = "G:\\From old Tower\\pff\\java\\Outlook-alice.pst";
+			String filename = "Outlook-new.pst";
+			filename = "G:\\From old Tower\\pff\\java\\Old Email.pst";
 			//filename = "RichardJohnson@sumac.uk.com - exchange.ost";
 			//String filename = "Outlook 32bit.pst";
 			//String russian = "Узеи́р Абду́л-Гусе́йн оглы́ Гаджибе́ков (азерб. Üzeyir bəy Əbdülhüseyn oğlu Hacıbəyov; 18 сентября 1885, Агджабеди, Шушинский уезд, Елизаветпольская губерния, Российская империя — 23 ноября 1948, Баку, Азербайджанская ССР, СССР) — азербайджанский композитор, дирижёр, публицист, фельетонист, драматург и педагог, народный артист СССР (1938), дважды лауреат Сталинских премий (1941, 1946). Действительный член АН Азербайджана (1945), профессор (1940), ректор Азербайджанской государственной ";
@@ -235,8 +232,7 @@ public class TestGui {
 						emailText.setText(rss.toString());
 					} else if (selectedMessage != null) {
 //						System.out.println(selectedMessage.getMessageClass());
-						//emailText.setText(selectedMessage.getBody());
-						emailText.setText(selectedMessage.getBody() + "\n----------------+++++++++++++++-----------------\n"+selectedMessage.getBodyHTML());
+						emailText.setText(selectedMessage.getBody());
 						//System.out.println(selectedMessage);
 						//emailText.setText(selectedMessage.toString());
 						//emailText.setText(selectedMessage.toString());
@@ -421,7 +417,6 @@ class EmailTableModel extends AbstractTableModel {
     	theFolder.moveChildCursorTo(0);
     	this.theFolder = theFolder;
     	cache = new HashMap();
-		System.gc();
     	this.fireTableDataChanged();
     }
 

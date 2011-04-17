@@ -143,6 +143,11 @@ public class PSTFolder extends PSTObject {
 			return;
 		}
 
+		// some folder types don't have children:
+		if (this.getNodeType() == PSTObject.NID_TYPE_SEARCH_FOLDER) {
+			return;
+		}
+
 		try {
 			long folderDescriptorIndex = this.descriptorIndexNode.descriptorIdentifier + 12; // +12 lists emails! :D
 			DescriptorIndexNode folderDescriptor = this.pstFile.getDescriptorIndexNode(folderDescriptorIndex);

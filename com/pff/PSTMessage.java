@@ -653,8 +653,9 @@ public class PSTMessage extends PSTObject {
 		}
 		return this.getStringItem(0x1013, 0, cp);
 	}
+
 	/**
-	 * Message identifier
+	 * Message ID for this email as allocated per rfc2822
 	 */
 	public String getInternetMessageId() {
 		return this.getStringItem(0x1035);

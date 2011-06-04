@@ -94,7 +94,7 @@ public class PSTFile {
 	private int encryptionType = 0;
 	
 	// our all important tree.
-	private LinkedHashMap<Integer, HashMap<Integer, DescriptorIndexNode>> childrenDescriptorTree = new LinkedHashMap<Integer, HashMap<Integer, DescriptorIndexNode>>();
+	private LinkedHashMap<Integer, LinkedList<DescriptorIndexNode>> childrenDescriptorTree = null;
 	
 	private HashMap<Long, Integer> nameToId = new HashMap<Long, Integer>();
 	private static HashMap<Integer, Long> idToName = new HashMap<Integer, Long>();
@@ -767,5 +767,111 @@ public class PSTFile {
 
 		return output;
 	}
+
+	/**
+	 * Build the children descriptor tree
+	 * This goes through the entire descriptor B-Tree and adds every item to the childrenDescriptorTree.
+	 * This is used as fallback when the nodes that list file contents are broken.
+	 * @param in
+	 * @throws IOException
+	 * @throws PSTException
+	 */
+	LinkedHashMap<Integer, LinkedList<DescriptorIndexNode>> getChildDescriptorTree()
+			throws IOException, PSTException
+	{
+		if (this.childrenDescriptorTree == null) {
+			long btreeStartOffset = 0;
+			if (this.getPSTFileType() == PST_TYPE_ANSI) {
+				btreeStartOffset = this.extractLEFileOffset(188);
+			} else {
+				btreeStartOffset = this.extractLEFileOffset(224);
+			}
+			this.childrenDescriptorTree = new LinkedHashMap<Integer, LinkedList<DescriptorIndexNode>>();
+			processDescriptorBTree(btreeStartOffset);
+		}
+		return this.childrenDescriptorTree;
+	}
+
+	/**
+	 * Recursive function for building the descriptor tree, used by buildDescriptorTree
+	 * @param in
+	 * @param btreeStartOffset
+	 * @throws IOException
+	 * @throws PSTException
+	 */
+	private void processDescriptorBTree(long btreeStartOffset)
+			throws IOException, PSTException
+	{
+		byte[] temp = new byte[2];
+		if (this.getPSTFileType() == PST_TYPE_ANSI) {
+			in.seek(btreeStartOffset+500);
+		} else {
+			in.seek(btreeStartOffset+496);
+		}
+		in.read(temp);
+
+		if ((temp[0] == 0xffffff81 && temp[1] == 0xffffff81)) {
+
+			if (this.getPSTFileType() == PST_TYPE_ANSI) {
+				in.seek(btreeStartOffset+496);
+			} else {
+				in.seek(btreeStartOffset+488);
+			}
+
+			int numberOfItems = in.read();
+			in.read(); // maxNumberOfItems
+			in.read(); // itemSize
+			int levelsToLeaf = in.read();
+
+			if (levelsToLeaf > 0) {
+				for (int x = 0; x < numberOfItems; x++) {
+					if (this.getPSTFileType() == PST_TYPE_ANSI) {
+						long branchNodeItemStartIndex = (btreeStartOffset + (12*x));
+						long nextLevelStartsAt =  this.extractLEFileOffset(branchNodeItemStartIndex+8);
+						processDescriptorBTree(nextLevelStartsAt);
+					} else {
+						long branchNodeItemStartIndex = (btreeStartOffset + (24*x));
+						long nextLevelStartsAt =  this.extractLEFileOffset(branchNodeItemStartIndex+16);
+						processDescriptorBTree(nextLevelStartsAt);
+					}
+				}
+			} else {
+				for (int x = 0; x < numberOfItems; x++) {
+					// The 64-bit descriptor index b-tree leaf node item
+					// give me the offset index please!
+					if (this.getPSTFileType() == PSTFile.PST_TYPE_ANSI) {
+						in.seek(btreeStartOffset + (x * 16));
+						temp = new byte[16];
+						in.read(temp);
+					} else {
+						in.seek(btreeStartOffset + (x * 32));
+						temp = new byte[32];
+						in.read(temp);
+					}
+
+					DescriptorIndexNode tempNode = new DescriptorIndexNode(temp, this.getPSTFileType());
+
+					// we don't want to be children of ourselves...
+					if (tempNode.parentDescriptorIndexIdentifier == tempNode.descriptorIdentifier) {
+						// skip!
+					} else if (childrenDescriptorTree.containsKey(tempNode.parentDescriptorIndexIdentifier)) {
+						// add this entry to the existing list of children
+						LinkedList<DescriptorIndexNode> children = childrenDescriptorTree.get(tempNode.parentDescriptorIndexIdentifier);
+						children.add(tempNode);
+					} else {
+						// create a new entry and add this one to that
+						LinkedList<DescriptorIndexNode> children = new LinkedList<DescriptorIndexNode>();
+						children.add(tempNode);
+						childrenDescriptorTree.put(tempNode.parentDescriptorIndexIdentifier, children);
+					}
+					this.itemCount++;
+				}
+			}
+		} else {
+			PSTObject.printHexFormatted(temp, true);
+			throw new PSTException("Unable to read descriptor node, is not a descriptor");
+		}
+	}
+
 
 }

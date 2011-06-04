@@ -139,7 +139,10 @@ public class PSTObject {
 	}
 
 	public int getNodeType() {
-		return this.descriptorIndexNode.descriptorIdentifier & 0x1F;
+		return PSTObject.getNodeType(this.descriptorIndexNode.descriptorIdentifier);
+	}
+	public static int getNodeType(int descriptorIdentifier) {
+		return descriptorIdentifier & 0x1F;
 	}
 	
 	

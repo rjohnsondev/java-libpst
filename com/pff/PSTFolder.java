@@ -129,6 +129,7 @@ public class PSTFolder extends PSTObject {
 	private LinkedHashSet<DescriptorIndexNode> otherItems = null;
 
 	private PSTTable7C emailsTable = null;
+	private LinkedList<DescriptorIndexNode> fallbackEmailsTable = null;
 	private PSTTable7C subfoldersTable = null;
 	
 	/**
@@ -139,7 +140,7 @@ public class PSTFolder extends PSTObject {
 	private void initEmailsTable()
 		throws PSTException, IOException
 	{
-		if (this.emailsTable != null) {
+		if (this.emailsTable != null || this.fallbackEmailsTable != null) {
 			return;
 		}
 
@@ -163,7 +164,26 @@ public class PSTFolder extends PSTObject {
 					0x67F2
 			);
 		} catch (Exception err) {
-			throw new PSTException("Can't get children for folder "+this.getDisplayName()+"("+this.getDescriptorNodeId()+") child count: "+this.getContentCount()+ " - "+err.toString(), err);
+
+			// here we have to attempt to fallback onto the children as listed by the descriptor b-tree
+			LinkedHashMap<Integer, LinkedList<DescriptorIndexNode>> tree = this.pstFile.getChildDescriptorTree();
+
+			fallbackEmailsTable = new LinkedList<DescriptorIndexNode>();
+			LinkedList<DescriptorIndexNode> allChildren = tree.get(this.getDescriptorNode().descriptorIdentifier);
+
+			// quickly go through and remove those entries that are not messages!
+			for (DescriptorIndexNode node : allChildren) {
+				if (PSTObject.getNodeType(node.descriptorIdentifier) == PSTObject.NID_TYPE_NORMAL_MESSAGE) {
+					fallbackEmailsTable.add(node);
+				}
+			}
+
+			System.err.println(
+					"Can't get children for folder "+
+					this.getDisplayName()+
+					"("+this.getDescriptorNodeId()+") child count: "+
+					this.getContentCount()+ " - "+
+					err.toString()+ ", using alternate child tree with " + fallbackEmailsTable.size()+" items");
 		}
 	}
 	
@@ -180,26 +200,41 @@ public class PSTFolder extends PSTObject {
 		throws PSTException, IOException
 	{
 		initEmailsTable();
-		
+
 		Vector<PSTObject> output = new Vector<PSTObject>();
-		if (this.emailsTable == null) {
-			return output;
-		}
-		List<HashMap<Integer, PSTTable7CItem>> rows = this.emailsTable.getItems(currentEmailIndex, numberToReturn);
-		
-		for (int x = 0; x < rows.size(); x++) {
-			if (this.currentEmailIndex == this.getContentCount())
-			{
-				// no more!
-				break;
+		if (emailsTable != null) {
+			List<HashMap<Integer, PSTTable7CItem>> rows = this.emailsTable.getItems(currentEmailIndex, numberToReturn);
+
+			for (int x = 0; x < rows.size(); x++) {
+				if (this.currentEmailIndex >= this.getContentCount())
+				{
+					// no more!
+					break;
+				}
+				// get the emails from the rows
+				PSTTable7CItem emailRow = rows.get(x).get(0x67F2);
+				DescriptorIndexNode childDescriptor = pstFile.getDescriptorIndexNode(emailRow.entryValueReference);
+				PSTObject child = PSTObject.detectAndLoadPSTObject(pstFile, childDescriptor);
+				output.add(child);
+				currentEmailIndex++;
 			}
-			// get the emails from the rows
-			PSTTable7CItem emailRow = rows.get(x).get(0x67F2);
-			DescriptorIndexNode childDescriptor = pstFile.getDescriptorIndexNode(emailRow.entryValueReference);
-			PSTObject child = PSTObject.detectAndLoadPSTObject(pstFile, childDescriptor);
-			output.add(child);
-			currentEmailIndex++;
+		} else if (fallbackEmailsTable != null) {
+			// we use the fallback
+			List<HashMap<Integer, PSTTable7CItem>> rows = this.emailsTable.getItems(currentEmailIndex, numberToReturn);
+			ListIterator<DescriptorIndexNode> iterator = this.fallbackEmailsTable.listIterator(currentEmailIndex);
+			for (int x = 0; x < numberToReturn; x++) {
+				if (this.currentEmailIndex >= this.getContentCount())
+				{
+					// no more!
+					break;
+				}
+				DescriptorIndexNode childDescriptor = iterator.next();
+				PSTObject child = PSTObject.detectAndLoadPSTObject(pstFile, childDescriptor);
+				output.add(child);
+				currentEmailIndex++;
+			}
 		}
+
 
 		return output;
 	}
@@ -241,23 +276,34 @@ public class PSTFolder extends PSTObject {
 	{
 		initEmailsTable();
 
-		if (this.emailsTable == null) {
-			return null;
-		}
-		List<HashMap<Integer, PSTTable7CItem>> rows = this.emailsTable.getItems(currentEmailIndex, 1);
+		if (this.emailsTable != null) {
+			List<HashMap<Integer, PSTTable7CItem>> rows = this.emailsTable.getItems(currentEmailIndex, 1);
 
-		if (this.currentEmailIndex == this.getContentCount())
-		{
-			// no more!
-			return null;
-		}
-		// get the emails from the rows
-		PSTTable7CItem emailRow = rows.get(0).get(0x67F2);
-		DescriptorIndexNode childDescriptor = pstFile.getDescriptorIndexNode(emailRow.entryValueReference);
-		PSTObject child = PSTObject.detectAndLoadPSTObject(pstFile, childDescriptor);
-		currentEmailIndex++;
+			if (this.currentEmailIndex == this.getContentCount())
+			{
+				// no more!
+				return null;
+			}
+			// get the emails from the rows
+			PSTTable7CItem emailRow = rows.get(0).get(0x67F2);
+			DescriptorIndexNode childDescriptor = pstFile.getDescriptorIndexNode(emailRow.entryValueReference);
+			PSTObject child = PSTObject.detectAndLoadPSTObject(pstFile, childDescriptor);
+			currentEmailIndex++;
 
-		return child;
+			return child;
+		} else if (this.fallbackEmailsTable != null) {
+			if (this.currentEmailIndex >= this.getContentCount())
+			{
+				// no more!
+				return null;
+			}
+			// get the emails from the rows
+			DescriptorIndexNode childDescriptor = fallbackEmailsTable.get(currentEmailIndex);
+			PSTObject child = PSTObject.detectAndLoadPSTObject(pstFile, childDescriptor);
+			currentEmailIndex++;
+			return child;
+		}
+		return null;
 	}
 	
 	/**

@@ -818,10 +818,6 @@ public class PSTMessage extends PSTObject {
 		}
 	}
 
-	public String displayTo() {
-		return this.getStringItem(0x0e04);
-	}
-	
 	/**
 	 * Start date Filetime
 	 */
@@ -853,6 +849,46 @@ public class PSTMessage extends PSTObject {
 	 */
 	public boolean isFlagged() {
 		return getTaskDueDate() != null;
+	}
+
+	/**
+	 * get the categories defined for this message
+	 */
+	public String[] getColorCategories()
+			throws PSTException
+	{
+		String[] categories = new String[0];
+		if (this.items.containsKey(0x8016)) {
+			try {
+				PSTTableBCItem item = this.items.get(0x8016);
+				//PSTObject.printHexFormatted(item.data, true);
+				int categoryCount = (int)item.data[0];
+				categories = new String[categoryCount];
+				int[] offsets = new int[categoryCount];
+				for (int x = 0; x < categoryCount; x++) {
+					offsets[x] = (int)PSTObject.convertBigEndianBytesToLong(item.data, (x*4)+1, (x+1)*4+1);
+				}
+				for (int x = 0; x < offsets.length -1; x++) {
+					int start = offsets[x];
+					int end = offsets[x+1];
+					int length = (end-start);
+					byte[] string = new byte[length];
+					System.arraycopy(item.data, start, string, 0, length);
+					String name = new String(string, "UTF-16LE");
+					categories[x] = name;
+				}
+				int start = offsets[offsets.length-1];
+				int end = item.data.length;
+				int length = (end-start);
+				byte[] string = new byte[length];
+				System.arraycopy(item.data, start, string, 0, length);
+				String name = new String(string, "UTF-16LE");
+				categories[categories.length-1] = name;
+			} catch (Exception err) {
+				throw new PSTException("Unable to decode category data", err);
+			}
+		}
+		return categories;
 	}
 	
 	/**

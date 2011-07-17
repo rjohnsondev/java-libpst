@@ -125,13 +125,11 @@ class PSTTable7C extends PSTTable {
 		numberOfKeys = keyTableInfo.length() / (sizeOfItemKey+sizeOfItemValue);
 		offset = 0;
 		for (int x = 0; x < numberOfKeys; x++) {
-			//int Context = (int)PSTObject.convertLittleEndianBytesToLong(keyTableInfo, offset, offset+4);
-			int Context = (int)keyTableInfo.seekAndReadLong(offset, 4);
-			//int RowIndex = (int)PSTObject.convertLittleEndianBytesToLong(keyTableInfo, offset+4, offset+8);
-			int RowIndex = (int)keyTableInfo.seekAndReadLong(offset+4, 4);
+			int Context = (int)keyTableInfo.seekAndReadLong(offset, sizeOfItemKey);
+			offset += sizeOfItemKey;
+			int RowIndex = (int)keyTableInfo.seekAndReadLong(offset, sizeOfItemValue);
+			offset += sizeOfItemValue;
 			keyMap.put(Context, RowIndex);
-/*			System.out.printf("\t0x%08X, 0x%08X\n", Context, RowIndex);	/**/
-			offset += 8;
 		}
 		
 		// Read the Row Matrix

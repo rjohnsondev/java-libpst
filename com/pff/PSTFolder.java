@@ -220,7 +220,6 @@ public class PSTFolder extends PSTObject {
 			}
 		} else if (fallbackEmailsTable != null) {
 			// we use the fallback
-			List<HashMap<Integer, PSTTable7CItem>> rows = this.emailsTable.getItems(currentEmailIndex, numberToReturn);
 			ListIterator<DescriptorIndexNode> iterator = this.fallbackEmailsTable.listIterator(currentEmailIndex);
 			for (int x = 0; x < numberToReturn; x++) {
 				if (this.currentEmailIndex >= this.getContentCount())

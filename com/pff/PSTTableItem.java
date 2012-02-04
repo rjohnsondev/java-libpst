@@ -190,6 +190,6 @@ class PSTTableItem {
 		return ret + getStringValue();
 	}
 
-	private static SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyyMMdd'T'HHmmss'Z'");
+	private SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyyMMdd'T'HHmmss'Z'");
 	private static SimpleTimeZone utcTimeZone = new SimpleTimeZone(0, "UTC");
 }

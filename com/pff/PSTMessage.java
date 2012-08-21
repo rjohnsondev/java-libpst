@@ -973,7 +973,7 @@ public class PSTMessage extends PSTObject {
 	public PSTRecipient getRecipient(int recipientNumber)
 		throws PSTException, IOException
 	{
-		if ( recipientNumber >= getNumberOfRecipients() )
+		if ( recipientNumber >= getNumberOfRecipients() || recipientNumber >= recipientTable.getItems().size() )
 		{
 			throw new PSTException("unable to fetch recipient number "+recipientNumber);
 		}

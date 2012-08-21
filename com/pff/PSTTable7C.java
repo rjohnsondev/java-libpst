@@ -237,7 +237,7 @@ class PSTTable7C extends PSTTable {
 				// Does this column exist for this row?
 				int bitIndex = columnDescriptors[col].iBit / 8;
 				int bit = columnDescriptors[col].iBit % 8;
-				if ( (bitmap[bitIndex] & (1<<bit)) == 0 )
+				if ( bitIndex >= bitmap.length || (bitmap[bitIndex] & (1<<bit)) == 0 )
 				{
 					// Column doesn't exist
 					//System.out.printf("Col %d (0x%04X) not present\n", col, columnDescriptors[col].id);	/**/

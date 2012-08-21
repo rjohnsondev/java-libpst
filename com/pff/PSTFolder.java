@@ -171,11 +171,13 @@ public class PSTFolder extends PSTObject {
 			fallbackEmailsTable = new LinkedList<DescriptorIndexNode>();
 			LinkedList<DescriptorIndexNode> allChildren = tree.get(this.getDescriptorNode().descriptorIdentifier);
 
-			// quickly go through and remove those entries that are not messages!
-			for (DescriptorIndexNode node : allChildren) {
-				if (PSTObject.getNodeType(node.descriptorIdentifier) == PSTObject.NID_TYPE_NORMAL_MESSAGE) {
-					fallbackEmailsTable.add(node);
-				}
+			if (allChildren != null) {
+               // quickly go through and remove those entries that are not messages!
+               for (DescriptorIndexNode node : allChildren) {
+                   if (node != null && PSTObject.getNodeType(node.descriptorIdentifier) == PSTObject.NID_TYPE_NORMAL_MESSAGE) {
+                       fallbackEmailsTable.add(node);
+                   }
+               }
 			}
 
 			System.err.println(
@@ -291,7 +293,7 @@ public class PSTFolder extends PSTObject {
 
 			return child;
 		} else if (this.fallbackEmailsTable != null) {
-			if (this.currentEmailIndex >= this.getContentCount())
+			if (this.currentEmailIndex >= this.getContentCount() || this.currentEmailIndex >= this.fallbackEmailsTable.size())
 			{
 				// no more!
 				return null;
@@ -335,7 +337,10 @@ public class PSTFolder extends PSTObject {
 		throws IOException, PSTException
 	{
 		this.initSubfoldersTable();
-		return this.subfoldersTable.getRowCount();
+		if (this.subfoldersTable != null)
+		    return this.subfoldersTable.getRowCount();
+		else
+		    return 0;
 	}
 	
 	/**

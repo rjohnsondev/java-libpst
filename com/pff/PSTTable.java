@@ -179,7 +179,11 @@ class PSTTable {
 		//byte[]	data;
 		PSTNodeInputStream in;
 		
-		NodeInfo(int start, int end, PSTNodeInputStream in) {
+		NodeInfo(int start, int end, PSTNodeInputStream in)
+           throws PSTException
+       {
+           if (start > end)
+               throw new PSTException(String.format("Invalid NodeInfo parameters: start %1$d is greater than end %2$d", start, end));
 			startOffset = start;
 			endOffset = end;
 			this.in = in;

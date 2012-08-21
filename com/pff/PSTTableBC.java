@@ -33,7 +33,7 @@
  */
 package com.pff;
 
-import java.util.*;
+import java.util.HashMap;
 
 
 /**
@@ -45,6 +45,10 @@ class PSTTableBC extends PSTTable {
 	
 	private HashMap<Integer, PSTTableBCItem> items = new HashMap<Integer, PSTTableBCItem>();
 	
+  private StringBuilder                    descBuffer            =
+                                                                     new StringBuilder();
+  private boolean                          isDescNotYetInitiated = false;
+
 	PSTTableBC(PSTNodeInputStream in)
 		throws PSTException, java.io.IOException
 	{
@@ -70,7 +74,7 @@ class PSTTableBC extends PSTTable {
 		//System.exit(0);
 		numberOfKeys = keyTableInfo.length / (sizeOfItemKey+sizeOfItemValue);
 
-		description += ("Number of entries: "+numberOfKeys+"\n");
+    descBuffer.append("Number of entries: " + numberOfKeys + "\n");
 
 		// Read the key table
 		int offset = 0;
@@ -167,7 +171,8 @@ class PSTTableBC extends PSTTable {
 			offset = offset + 8;
 						
 			items.put(item.entryType, item);
-			description += item.toString()+"\n\n";
+      // description += item.toString()+"\n\n";
+
 		}
 
 		releaseRawData();
@@ -183,7 +188,18 @@ class PSTTableBC extends PSTTable {
 	}
 	
 	public String toString() {
-		return this.description;
+	  
+	  if (isDescNotYetInitiated) {
+	    isDescNotYetInitiated=false;
+	    
+	    for (Integer curItem:items.keySet()) {
+        descBuffer.append(items.get(curItem).toString() + "\n\n");
+	    }
+//	    description += item.toString()+"\n\n";
+	  }
+	  
+
+		return this.description + descBuffer.toString();
 	}
 }
 

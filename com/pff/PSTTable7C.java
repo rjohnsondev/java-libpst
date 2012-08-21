@@ -355,7 +355,7 @@ class PSTTable7C extends PSTTable {
 
 				currentItem.put(item.entryType, item);
 				
-				description += item.toString()+"\n\n";
+				//description += item.toString()+"\n\n";
 			}
 			itemList.add(dataSetNumber, currentItem);
 			dataSetNumber++;
@@ -378,9 +378,9 @@ class PSTTable7C extends PSTTable {
 			//ibData = (int)(PSTObject.convertLittleEndianBytesToLong(data, offset+4, offset+6) & 0xFFFF);
 			ibData = (int)(nodeInfo.seekAndReadLong(offset+4, 2) & 0xFFFF);
 			//cbData = (int)data[offset+6] & 0xFF;
-			cbData = (int)nodeInfo.in.read() & 0xFF;
+			cbData = nodeInfo.in.read() & 0xFF;
 			//iBit = (int)data[offset+7] & 0xFF;
-			iBit = (int)nodeInfo.in.read() & 0xFF;
+			iBit = nodeInfo.in.read() & 0xFF;
 		}
 
 		int		type;

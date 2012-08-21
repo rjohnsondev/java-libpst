@@ -57,7 +57,7 @@ public class PSTMessageStore extends PSTObject {
 		// attempt to find in the table.
 		int guidEntryType = 0x0ff9;
 		if (this.items.containsKey(guidEntryType)) {
-			PSTTableBCItem item = (PSTTableBCItem)this.items.get(guidEntryType);
+			PSTTableBCItem item = this.items.get(guidEntryType);
 			int offset = 0;
 			byte[] bytes = item.data;
 			long mostSigBits = (PSTObject.convertLittleEndianBytesToLong(bytes, offset, offset+4) << 32) |

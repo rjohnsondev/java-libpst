@@ -594,9 +594,9 @@ public class PSTMessage extends PSTObject {
 	 */
 	public String getBody() {
 		String cp = null;
-		PSTTableBCItem cpItem = (PSTTableBCItem)this.items.get(0x3FFD); // PidTagMessageCodepage
+		PSTTableBCItem cpItem = this.items.get(0x3FFD); // PidTagMessageCodepage
 		if (cpItem == null) {
-			cpItem = (PSTTableBCItem)this.items.get(0x3FDE); // PidTagInternetCodepage
+			cpItem = this.items.get(0x3FDE); // PidTagInternetCodepage
 		}
 		if (cpItem != null) {
 			cp = PSTFile.getInternetCodePageCharset(cpItem.entryValueReference);
@@ -644,9 +644,9 @@ public class PSTMessage extends PSTObject {
 	 */
 	public String getBodyHTML() {
 		String cp = null;
-		PSTTableBCItem cpItem = (PSTTableBCItem)this.items.get(0x3FDE); // PidTagInternetCodepage
+		PSTTableBCItem cpItem = this.items.get(0x3FDE); // PidTagInternetCodepage
 		if (cpItem == null) {
-			cpItem = (PSTTableBCItem)this.items.get(0x3FFD); // PidTagMessageCodepage
+			cpItem = this.items.get(0x3FFD); // PidTagMessageCodepage
 		}
 		if (cpItem != null) {
 			cp = PSTFile.getInternetCodePageCharset(cpItem.entryValueReference);
@@ -862,7 +862,7 @@ public class PSTMessage extends PSTObject {
 			try {
 				PSTTableBCItem item = this.items.get(0x8016);
 				//PSTObject.printHexFormatted(item.data, true);
-				int categoryCount = (int)item.data[0];
+				int categoryCount = item.data[0];
 				if (categoryCount > 0) {
 					categories = new String[categoryCount];
 					int[] offsets = new int[categoryCount];

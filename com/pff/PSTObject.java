@@ -34,13 +34,7 @@
 package com.pff;
 
 import java.io.IOException;
-import java.io.RandomAccessFile;
-import java.nio.charset.Charset;
 import java.util.*;
-import java.io.*;
-
-//import com.pff.PSTFile.PSTFileBlock;
-import java.io.ByteArrayInputStream;
 
 /**
  * PST Object is the root class of all PST Items.
@@ -151,7 +145,7 @@ public class PSTObject {
 	}
 	protected int getIntItem(int identifier, int defaultValue) {
 		if (this.items.containsKey(identifier)) {
-			PSTTableBCItem item = (PSTTableBCItem)this.items.get(identifier);
+			PSTTableBCItem item = this.items.get(identifier);
 			return item.entryValueReference;
 		}
 		return defaultValue;
@@ -162,7 +156,7 @@ public class PSTObject {
 	}
 	protected boolean getBooleanItem(int identifier, boolean defaultValue) {
 		if (this.items.containsKey(identifier)) {
-			PSTTableBCItem item = (PSTTableBCItem)this.items.get(identifier);
+			PSTTableBCItem item = this.items.get(identifier);
 			return item.entryValueReference != 0;
 		}
 		return defaultValue;
@@ -173,7 +167,7 @@ public class PSTObject {
 	}
 	protected double getDoubleItem(int identifier, double defaultValue) {
 		if (this.items.containsKey(identifier)) {
-			PSTTableBCItem item = (PSTTableBCItem)this.items.get(identifier);
+			PSTTableBCItem item = this.items.get(identifier);
 			long longVersion = PSTObject.convertLittleEndianBytesToLong(item.data);
 			return Double.longBitsToDouble(longVersion);
 		}
@@ -186,7 +180,7 @@ public class PSTObject {
 	}
 	protected long getLongItem(int identifier, long defaultValue) {
 		if (this.items.containsKey(identifier)) {
-			PSTTableBCItem item = (PSTTableBCItem)this.items.get(identifier);
+			PSTTableBCItem item = this.items.get(identifier);
 			if (item.entryValueType == 0x0003) {
 				// we are really just an int
 				return item.entryValueReference;
@@ -210,7 +204,7 @@ public class PSTObject {
 		return getStringItem(identifier, stringType, null);
 	}
 	protected String getStringItem(int identifier, int stringType, String codepage) {
-		PSTTableBCItem item = (PSTTableBCItem)this.items.get(identifier);
+		PSTTableBCItem item = this.items.get(identifier);
 		if ( item != null ) {
 
 			if (codepage == null) {
@@ -231,7 +225,7 @@ public class PSTObject {
 				this.localDescriptorItems.containsKey(item.entryValueReference))
 			{
 				// we have a hit!
-				PSTDescriptorItem descItem = (PSTDescriptorItem)this.localDescriptorItems.get(item.entryValueReference);
+				PSTDescriptorItem descItem = this.localDescriptorItems.get(item.entryValueReference);
 				
 				try {
 					byte[] data = descItem.getData();
@@ -293,9 +287,9 @@ public class PSTObject {
 
 	private String getStringCodepage() {
 		// try and get the codepage
-		PSTTableBCItem cpItem = (PSTTableBCItem)this.items.get(0x3FFD); // PidTagMessageCodepage
+		PSTTableBCItem cpItem = this.items.get(0x3FFD); // PidTagMessageCodepage
 		if (cpItem == null) {
-			cpItem = (PSTTableBCItem)this.items.get(0x3FDE); // PidTagInternetCodepage
+			cpItem = this.items.get(0x3FDE); // PidTagInternetCodepage
 		}
 		if (cpItem != null) {
 			return PSTFile.getInternetCodePageCharset(cpItem.entryValueReference);
@@ -305,7 +299,7 @@ public class PSTObject {
 	
 	public Date getDateItem(int identifier) {
 		if ( this.items.containsKey(identifier) ) {
-			PSTTableBCItem item = (PSTTableBCItem)this.items.get(identifier);
+			PSTTableBCItem item = this.items.get(identifier);
 			if (item.data.length == 0 ) {
 				return new Date(0);
 			}
@@ -319,7 +313,7 @@ public class PSTObject {
 	
 	protected byte[] getBinaryItem(int identifier) {
 		if (this.items.containsKey(identifier)) {
-			PSTTableBCItem item = (PSTTableBCItem)this.items.get(identifier);
+			PSTTableBCItem item = this.items.get(identifier);
 			if ( item.entryValueType == 0x0102 ) {
 				if ( !item.isExternalValueReference ) {
 					return item.data;
@@ -328,7 +322,7 @@ public class PSTObject {
 					 this.localDescriptorItems.containsKey(item.entryValueReference))
 				{
 					// we have a hit!
-					PSTDescriptorItem descItem = (PSTDescriptorItem)this.localDescriptorItems.get(item.entryValueReference);
+					PSTDescriptorItem descItem = this.localDescriptorItems.get(item.entryValueReference);
 					try {
 						return descItem.getData();
 					} catch (Exception e) {
@@ -635,7 +629,7 @@ public class PSTObject {
 		int nidType = (folderIndexNode.descriptorIdentifier & 0x1F);
 
 		while (iterator.hasNext()) {
-			Integer key = (Integer)iterator.next();
+			Integer key = iterator.next();
 			if (key.intValue() >= 0x0001 &&
 				key.intValue() <= 0x0bff)
 			{
@@ -787,7 +781,7 @@ public class PSTObject {
     }
 
     public static Calendar apptTimeToCalendar(int minutes) {
-    	final long ms_since_16010101 = (long)minutes * (60*1000L);
+    	final long ms_since_16010101 = minutes * (60*1000L);
         final long ms_since_19700101 = ms_since_16010101 - EPOCH_DIFF;
         Calendar c = Calendar.getInstance(PSTTimeZone.utcTimeZone);
         c.setTimeInMillis(ms_since_19700101);

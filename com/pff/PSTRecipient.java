@@ -128,7 +128,7 @@ public class PSTRecipient {
 
 			if ( item.entryValueType == 0x0002 ) {
 				short s = (short)item.entryValueReference;
-				return (int)s;
+				return s;
 			}
 		}
 		

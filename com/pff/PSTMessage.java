@@ -861,7 +861,9 @@ public class PSTMessage extends PSTObject {
 		if (this.items.containsKey(0x8016)) {
 			try {
 				PSTTableBCItem item = this.items.get(0x8016);
-				//PSTObject.printHexFormatted(item.data, true);
+				if (item.data.length == 0) {
+					return categories;
+				}
 				int categoryCount = item.data[0];
 				if (categoryCount > 0) {
 					categories = new String[categoryCount];

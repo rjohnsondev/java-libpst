@@ -599,7 +599,8 @@ public class PSTObject {
 		// replace the item data with the stuff from the array...
 		return output;
 	}
-/**/	
+/**/
+
 	/**
 	 * Detect and load a PST Object from a file with the specified descriptor index
 	 * @param theFile
@@ -613,103 +614,38 @@ public class PSTObject {
 	{
 		return PSTObject.detectAndLoadPSTObject(theFile, theFile.getDescriptorIndexNode(descriptorIndex));
 	}
-	
+
+	/**
+	 * Detect and load a PST Object from a file with the specified descriptor index
+	 * @param theFile
+	 * @param folderIndexNode
+	 * @return PSTObject with that index
+	 * @throws IOException
+	 * @throws PSTException
+	 */
 	static PSTObject detectAndLoadPSTObject(PSTFile theFile, DescriptorIndexNode folderIndexNode)
 		throws IOException, PSTException
 	{
-		//folderIndexNode.readData(theFile);
-		//PSTTableBC table = new PSTTableBC(folderIndexNode.dataBlock.data, folderIndexNode.dataBlock.blockOffsets);
-		PSTTableBC table = new PSTTableBC(new PSTNodeInputStream(theFile, theFile.getOffsetIndexNode(folderIndexNode.dataOffsetIndexIdentifier)));
-
-		// get the table items and look at the types we are dealing with
-		Set<Integer> keySet = table.getItems().keySet();
-		Iterator<Integer> iterator = keySet.iterator();
-		
-		String type = "";
 		int nidType = (folderIndexNode.descriptorIdentifier & 0x1F);
+		if ( nidType == 0x02 || nidType == 0x03 || nidType == 0x04 ) {
 
-		while (iterator.hasNext()) {
-			Integer key = iterator.next();
-			if (key.intValue() >= 0x0001 &&
-				key.intValue() <= 0x0bff)
-			{
-				type = "Message envelope";
-				if ( nidType != 4 ) {
-					// System.out.printf("nidType 0x%02X for message envelope\n", nidType);
-				}
-				break;
+			PSTTableBC table = new PSTTableBC(new PSTNodeInputStream(theFile, theFile.getOffsetIndexNode(folderIndexNode.dataOffsetIndexIdentifier)));
+
+			HashMap<Integer, PSTDescriptorItem> localDescriptorItems = null;
+			if (folderIndexNode.localDescriptorsOffsetIndexIdentifier != 0) {
+				localDescriptorItems = theFile.getPSTDescriptorItems(folderIndexNode.localDescriptorsOffsetIndexIdentifier);
 			}
-			/*else if (key.intValue() >= 0x1000 &&
-					 key.intValue() <= 0x2fff)
-			{
-				type = "Message content";
-				break;
-			}*/
-			else if (key.intValue() >= 0x3400 &&
-					 key.intValue() <= 0x35ff)
-			{
-				type = "Message store";
-				break;
-			}
-			else if (key.intValue() >= 0x3600 &&
-				key.intValue() <= 0x36ff)
-			{
-				type = "Folder and address book";
-				if ( nidType != 2 && nidType != 3 ) {
-					// System.out.printf("nidType: 0x%02X\n", nidType);
-				}
-				break;
-			}
-			/*else if (key.intValue() >= 0x3700 &&
-					key.intValue() <= 0x38ff)
-			{
-				type = "Attachment";
-				break;
-			}
-			else if (key.intValue() >= 0x3900 &&
-					key.intValue() <= 0x39ff)
-			{
-				type = "Address book";
-				break;
-			}*/
-			/*else if (key.intValue() >= 0x3a00 &&
-					key.intValue() <= 0x3bff)
-			{
-				type = "Messaging user";
-				break;
-			}*/
-			else if (key.intValue() >= 0x3c00 &&
-					key.intValue() <= 0x3cff)
-			{
-				type = "Distribution list";
-				break;
-			}
-		}
-		
-		HashMap<Integer, PSTDescriptorItem> localDescriptorItems = null;
-		
-		if (folderIndexNode.localDescriptorsOffsetIndexIdentifier != 0) {
-			//PSTDescriptor descriptor = new PSTDescriptor(theFile, folderIndexNode.localDescriptorsOffsetIndexIdentifier);
-			localDescriptorItems = theFile.getPSTDescriptorItems(folderIndexNode.localDescriptorsOffsetIndexIdentifier);
-		}
-		
-//		System.out.println(type);
-//		System.out.println(table);
-		
-//		if (type.equals("Folder and address book")) {
-		if ( nidType == 0x02 || nidType == 0x03 ) {
-			return new PSTFolder(theFile, folderIndexNode, table, localDescriptorItems);
-		//} else if (type.equals("Message envelope")) {
-		} else if ( nidType == 0x04 ) {
 			
-			return PSTObject.createAppropriatePSTMessageObject(theFile, folderIndexNode, table, localDescriptorItems);
+			if ( nidType == 0x02 || nidType == 0x03 ) {
+				return new PSTFolder(theFile, folderIndexNode, table, localDescriptorItems);
+			} else  {
+				return PSTObject.createAppropriatePSTMessageObject(theFile, folderIndexNode, table, localDescriptorItems);
+			}
 		}
 		else
 		{			
-			// System.out.println("Unknown child type: "+type);
-			throw new PSTException("Unknown child type: "+type+" - "+folderIndexNode.localDescriptorsOffsetIndexIdentifier);
+			throw new PSTException("Unknown child type with offset id: "+folderIndexNode.localDescriptorsOffsetIndexIdentifier);
 		}
-		
 	}
 
 	static PSTMessage createAppropriatePSTMessageObject(PSTFile theFile, DescriptorIndexNode folderIndexNode, PSTTableBC table, HashMap<Integer, PSTDescriptorItem> localDescriptorItems)
@@ -741,6 +677,62 @@ public class PSTObject {
 		}
 
 		return new PSTMessage(theFile, folderIndexNode, table, localDescriptorItems);
+	}
+
+	static String guessPSTObjectType(PSTFile theFile, DescriptorIndexNode folderIndexNode)
+		throws IOException, PSTException
+	{
+
+		PSTTableBC table = new PSTTableBC(new PSTNodeInputStream(theFile, theFile.getOffsetIndexNode(folderIndexNode.dataOffsetIndexIdentifier)));
+
+		// get the table items and look at the types we are dealing with
+		Set<Integer> keySet = table.getItems().keySet();
+		Iterator<Integer> iterator = keySet.iterator();
+
+		while (iterator.hasNext()) {
+			Integer key = iterator.next();
+			if (key.intValue() >= 0x0001 &&
+				key.intValue() <= 0x0bff)
+			{
+				return "Message envelope";
+			}
+			else if (key.intValue() >= 0x1000 &&
+					 key.intValue() <= 0x2fff)
+			{
+				return "Message content";
+			}
+			else if (key.intValue() >= 0x3400 &&
+					 key.intValue() <= 0x35ff)
+			{
+				return "Message store";
+			}
+			else if (key.intValue() >= 0x3600 &&
+				key.intValue() <= 0x36ff)
+			{
+				return "Folder and address book";
+			}
+			else if (key.intValue() >= 0x3700 &&
+					key.intValue() <= 0x38ff)
+			{
+				return "Attachment";
+			}
+			else if (key.intValue() >= 0x3900 &&
+					key.intValue() <= 0x39ff)
+			{
+				return "Address book";
+			}
+			else if (key.intValue() >= 0x3a00 &&
+					key.intValue() <= 0x3bff)
+			{
+				return "Messaging user";
+			}
+			else if (key.intValue() >= 0x3c00 &&
+					key.intValue() <= 0x3cff)
+			{
+				return "Distribution list";
+			}
+		}
+		return "Unknown";
 	}
 	
 	/**

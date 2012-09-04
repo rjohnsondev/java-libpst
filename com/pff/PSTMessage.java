@@ -857,10 +857,12 @@ public class PSTMessage extends PSTObject {
 	public String[] getColorCategories()
 			throws PSTException
 	{
+		int keywordCategory = pstFile.getPublicStringToIdMapItem("Keywords");
+
 		String[] categories = new String[0];
-		if (this.items.containsKey(0x8016)) {
+		if (this.items.containsKey(keywordCategory)) {
 			try {
-				PSTTableBCItem item = this.items.get(0x8016);
+				PSTTableBCItem item = this.items.get(keywordCategory);
 				if (item.data.length == 0) {
 					return categories;
 				}

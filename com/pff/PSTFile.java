@@ -97,7 +97,9 @@ public class PSTFile {
 	private LinkedHashMap<Integer, LinkedList<DescriptorIndexNode>> childrenDescriptorTree = null;
 	
 	private HashMap<Long, Integer> nameToId = new HashMap<Long, Integer>();
+	private HashMap<String, Integer> stringToId = new HashMap<String, Integer>();
 	private static HashMap<Integer, Long> idToName = new HashMap<Integer, Long>();
+	private HashMap<Integer, String> idToString = new HashMap<Integer, String>();
 	private byte[] guids = null;
 	
 	private int itemCount = 0;
@@ -180,6 +182,7 @@ public class PSTFile {
 	private void processNameToIdMap(RandomAccessFile in)
 		throws IOException, PSTException
 	{
+
 		// Create our guid map
 		for ( int i = 0; i < guidStrings.length; ++i ) {
 			UUID uuid = UUID.fromString(guidStrings[i]);
@@ -238,11 +241,15 @@ public class PSTFile {
 		PSTTableBCItem mapEntries = tableItems.get(3);	//
 		byte[] nameToIdByte = getData(mapEntries, localDescriptorItems);
 
+		PSTTableBCItem stringMapEntries = tableItems.get(4);	//
+		byte[] stringNameToIdByte = getData(stringMapEntries, localDescriptorItems);
+
 		// process the entries
 		for (int x = 0; x+8 < nameToIdByte.length; x += 8) {
 			int dwPropertyId = (int)PSTObject.convertLittleEndianBytesToLong(nameToIdByte, x, x+4);
 			int wGuid = (int)PSTObject.convertLittleEndianBytesToLong(nameToIdByte, x+4, x+6);
 			int wPropIdx = ((int)PSTObject.convertLittleEndianBytesToLong(nameToIdByte, x+6, x+8));
+
 			if ( (wGuid & 0x0001) == 0 ) {
 				wPropIdx += 0x8000;
 				wGuid >>= 1;
@@ -259,8 +266,28 @@ public class PSTFile {
 /*
 				System.out.printf("0x%08X:%04X, 0x%08X\n", dwPropertyId, guidIndex, wPropIdx);
 /**/
+			} else {
+				// else the identifier is a string
+				// dwPropertyId becomes thHke byte offset into the String stream in which the string name of the property is stored.
+				int len = (int)PSTObject.convertLittleEndianBytesToLong(
+						stringNameToIdByte,
+						dwPropertyId,
+						dwPropertyId+4
+					);
+				byte[] keyByteValue = new byte[len];
+				System.arraycopy(stringNameToIdByte, dwPropertyId+4, keyByteValue, 0, keyByteValue.length);
+				wPropIdx += 0x8000;
+				String key = new String(keyByteValue, "UTF-16LE");
+				stringToId.put(key, wPropIdx);
+				idToString.put(wPropIdx, key);
+				/*
+				if (wPropIdx == 32784) {
+					System.out.println("here!" + dwPropertyId);
+					System.out.println(key);
+					//System.out.println(32784 - 0x8000);
+				}
+				*/
 			}
-			// else the identifier is a string
 		}
 	}
 
@@ -293,6 +320,14 @@ public class PSTFile {
 		Integer i = nameToId.get(lKey);
 		if ( i == null )
 		{
+			return -1;
+		}
+		return i;
+	}
+	int getPublicStringToIdMapItem(String key)
+	{
+		Integer i = this.stringToId.get(key);
+		if (i == null) {
 			return -1;
 		}
 		return i;

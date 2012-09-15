@@ -672,6 +672,8 @@ public class PSTObject {
 			return new PSTActivity(theFile, folderIndexNode, table, localDescriptorItems);
 		} else if (messageClass.equals("IPM.Post.Rss")) {
 			return new PSTRss(theFile, folderIndexNode, table, localDescriptorItems);
+		} else if (messageClass.equals("IPM.DistList")) {
+			return new PSTDistList(theFile, folderIndexNode, table, localDescriptorItems);
 		} else {
 			System.err.println("Unknown message type: "+messageClass);
 		}

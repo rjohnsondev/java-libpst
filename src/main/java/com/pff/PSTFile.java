@@ -96,7 +96,7 @@ public class PSTFile {
 	// our all important tree.
 	private LinkedHashMap<Integer, LinkedList<DescriptorIndexNode>> childrenDescriptorTree = null;
 	
-	private HashMap<Long, Integer> nameToId = new HashMap<Long, Integer>();
+	HashMap<Long, Integer> nameToId = new HashMap<Long, Integer>();
 	private HashMap<String, Integer> stringToId = new HashMap<String, Integer>();
 	private static HashMap<Integer, Long> idToName = new HashMap<Integer, Long>();
 	private HashMap<Integer, String> idToString = new HashMap<Integer, String>();
@@ -280,13 +280,6 @@ public class PSTFile {
 				String key = new String(keyByteValue, "UTF-16LE");
 				stringToId.put(key, wPropIdx);
 				idToString.put(wPropIdx, key);
-				/*
-				if (wPropIdx == 32784) {
-					System.out.println("here!" + dwPropertyId);
-					System.out.println(key);
-					//System.out.println(32784 - 0x8000);
-				}
-				*/
 			}
 		}
 	}

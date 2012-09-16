@@ -54,35 +54,73 @@ public class PSTDistList extends PSTMessage {
 		super(theFile, folderIndexNode, table, localDescriptorItems);
 	}
 	
+	private int findNextNullChar(byte[] data, int start) {
+		for (; start < data.length; start += 2) {
+			if (data[start] == 0 && data[start+1] == 0) {
+				break;
+			}
+		}
+		return start;
+	}
+
+	private boolean compareByteArrays(byte[] orig, byte[] other, int start, int end) {
+		if (end - start != orig.length) {
+			return false;
+		}
+		if (end > other.length) {
+			return false;
+		}
+		for (int x = 0; x < orig.length; x++) {
+			if (orig[x] != other[x + start]) {
+				return false;
+			}
+		}
+		return true;
+	}
 
 	public String[] getDistributionListMembers()
 		throws PSTException, IOException
 	{
 		//PidLidDistributionListMembers
 		PSTTableBCItem item = this.items.get(pstFile.getNameToIdMapItem(0x8055, PSTFile.PSETID_Address));
+		item = this.items.get(0x8047);
 		String[] out = {};
 		if (item != null) {
 			PSTObject.printHexFormatted(item.data, true);
-			// get the details
-			int addressCount = (int)PSTObject.convertLittleEndianBytesToLong(item.data, 0, 4);
-			int pos = 4;
-			System.out.println("Addresses: "+addressCount);
-			for (int x = 0;x < addressCount; x++) {
-				int propertyCount = (int)PSTObject.convertLittleEndianBytesToLong(item.data, pos, pos+4);
-				pos += 4;
-				for (int y = 0; y < propertyCount; y++) {
-					int propertyType = (int)PSTObject.convertLittleEndianBytesToLong(item.data, pos, pos+2);
-					System.out.println("Property Type: "+propertyType);
-					pos += 2;
-					int propertyId = (int)PSTObject.convertLittleEndianBytesToLong(item.data, pos, pos+2);
-					System.out.println("Property Id: "+propertyId);
-					pos += 2;
-					break;
-				}
-				//PSTObject.printHexFormatted(data, true);
-				break;
+			// start 32 bytes in and then we are split by nulls...
+			byte[] repeat = new byte[20];
+			System.arraycopy(item.data, 16, repeat, 0, repeat.length);
+			PSTObject.printHexFormatted(repeat, true);
+			int pos = 36;
+
+			boolean entryRemains = true;
+
+			while (entryRemains) {
+				int end = findNextNullChar(item.data, pos);
+				byte[] d = new byte[end-pos];
+				System.arraycopy(item.data, pos, d, 0, d.length);
+				String displayName = new String(d, "UTF-16LE");
+				System.out.println("Display: "+displayName);
+				pos = end + 2;
+
+				end = findNextNullChar(item.data, pos);
+				d = new byte[end-pos];
+				System.arraycopy(item.data, pos, d, 0, d.length);
+				String type = new String(d, "UTF-16LE");
+				System.out.println("Type: "+type);
+				pos = end + 2;
+
+				end = findNextNullChar(item.data, pos);
+				d = new byte[end-pos];
+				System.arraycopy(item.data, pos, d, 0, d.length);
+				String email = new String(d, "UTF-16LE");
+				System.out.println("Email: "+email);
+				pos = end + 2;
+
+				entryRemains = compareByteArrays(repeat, item.data, pos, pos+16);
+
 			}
-					
+
 		}
 
 		return out;

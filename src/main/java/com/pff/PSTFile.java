@@ -96,7 +96,7 @@ public class PSTFile {
 	// our all important tree.
 	private LinkedHashMap<Integer, LinkedList<DescriptorIndexNode>> childrenDescriptorTree = null;
 	
-	HashMap<Long, Integer> nameToId = new HashMap<Long, Integer>();
+	private HashMap<Long, Integer> nameToId = new HashMap<Long, Integer>();
 	private HashMap<String, Integer> stringToId = new HashMap<String, Integer>();
 	private static HashMap<Integer, Long> idToName = new HashMap<Integer, Long>();
 	private HashMap<Integer, String> idToString = new HashMap<Integer, String>();

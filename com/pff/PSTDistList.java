@@ -82,45 +82,59 @@ public class PSTDistList extends PSTMessage {
 		throws PSTException, IOException
 	{
 		//PidLidDistributionListMembers
+		// this looks like a Recipeint One-Off EntryID Structure
 		PSTTableBCItem item = this.items.get(pstFile.getNameToIdMapItem(0x8055, PSTFile.PSETID_Address));
-		item = this.items.get(0x8047);
+		//item = this.items.get(0x8047);
 		String[] out = {};
 		if (item != null) {
 			PSTObject.printHexFormatted(item.data, true);
-			// start 32 bytes in and then we are split by nulls...
-			byte[] repeat = new byte[20];
-			System.arraycopy(item.data, 16, repeat, 0, repeat.length);
-			PSTObject.printHexFormatted(repeat, true);
-			int pos = 36;
 
-			boolean entryRemains = true;
+			int pos = 0;
 
-			while (entryRemains) {
-				int end = findNextNullChar(item.data, pos);
-				byte[] d = new byte[end-pos];
-				System.arraycopy(item.data, pos, d, 0, d.length);
-				String displayName = new String(d, "UTF-16LE");
-				System.out.println("Display: "+displayName);
-				pos = end + 2;
+			int count = (int)PSTObject.convertLittleEndianBytesToLong(item.data, pos, pos+4);
+			//System.out.println("Count: "+count);
+			pos += 4;
+			pos = (int)PSTObject.convertLittleEndianBytesToLong(item.data, pos, pos+4);
+			//System.out.println("pos: "+pos);
 
-				end = findNextNullChar(item.data, pos);
-				d = new byte[end-pos];
-				System.arraycopy(item.data, pos, d, 0, d.length);
-				String type = new String(d, "UTF-16LE");
-				System.out.println("Type: "+type);
-				pos = end + 2;
+			while (pos < item.data.length) {
 
-				end = findNextNullChar(item.data, pos);
-				d = new byte[end-pos];
-				System.arraycopy(item.data, pos, d, 0, d.length);
-				String email = new String(d, "UTF-16LE");
-				System.out.println("Email: "+email);
-				pos = end + 2;
+				int flags = (int)PSTObject.convertLittleEndianBytesToLong(item.data, pos, pos+4);
+				pos += 4;
 
-				entryRemains = compareByteArrays(repeat, item.data, pos, pos+16);
+				byte[] guid = new byte[16];
+				//System.arraycopy(item.data, pos, guid, 0, guid.length);
+				//PSTObject.printHexFormatted(guid, true);
+				pos += 16;
+
+				int version = (int)PSTObject.convertLittleEndianBytesToLong(item.data, pos, pos+2);
+				pos += 2;
+
+				int additionalFlags = (int)PSTObject.convertLittleEndianBytesToLong(item.data, pos, pos+2);
+				pos += 2;
+
+				int stringEnd = findNextNullChar(item.data, pos);
+				byte[] displayNameBytes = new byte[stringEnd - pos];
+				System.arraycopy(item.data, pos, displayNameBytes, 0, displayNameBytes.length);
+				String displayName = new String(displayNameBytes, "UTF-16LE");
+				//System.out.println("displayName: "+displayName);
+				pos = stringEnd + 2;
+
+				stringEnd = findNextNullChar(item.data, pos);
+				byte[] addressTypeBytes = new byte[stringEnd - pos];
+				System.arraycopy(item.data, pos, addressTypeBytes, 0, addressTypeBytes.length);
+				String addressType = new String(addressTypeBytes, "UTF-16LE");
+				//System.out.println("addressType "+addressType);
+				pos = stringEnd + 2;
+
+				stringEnd = findNextNullChar(item.data, pos);
+				byte[] emailAddressBytes = new byte[stringEnd - pos];
+				System.arraycopy(item.data, pos, emailAddressBytes, 0, emailAddressBytes.length);
+				String emailAddress = new String(emailAddressBytes, "UTF-16LE");
+				//System.out.println("emailAddress "+emailAddress);
+				pos = stringEnd + 2;
 
 			}
-
 		}
 
 		return out;

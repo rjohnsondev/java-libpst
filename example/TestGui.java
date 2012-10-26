@@ -5,10 +5,12 @@
 package example;
 
 import java.awt.*;
+import java.awt.event.*;
 
 import javax.swing.*;
 import javax.swing.event.*;
 import javax.swing.table.AbstractTableModel;
+import javax.swing.JMenuItem;
 import java.io.*;
 import javax.swing.tree.*;
 
@@ -20,15 +22,21 @@ import java.util.*;
  * @author toweruser
  *
  */
-public class TestGui {
+public class TestGui implements ActionListener {
 	private PSTFile pstFile;
 	private EmailTableModel emailTableModel;
 	private JTextPane emailText;
+	private JPanel emailPanel;
+	private JPanel attachPanel;
+	private JLabel attachLabel;
+	private JTextField attachText;
+	private PSTMessage selectedMessage;
+	private JFrame f;
 	
 	public TestGui() throws PSTException, IOException {
 
 		// setup the basic window
-        JFrame f = new JFrame("PST Browser");
+        f = new JFrame("PST Browser");
 		
 		// attempt to open the pst file
 		try {
@@ -217,7 +225,7 @@ public class TestGui {
         	selectionModel.addListSelectionListener(new ListSelectionListener(){
 				public void valueChanged(ListSelectionEvent e) {
 					JTable source = emailTable;
-					PSTMessage selectedMessage = emailTableModel.getMessageAtRow(source.getSelectedRow());
+					selectedMessage = emailTableModel.getMessageAtRow(source.getSelectedRow());
 					if (selectedMessage instanceof PSTContact) {
 						PSTContact contact = (PSTContact)selectedMessage;
 						emailText.setText(contact.toString());
@@ -239,6 +247,7 @@ public class TestGui {
 //						PSTTask task = selectedMessage.toTask();
 //						emailText.setText(task.toString());
 					}
+					setAttachmentText();
 					
 //					treePane.getViewport().setViewPosition(new Point(0,0));
 					emailText.setCaretPosition(0);
@@ -249,12 +258,24 @@ public class TestGui {
         }
         
         
+		f.setJMenuBar(createMenu());
+
         // the email
         emailText = new JTextPane();
         emailText.setFont(new Font(Font.MONOSPACED, Font.PLAIN, 12));
         //emailText.setFont(new Font("Arial Unicode MS", Font.PLAIN, 12));
         
-        JSplitPane emailSplitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, emailTablePanel, new JScrollPane(emailText));
+		emailPanel = new JPanel(new BorderLayout());
+		attachPanel = new JPanel(new BorderLayout());
+		attachLabel = new JLabel("Attachments:");
+		attachText = new JTextField("");
+		attachText.setEditable(false);
+		attachPanel.add(attachLabel, BorderLayout.WEST);
+		attachPanel.add(attachText, BorderLayout.CENTER);
+		emailPanel.add(attachPanel, BorderLayout.NORTH);
+		emailPanel.add(emailText, BorderLayout.CENTER);
+
+        JSplitPane emailSplitPane = new JSplitPane(JSplitPane.VERTICAL_SPLIT, emailTablePanel, new JScrollPane(emailPanel));
         emailSplitPane.setOneTouchExpandable(true);
         emailSplitPane.setDividerLocation(0.25);
         
@@ -297,6 +318,32 @@ public class TestGui {
 		}
 	}
 
+	void setAttachmentText() {
+		StringBuffer s = new StringBuffer();
+
+		try {
+			if (selectedMessage != null) {
+				int numAttach = selectedMessage.getNumberOfAttachments();
+				for (int x = 0; x < numAttach; x++) {
+					PSTAttachment attach = selectedMessage.getAttachment(x);
+					String filename = attach.getLongFilename();
+					if (filename.isEmpty()) {
+						filename = attach.getFilename();
+					}
+					if (!filename.isEmpty()) {
+						if (x != 0) {
+							s.append(", ");
+						}
+						s.append(filename);
+					}
+				}
+			}
+		} catch (Exception e) {
+		}
+
+		attachText.setText(s.toString());
+	}
+
 	void selectFolder(PSTFolder folder)
 			throws IOException, PSTException
 	{
@@ -304,6 +351,70 @@ public class TestGui {
 		
 		emailTableModel.setFolder(folder);
 		
+	}
+
+	public JMenuBar createMenu() {
+		JMenuBar menuBar;
+		JMenu menu;
+
+		menuBar = new JMenuBar();
+		menu = new JMenu("File");
+		menu.setMnemonic(KeyEvent.VK_F);
+		menuBar.add(menu);
+
+		JMenuItem menuItem = new JMenuItem("Save Attachments", KeyEvent.VK_S);
+		menuItem.addActionListener(this);
+		menu.add(menuItem);
+
+		return menuBar;
+	}
+
+	public void actionPerformed(ActionEvent e) {
+		JMenuItem source = (JMenuItem)(e.getSource());
+		if (source.getText() == "Save Attachments")
+		{
+			saveAttachments();
+		}
+	}
+
+	private void saveAttachments() {
+		if (selectedMessage != null) {
+			int numAttach = selectedMessage.getNumberOfAttachments();
+			if (numAttach == 0) {
+				JOptionPane.showMessageDialog(f, "Email has no attachments");
+				return;
+			}
+			try {
+				for (int x = 0; x < numAttach; x++) {
+					PSTAttachment attach = selectedMessage.getAttachment(x);
+					InputStream attachmentStream = attach.getFileInputStream();
+					String filename = attach.getLongFilename();
+					if (filename.isEmpty()) {
+						filename = attach.getFilename();
+					}
+					JFileChooser chooser = new JFileChooser();
+					chooser.setSelectedFile(new File(filename));
+					int r = chooser.showSaveDialog(f);
+					if (r == JFileChooser.APPROVE_OPTION) {
+						FileOutputStream out = new FileOutputStream(chooser.getSelectedFile());
+						// 8176 is the block size used internally and should give the best performance
+						int bufferSize = 8176;
+						byte[] buffer = new byte[bufferSize];
+						int count;
+						do {
+							count = attachmentStream.read(buffer);
+							out.write(buffer, 0, count);
+						} while (count == bufferSize);
+						out.close();
+					}
+					attachmentStream.close();
+				}
+			} catch (IOException ioe) {
+				JOptionPane.showMessageDialog(f, "Failed writing to file");
+			} catch (PSTException pste) {
+				JOptionPane.showMessageDialog(f, "Error in PST file");
+			}
+		}
 	}
 
 	/**

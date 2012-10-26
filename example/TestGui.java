@@ -392,7 +392,7 @@ class EmailTableModel extends AbstractTableModel {
 					return next.getSentRepresentingName() + " <"+ next.getSentRepresentingEmailAddress() +">";
 				case 3:
 					return next.getReceivedByName() + " <"+next.getReceivedByAddress()+">" + 
-						next.displayTo();
+						next.getDisplayTo();
 				case 4:
 					return next.getClientSubmitTime();
 //					return next.isFlagged();

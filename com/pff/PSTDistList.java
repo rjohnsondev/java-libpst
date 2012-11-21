@@ -92,10 +92,10 @@ public class PSTDistList extends PSTMessage {
 			int pos = 0;
 
 			int count = (int)PSTObject.convertLittleEndianBytesToLong(item.data, pos, pos+4);
-			//System.out.println("Count: "+count);
+			System.out.println("Count: "+count);
 			pos += 4;
 			pos = (int)PSTObject.convertLittleEndianBytesToLong(item.data, pos, pos+4);
-			//System.out.println("pos: "+pos);
+			System.out.println("pos: "+pos);
 
 			while (pos < item.data.length) {
 
@@ -103,15 +103,29 @@ public class PSTDistList extends PSTMessage {
 				pos += 4;
 
 				byte[] guid = new byte[16];
-				//System.arraycopy(item.data, pos, guid, 0, guid.length);
-				//PSTObject.printHexFormatted(guid, true);
+				System.arraycopy(item.data, pos, guid, 0, guid.length);
+				PSTObject.printHexFormatted(guid, true);
 				pos += 16;
 
 				int version = (int)PSTObject.convertLittleEndianBytesToLong(item.data, pos, pos+2);
+				System.out.println("Version: "+version);
 				pos += 2;
 
 				int additionalFlags = (int)PSTObject.convertLittleEndianBytesToLong(item.data, pos, pos+2);
+				PSTObject.printFormattedNumber("Additional flags: ",additionalFlags);
 				pos += 2;
+
+				PSTObject.printFormattedNumber("flag: ",0x800);
+				int pad = additionalFlags & 0x8000;
+				PSTObject.printFormattedNumber("Pad: ",pad);
+				int mae = additionalFlags & 0x0C00;
+				int format = additionalFlags & 0x1E00;
+				int m = additionalFlags & 0x0100;
+				int u = additionalFlags & 0x0080;
+				int r = additionalFlags & 0x0060;
+				int l = additionalFlags & 0x0010;
+				int pad2 = additionalFlags & 0x000F;
+
 
 				int stringEnd = findNextNullChar(item.data, pos);
 				byte[] displayNameBytes = new byte[stringEnd - pos];

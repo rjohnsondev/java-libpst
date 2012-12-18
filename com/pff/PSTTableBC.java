@@ -44,10 +44,9 @@ import java.util.HashMap;
 class PSTTableBC extends PSTTable {
 	
 	private HashMap<Integer, PSTTableBCItem> items = new HashMap<Integer, PSTTableBCItem>();
-	
-  private StringBuilder                    descBuffer            =
-                                                                     new StringBuilder();
-  private boolean                          isDescNotYetInitiated = false;
+
+	private StringBuilder descBuffer = new StringBuilder();
+	private boolean isDescNotYetInitiated = false;
 
 	PSTTableBC(PSTNodeInputStream in)
 		throws PSTException, java.io.IOException

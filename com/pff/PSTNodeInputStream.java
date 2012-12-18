@@ -59,7 +59,14 @@ public class PSTNodeInputStream extends InputStream {
 	PSTNodeInputStream(PSTFile pstFile, byte[] attachmentData) {
 		this.allData = attachmentData;
 		this.length = this.allData.length;
-		this.encrypted = pstFile.getEncryptionType() == PSTFile.ENCRYPTION_TYPE_COMPRESSIBLE;
+		encrypted = pstFile.getEncryptionType() == PSTFile.ENCRYPTION_TYPE_COMPRESSIBLE;
+		this.currentBlock = 0;
+		this.currentLocation = 0;
+	}
+	PSTNodeInputStream(PSTFile pstFile, byte[] attachmentData, boolean encrypted) {
+		this.allData = attachmentData;
+		this.encrypted = encrypted;
+		this.length = this.allData.length;
 		this.currentBlock = 0;
 		this.currentLocation = 0;
 	}

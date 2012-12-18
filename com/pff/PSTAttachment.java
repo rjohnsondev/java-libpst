@@ -120,7 +120,8 @@ public class PSTAttachment extends PSTObject {
 			PSTDescriptorItem descriptorItemNested = this.localDescriptorItems.get(attachmentDataObject.entryValueReference);
 			return new PSTNodeInputStream(this.pstFile, descriptorItemNested);
 		} else {
-			return new PSTNodeInputStream(this.pstFile, attachmentDataObject.data);
+			// internal value references are never encrypted
+			return new PSTNodeInputStream(this.pstFile, attachmentDataObject.data, false);
 		}
 
 	}

@@ -4,26 +4,62 @@
 
 package example;
 
-import java.awt.*;
-import java.awt.event.*;
+import java.awt.BorderLayout;
+import java.awt.Font;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
 
-import javax.swing.*;
-import javax.swing.event.*;
-import javax.swing.table.AbstractTableModel;
+import javax.swing.JFileChooser;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
-import java.io.*;
-import javax.swing.tree.*;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JSplitPane;
+import javax.swing.JTable;
+import javax.swing.JTextField;
+import javax.swing.JTextPane;
+import javax.swing.JTree;
+import javax.swing.ListSelectionModel;
+import javax.swing.WindowConstants;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.event.TreeSelectionEvent;
+import javax.swing.event.TreeSelectionListener;
+import javax.swing.table.AbstractTableModel;
+import javax.swing.tree.DefaultMutableTreeNode;
+import javax.swing.tree.DefaultTreeCellRenderer;
 
-import com.pff.*;
-
-import java.util.*;
+import com.pff.exceptions.PSTException;
+import com.pff.objects.PSTActivity;
+import com.pff.objects.PSTAttachment;
+import com.pff.objects.PSTContact;
+import com.pff.objects.PSTFolder;
+import com.pff.objects.PSTMessage;
+import com.pff.objects.PSTMessageStore;
+import com.pff.objects.PSTObject;
+import com.pff.objects.PSTRss;
+import com.pff.objects.PSTTask;
+import com.pff.source.PSTRandomAccessFile;
+import com.pff.source.PSTSource;
 
 /**
  * @author toweruser
  *
  */
 public class TestGui implements ActionListener {
-	private PSTFile pstFile;
+	private PSTSource pstFile;
 	private EmailTableModel emailTableModel;
 	private JTextPane emailText;
 	private JPanel emailPanel;
@@ -40,7 +76,7 @@ public class TestGui implements ActionListener {
 		
 		// attempt to open the pst file
 		try {
-			/*
+			
 			JFileChooser chooser = new JFileChooser();
 			if (chooser.showOpenDialog(f) == JFileChooser.APPROVE_OPTION) {
 			} else {
@@ -48,13 +84,12 @@ public class TestGui implements ActionListener {
 			}
 
 			String filename = chooser.getSelectedFile().getCanonicalPath();
-			 */
-			String filename = "Outlook-new.pst";
-			filename = "G:\\From old Tower\\pff\\java\\Old Email.pst";
+			 
+			/*String filename = "Outlook-new.pst";
+			filename = "G:\\From old Tower\\pff\\java\\Old Email.pst";*/
 			//filename = "RichardJohnson@sumac.uk.com - exchange.ost";
 			//String filename = "Outlook 32bit.pst";
-			//String russian = "Узеи́р Абду́л-Гусе́йн оглы́ Гаджибе́ков (азерб. Üzeyir bəy Əbdülhüseyn oğlu Hacıbəyov; 18 сентября 1885, Агджабеди, Шушинский уезд, Елизаветпольская губерния, Российская империя — 23 ноября 1948, Баку, Азербайджанская ССР, СССР) — азербайджанский композитор, дирижёр, публицист, фельетонист, драматург и педагог, народный артист СССР (1938), дважды лауреат Сталинских премий (1941, 1946). Действительный член АН Азербайджана (1945), профессор (1940), ректор Азербайджанской государственной ";
-
+			
 			//System.out.println(java.nio.charset.Charset.availableCharsets());
 
 			//byte[] russianBytes = russian.getBytes("UTF-8");
@@ -62,7 +97,8 @@ public class TestGui implements ActionListener {
 
 			//String filename = "Outlook 32bit.pst";
 			//filename = "RichardJohnson@sumac.uk.com - exchange.ost";
-			pstFile = new PSTFile(filename);
+			PSTRandomAccessFile pstRaF = new PSTRandomAccessFile(filename);
+			pstFile = new PSTSource(pstRaF);
 			//pstFile = new PSTFile("RichardJohnson@sumac.uk.com - exchange.ost");
 
 
@@ -175,7 +211,9 @@ public class TestGui implements ActionListener {
         }
         
         final JTree folderTree = new JTree(top){
-        	public String convertValueToText(Object value, boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
+        	private static final long serialVersionUID = 1L;
+
+			public String convertValueToText(Object value, boolean selected, boolean expanded, boolean leaf, int row, boolean hasFocus) {
         		DefaultMutableTreeNode nodeValue = (DefaultMutableTreeNode)value;
         		if (nodeValue.getUserObject() instanceof PSTFolder) {
         			PSTFolder folderValue = (PSTFolder)nodeValue.getUserObject();
@@ -293,14 +331,14 @@ public class TestGui implements ActionListener {
         // Set the visibility as true, thereby displaying it
         f.setVisible(true);
 //        f.setSize(800, 600);
-        f.setExtendedState(f.getExtendedState() | f.MAXIMIZED_BOTH);
+        f.setExtendedState(f.getExtendedState() | JFrame.MAXIMIZED_BOTH);
 	}
 	
 	private void buildTree(DefaultMutableTreeNode top, PSTFolder theFolder) {
 		// this is recursive, try and keep up.
 		try {
-			Vector children = theFolder.getSubFolders();
-			Iterator childrenIterator = children.iterator();
+			ArrayList<PSTFolder> children = theFolder.getSubFolders();
+			Iterator<PSTFolder> childrenIterator = children.iterator();
 			while (childrenIterator.hasNext()) {
 				PSTFolder folder = (PSTFolder)childrenIterator.next();
 
@@ -429,13 +467,14 @@ public class TestGui implements ActionListener {
 }
 
 class EmailTableModel extends AbstractTableModel {
+	private static final long serialVersionUID = 6414607674310021030L;
 	
 	PSTFolder theFolder = null;
-	PSTFile theFile = null;
+	PSTSource theFile = null;
 	
-	HashMap cache = new HashMap();
+	HashMap<Integer, PSTObject> cache = new HashMap<Integer, PSTObject>();
 	
-	public EmailTableModel(PSTFolder theFolder, PSTFile theFile) {
+	public EmailTableModel(PSTFolder theFolder, PSTSource theFile) {
 		super();
 		
 		this.theFolder = theFolder;
@@ -527,7 +566,7 @@ class EmailTableModel extends AbstractTableModel {
 	{
     	theFolder.moveChildCursorTo(0);
     	this.theFolder = theFolder;
-    	cache = new HashMap();
+    	cache = new HashMap<Integer, PSTObject>();
     	this.fireTableDataChanged();
     }
 

@@ -1,16 +1,23 @@
 package example;
-import com.pff.*;
-import java.util.*;
+import java.util.ArrayList;
+
+import com.pff.exceptions.PSTException;
+import com.pff.objects.PSTFolder;
+import com.pff.objects.PSTMessage;
+import com.pff.source.PSTRandomAccessFile;
+import com.pff.source.PSTSource;
+import com.pff.source._RandomAccessPSTSource;
 
 public class Test {
-	public static void main(String[] args)
-	{
+	
+	public static void main(String[] args) {
 		new Test(args[0]);
 	}
 
 	public Test(String filename) {
 		try {
-			PSTFile pstFile = new PSTFile(filename);
+			_RandomAccessPSTSource raSrc = new PSTRandomAccessFile(filename);
+			PSTSource pstFile = new PSTSource(raSrc);
 			System.out.println(pstFile.getMessageStore().getDisplayName());
 			processFolder(pstFile.getRootFolder());
 		} catch (Exception err) {
@@ -19,9 +26,7 @@ public class Test {
 	}
 
 	int depth = -1;
-	public void processFolder(PSTFolder folder)
-			throws PSTException, java.io.IOException
-	{
+	public void processFolder(PSTFolder folder) throws PSTException, java.io.IOException {
 		depth++;
 		// the root folder doesn't have a display name
 		if (depth > 0) {
@@ -31,7 +36,7 @@ public class Test {
 
 		// go through the folders...
 		if (folder.hasSubfolders()) {
-			Vector<PSTFolder> childFolders = folder.getSubFolders();
+			ArrayList<PSTFolder> childFolders = folder.getSubFolders();
 			for (PSTFolder childFolder : childFolders) {
 				processFolder(childFolder);
 			}

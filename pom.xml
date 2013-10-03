@@ -4,7 +4,7 @@
 
   <groupId>com.pff</groupId>
   <artifactId>java-libpst</artifactId>
-  <version>1.0-SNAPSHOT</version>
+  <version>1.0-vfs2-SNAPSHOT</version>
   <packaging>jar</packaging>
 
   <name>java-libpst</name>

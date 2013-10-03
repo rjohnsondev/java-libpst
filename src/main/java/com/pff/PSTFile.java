@@ -32,8 +32,20 @@
  *
  */
 package com.pff;
-import java.io.*;
-import java.util.*;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.RandomAccessFile;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.Properties;
+import java.util.UUID;
+
+import org.apache.commons.vfs2.FileObject;
+import org.apache.commons.vfs2.util.RandomAccessMode;
+
 
 /**
  * PSTFile is the containing class that allows you to access items within a .pst file.
@@ -104,7 +116,7 @@ public class PSTFile {
 	
 	private int itemCount = 0;
 	
-	private RandomAccessFile in;
+	private PSTRandomFile in;
 	
 	/**
 	 * constructor
@@ -118,12 +130,24 @@ public class PSTFile {
 	{
 		this(new File(fileName));
 	}
+	
 	public PSTFile(File fileName)
 		throws FileNotFoundException, PSTException, IOException
 	{
 		// attempt to open the file.
-		in = new RandomAccessFile(fileName, "r");
+		in = new PSTRandomAccessFile(new RandomAccessFile(fileName, "r"));
+		init();
+	}
 
+	public PSTFile(FileObject fileObject)
+			throws FileNotFoundException, PSTException, IOException
+		{
+			// attempt to open the file.
+			in = new PSTRandomAccessContent(fileObject.getContent().getRandomAccessContent(RandomAccessMode.READ));
+			init();
+		}
+
+	private void init() throws FileNotFoundException, PSTException, IOException {
 		// get the first 4 bytes, should be !BDN
 		try {
 			byte[] temp = new byte[4];
@@ -160,7 +184,7 @@ public class PSTFile {
 			}
 			
 			// build out name to id map.
-			processNameToIdMap(in);
+			processNameToIdMap();
 			
 		}  catch (IOException err) {
 			throw new PSTException("Unable to read PST Sig", err);
@@ -175,11 +199,10 @@ public class PSTFile {
 	
 	/**
 	 * read the name-to-id map from the file and load it in
-	 * @param in
 	 * @throws IOException
 	 * @throws PSTException
 	 */
-	private void processNameToIdMap(RandomAccessFile in)
+	private void processNameToIdMap()
 		throws IOException, PSTException
 	{
 
@@ -454,8 +477,8 @@ public class PSTFile {
 	/**
 	 * get the handle to the file we are currently accessing
 	 */
-	public RandomAccessFile getFileHandle() {
-		return this.in;
+	PSTRandomFile getFileHandle() {
+		return in;
 	}
 	
 	
@@ -570,7 +593,7 @@ public class PSTFile {
 	 * @throws IOException
 	 * @throws PSTException
 	 */
-	private byte[] findBtreeItem(RandomAccessFile in, long index, boolean descTree)
+	private byte[] findBtreeItem(long index, boolean descTree)
 		throws IOException, PSTException
 	{
 
@@ -732,7 +755,6 @@ public class PSTFile {
 
 	/**
 	 * navigate the internal descriptor B-Tree and find a specific item
-	 * @param in
 	 * @param identifier
 	 * @return the descriptor node for the item
 	 * @throws IOException
@@ -741,12 +763,11 @@ public class PSTFile {
 	DescriptorIndexNode getDescriptorIndexNode(long identifier)
 		throws IOException, PSTException
 	{
-		return new DescriptorIndexNode(findBtreeItem(in, identifier, true), this.getPSTFileType());
+		return new DescriptorIndexNode(findBtreeItem(identifier, true), this.getPSTFileType());
 	}
 
 	/**
 	 * navigate the internal index B-Tree and find a specific item
-	 * @param in
 	 * @param identifier
 	 * @return the offset index item
 	 * @throws IOException
@@ -755,7 +776,7 @@ public class PSTFile {
 	OffsetIndexItem getOffsetIndexNode(long identifier)
 		throws IOException, PSTException
 	{
-		return new OffsetIndexItem(findBtreeItem(in, identifier, false), this.getPSTFileType());
+		return new OffsetIndexItem(findBtreeItem(identifier, false), this.getPSTFileType());
 	}
 
 
@@ -807,7 +828,6 @@ public class PSTFile {
 	 * Build the children descriptor tree
 	 * This goes through the entire descriptor B-Tree and adds every item to the childrenDescriptorTree.
 	 * This is used as fallback when the nodes that list file contents are broken.
-	 * @param in
 	 * @throws IOException
 	 * @throws PSTException
 	 */
@@ -829,7 +849,6 @@ public class PSTFile {
 
 	/**
 	 * Recursive function for building the descriptor tree, used by buildDescriptorTree
-	 * @param in
 	 * @param btreeStartOffset
 	 * @throws IOException
 	 * @throws PSTException

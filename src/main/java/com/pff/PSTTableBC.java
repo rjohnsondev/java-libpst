@@ -79,7 +79,7 @@ class PSTTableBC extends PSTTable {
 		int offset = 0;
 		for (int x = 0; x < numberOfKeys; x++) {
 			
-			PSTTableBCItem item = new PSTTableBCItem();
+			PSTTableBCItem item = new PSTTableBCItem(in.getPSTFile());
 			item.itemIndex = x;
 			item.entryType =(int)PSTObject.convertLittleEndianBytesToLong(keyTableInfo, offset+0, offset+2);
 			//item.entryType =(int)in.seekAndReadLong(offset, 2);

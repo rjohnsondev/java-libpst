@@ -36,8 +36,8 @@ package com.pff;
 /*
 import java.io.UnsupportedEncodingException;
 /**/
+import java.io.IOException;
 import java.util.*;
-import java.io.*;
 
 /**
  * Specific functions for the 7c table type ("Table Context").
@@ -55,17 +55,18 @@ class PSTTable7C extends PSTTable {
 	private NodeInfo rowNodeInfo = null;
 	private int TCI_1b = 0;
 	private int overrideCol = -1;
+	private final PSTFile pstFile;
 	
-	protected PSTTable7C(PSTNodeInputStream in, HashMap<Integer, PSTDescriptorItem> subNodeDescriptorItems)
+	protected PSTTable7C(PSTNodeInputStream in, Map<Integer, PSTDescriptorItem> subNodeDescriptorItems)
 		throws PSTException, java.io.IOException
 	{
 		this(in, subNodeDescriptorItems, -1);
 	}
-	protected PSTTable7C(PSTNodeInputStream in, HashMap<Integer, PSTDescriptorItem> subNodeDescriptorItems, int entityToExtract)
+	protected PSTTable7C(PSTNodeInputStream in, Map<Integer, PSTDescriptorItem> subNodeDescriptorItems, int entityToExtract)
 		throws PSTException, java.io.IOException
 	{
 		super(in, subNodeDescriptorItems);
-
+		this.pstFile = in.getPSTFile();
 		if (tableTypeByte != 0x7c)
 		{
 			//System.out.println(Long.toHexString(this.tableTypeByte));
@@ -220,7 +221,7 @@ class PSTTable7C extends PSTTable {
 			int id = (int)rowNodeInfo.seekAndReadLong(currentValueArrayStart, 4);
 
 			// Put into the item map as PidTagLtpRowId (0x67F2)
-			PSTTable7CItem item = new PSTTable7CItem();
+			PSTTable7CItem item = new PSTTable7CItem(pstFile);
 			item.itemIndex = -1;
 			item.entryValueType = 3;
 			item.entryType = 0x67F2;
@@ -245,7 +246,7 @@ class PSTTable7C extends PSTTable {
 					continue;
 				}
 
-				item = new PSTTable7CItem();
+				item = new PSTTable7CItem(pstFile);
 				item.itemIndex = col;
 				
 				item.entryValueType = columnDescriptors[col].type;

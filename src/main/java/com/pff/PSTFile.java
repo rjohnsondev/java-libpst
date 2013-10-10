@@ -32,16 +32,8 @@
  *
  */
 package com.pff;
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.RandomAccessFile;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.Properties;
-import java.util.UUID;
+import java.io.*;
+import java.util.*;
 
 import org.apache.commons.vfs2.FileObject;
 import org.apache.commons.vfs2.util.RandomAccessMode;
@@ -100,7 +92,7 @@ public class PSTFile {
 		  "71035549-0739-4DCB-9163-00F0580DBBDF",
 		  "00062040-0000-0000-C000-000000000046" };
 	
-	private HashMap<UUID, Integer> guidMap = new HashMap<UUID, Integer>();
+	private final Map<UUID, Integer> guidMap = new HashMap<UUID, Integer>();
 	
 	// the type of encryption the files uses.
 	private int encryptionType = 0;
@@ -108,10 +100,10 @@ public class PSTFile {
 	// our all important tree.
 	private LinkedHashMap<Integer, LinkedList<DescriptorIndexNode>> childrenDescriptorTree = null;
 	
-	private HashMap<Long, Integer> nameToId = new HashMap<Long, Integer>();
-	private HashMap<String, Integer> stringToId = new HashMap<String, Integer>();
-	private static HashMap<Integer, Long> idToName = new HashMap<Integer, Long>();
-	private HashMap<Integer, String> idToString = new HashMap<Integer, String>();
+	private final Map<Long, Integer> nameToId = new HashMap<Long, Integer>();
+	private final Map<String, Integer> stringToId = new HashMap<String, Integer>();
+	private final Map<Integer, Long> idToName = new HashMap<Integer, Long>();
+	private final Map<Integer, String> idToString = new HashMap<Integer, String>();
 	private byte[] guids = null;
 	
 	private int itemCount = 0;
@@ -357,7 +349,7 @@ public class PSTFile {
 	}
 
 
-	static long getNameToIdMapKey(int id)
+	long getNameToIdMapKey(int id)
 		//throws PSTException
 	{
 		Long i = idToName.get(id);
@@ -430,7 +422,7 @@ public class PSTFile {
 		return null;
 	}
 
-	static String getPropertyDescription(int entryType, int entryValueType) {
+	String getPropertyDescription(int entryType, int entryValueType) {
 		String ret = "";
 		if ( entryType < 0x8000 ) {
 			String name = PSTFile.getPropertyName(entryType, false);
@@ -440,7 +432,7 @@ public class PSTFile {
 				ret = String.format("0x%04X:%04X: ", entryType, entryValueType);
 			}
 		} else {
-			long type = PSTFile.getNameToIdMapKey(entryType);
+			long type = getNameToIdMapKey(entryType);
 			if ( type == -1 ) {
 				ret = String.format("0xFFFF(%04X):%04X: ", entryType, entryValueType);
 			} else {

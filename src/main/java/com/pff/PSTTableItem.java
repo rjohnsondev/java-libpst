@@ -57,6 +57,12 @@ class PSTTableItem {
 	public byte[] data = new byte[0];
 	public boolean isExternalValueReference = false;
 	
+	private final PSTFile pstFile;
+	
+	public PSTTableItem(PSTFile pstFile) {
+            this.pstFile = pstFile;
+        }
+	
 	public long getLongValue() {
 		if ( this.data.length > 0 ) {
 			return PSTObject.convertLittleEndianBytesToLong(data);
@@ -134,7 +140,7 @@ class PSTTableItem {
 	}
 
 	public String toString() {
-		String ret = PSTFile.getPropertyDescription(entryType, entryValueType);
+		String ret = pstFile.getPropertyDescription(entryType, entryValueType);
 
 		if ( entryValueType == 0x000B )
 		{

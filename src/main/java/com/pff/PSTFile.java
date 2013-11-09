@@ -35,6 +35,10 @@ package com.pff;
 import java.io.*;
 import java.util.*;
 
+import org.apache.commons.vfs2.FileObject;
+import org.apache.commons.vfs2.util.RandomAccessMode;
+
+
 /**
  * PSTFile is the containing class that allows you to access items within a .pst file.
  * Start here, get the root of the folders and work your way down through your items.
@@ -88,7 +92,7 @@ public class PSTFile {
 		  "71035549-0739-4DCB-9163-00F0580DBBDF",
 		  "00062040-0000-0000-C000-000000000046" };
 	
-	private HashMap<UUID, Integer> guidMap = new HashMap<UUID, Integer>();
+	private final Map<UUID, Integer> guidMap = new HashMap<UUID, Integer>();
 	
 	// the type of encryption the files uses.
 	private int encryptionType = 0;
@@ -96,15 +100,15 @@ public class PSTFile {
 	// our all important tree.
 	private LinkedHashMap<Integer, LinkedList<DescriptorIndexNode>> childrenDescriptorTree = null;
 	
-	private HashMap<Long, Integer> nameToId = new HashMap<Long, Integer>();
-	private HashMap<String, Integer> stringToId = new HashMap<String, Integer>();
-	private static HashMap<Integer, Long> idToName = new HashMap<Integer, Long>();
-	private HashMap<Integer, String> idToString = new HashMap<Integer, String>();
+	private final Map<Long, Integer> nameToId = new HashMap<Long, Integer>();
+	private final Map<String, Integer> stringToId = new HashMap<String, Integer>();
+	private final Map<Integer, Long> idToName = new HashMap<Integer, Long>();
+	private final Map<Integer, String> idToString = new HashMap<Integer, String>();
 	private byte[] guids = null;
 	
 	private int itemCount = 0;
 	
-	private RandomAccessFile in;
+	private PSTRandomFile in;
 	
 	/**
 	 * constructor
@@ -118,12 +122,24 @@ public class PSTFile {
 	{
 		this(new File(fileName));
 	}
+	
 	public PSTFile(File fileName)
 		throws FileNotFoundException, PSTException, IOException
 	{
 		// attempt to open the file.
-		in = new RandomAccessFile(fileName, "r");
+		in = new PSTRandomAccessFile(new RandomAccessFile(fileName, "r"));
+		init();
+	}
 
+	public PSTFile(FileObject fileObject)
+			throws FileNotFoundException, PSTException, IOException
+		{
+			// attempt to open the file.
+			in = new PSTRandomAccessContent(fileObject.getContent().getRandomAccessContent(RandomAccessMode.READ));
+			init();
+		}
+
+	private void init() throws FileNotFoundException, PSTException, IOException {
 		// get the first 4 bytes, should be !BDN
 		try {
 			byte[] temp = new byte[4];
@@ -160,7 +176,7 @@ public class PSTFile {
 			}
 			
 			// build out name to id map.
-			processNameToIdMap(in);
+			processNameToIdMap();
 			
 		}  catch (IOException err) {
 			throw new PSTException("Unable to read PST Sig", err);
@@ -175,11 +191,10 @@ public class PSTFile {
 	
 	/**
 	 * read the name-to-id map from the file and load it in
-	 * @param in
 	 * @throws IOException
 	 * @throws PSTException
 	 */
-	private void processNameToIdMap(RandomAccessFile in)
+	private void processNameToIdMap()
 		throws IOException, PSTException
 	{
 
@@ -334,7 +349,7 @@ public class PSTFile {
 	}
 
 
-	static long getNameToIdMapKey(int id)
+	long getNameToIdMapKey(int id)
 		//throws PSTException
 	{
 		Long i = idToName.get(id);
@@ -407,7 +422,7 @@ public class PSTFile {
 		return null;
 	}
 
-	static String getPropertyDescription(int entryType, int entryValueType) {
+	String getPropertyDescription(int entryType, int entryValueType) {
 		String ret = "";
 		if ( entryType < 0x8000 ) {
 			String name = PSTFile.getPropertyName(entryType, false);
@@ -417,7 +432,7 @@ public class PSTFile {
 				ret = String.format("0x%04X:%04X: ", entryType, entryValueType);
 			}
 		} else {
-			long type = PSTFile.getNameToIdMapKey(entryType);
+			long type = getNameToIdMapKey(entryType);
 			if ( type == -1 ) {
 				ret = String.format("0xFFFF(%04X):%04X: ", entryType, entryValueType);
 			} else {
@@ -454,8 +469,8 @@ public class PSTFile {
 	/**
 	 * get the handle to the file we are currently accessing
 	 */
-	public RandomAccessFile getFileHandle() {
-		return this.in;
+	PSTRandomFile getFileHandle() {
+		return in;
 	}
 	
 	
@@ -570,7 +585,7 @@ public class PSTFile {
 	 * @throws IOException
 	 * @throws PSTException
 	 */
-	private byte[] findBtreeItem(RandomAccessFile in, long index, boolean descTree)
+	private byte[] findBtreeItem(long index, boolean descTree)
 		throws IOException, PSTException
 	{
 
@@ -732,7 +747,6 @@ public class PSTFile {
 
 	/**
 	 * navigate the internal descriptor B-Tree and find a specific item
-	 * @param in
 	 * @param identifier
 	 * @return the descriptor node for the item
 	 * @throws IOException
@@ -741,12 +755,11 @@ public class PSTFile {
 	DescriptorIndexNode getDescriptorIndexNode(long identifier)
 		throws IOException, PSTException
 	{
-		return new DescriptorIndexNode(findBtreeItem(in, identifier, true), this.getPSTFileType());
+		return new DescriptorIndexNode(findBtreeItem(identifier, true), this.getPSTFileType());
 	}
 
 	/**
 	 * navigate the internal index B-Tree and find a specific item
-	 * @param in
 	 * @param identifier
 	 * @return the offset index item
 	 * @throws IOException
@@ -755,7 +768,7 @@ public class PSTFile {
 	OffsetIndexItem getOffsetIndexNode(long identifier)
 		throws IOException, PSTException
 	{
-		return new OffsetIndexItem(findBtreeItem(in, identifier, false), this.getPSTFileType());
+		return new OffsetIndexItem(findBtreeItem(identifier, false), this.getPSTFileType());
 	}
 
 
@@ -807,7 +820,6 @@ public class PSTFile {
 	 * Build the children descriptor tree
 	 * This goes through the entire descriptor B-Tree and adds every item to the childrenDescriptorTree.
 	 * This is used as fallback when the nodes that list file contents are broken.
-	 * @param in
 	 * @throws IOException
 	 * @throws PSTException
 	 */
@@ -829,7 +841,6 @@ public class PSTFile {
 
 	/**
 	 * Recursive function for building the descriptor tree, used by buildDescriptorTree
-	 * @param in
 	 * @param btreeStartOffset
 	 * @throws IOException
 	 * @throws PSTException

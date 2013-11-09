@@ -39,6 +39,9 @@ package com.pff;
  */
 class PSTTableBCItem extends PSTTableItem
 {
+    public PSTTableBCItem(PSTFile pstFile) {
+        super(pstFile);
+    }
 
 	public String toString() {
 		return "Table Item: "+super.toString() + "\n";

@@ -237,7 +237,7 @@ public class PSTObject {
 				} catch (Exception e) {
 					System.err.printf("Exception %s decoding string %s: %s\n",
 							e.toString(),
-							PSTFile.getPropertyDescription(identifier, stringType), data != null ? data.toString() : "null");
+							pstFile.getPropertyDescription(identifier, stringType), data != null ? data.toString() : "null");
 					return "";
 				}
 				//System.out.printf("PSTObject.getStringItem - item isn't a string: 0x%08X\n", identifier);

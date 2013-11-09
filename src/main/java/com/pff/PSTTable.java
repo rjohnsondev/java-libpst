@@ -34,7 +34,7 @@
 package com.pff;
 
 import java.io.IOException;
-import java.util.HashMap;
+import java.util.Map;
 
 
 /**
@@ -62,11 +62,11 @@ class PSTTable {
 	
 	//private int[][]	rgbiAlloc = null;
 	//private byte[]	data = null;
-	private HashMap<Integer, PSTDescriptorItem> subNodeDescriptorItems = null;
+	private Map<Integer, PSTDescriptorItem> subNodeDescriptorItems;
 	
 	protected String description = "";
 	
-	protected PSTTable(PSTNodeInputStream in, HashMap<Integer, PSTDescriptorItem> subNodeDescriptorItems)
+	protected PSTTable(PSTNodeInputStream in, Map<Integer, PSTDescriptorItem> subNodeDescriptorItems)
 		throws PSTException, IOException
 	{
 		this.subNodeDescriptorItems = subNodeDescriptorItems;

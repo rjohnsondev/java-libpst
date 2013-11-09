@@ -1,5 +1,6 @@
 package com.pff;
 
+import java.io.EOFException;
 import java.io.IOException;
 
 import org.apache.commons.vfs2.RandomAccessContent;
@@ -32,7 +33,13 @@ class PSTRandomAccessContent implements PSTRandomFile {
 	 * @see com.pff.PSTRandomFile#read(byte[])
 	 */
 	public void read(byte[] b) throws IOException {
+	    try {
 		rac.readFully(b);
+	    }
+	    catch (EOFException e) {
+		e.printStackTrace();
+		// Ignore
+	    }
 	}
 
 	/**
@@ -52,7 +59,7 @@ class PSTRandomAccessContent implements PSTRandomFile {
 	 * @see com.pff.PSTRandomFile#read()
 	 */
 	public int read() throws IOException {
-		return rac.readInt();
+		return rac.readByte();
 	}
 
 	/**

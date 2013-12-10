@@ -206,7 +206,7 @@ class PSTTable7C extends PSTTable {
 					// adjust!
 					//currentValueArrayStart += 8176 - (currentValueArrayStart % 8176);
 					currentValueArrayStart += blockPadding;
-					if (currentValueArrayStart + TCI_bm < rowNodeInfo.length()) {
+					if (currentValueArrayStart + TCI_bm > rowNodeInfo.length()) {
 						continue;
 					}
 				}

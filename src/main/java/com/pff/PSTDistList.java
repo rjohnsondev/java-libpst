@@ -99,6 +99,37 @@ public class PSTDistList extends PSTMessage {
 
 			while (pos < item.data.length) {
 
+				/*
+				0300 0000
+
+				1000 0000 3d00 0000 a100 0000 0000 0000
+
+				c091 add3 519d cf11 a4a9 00aa 0047 faa4
+				c3
+				  00 0000 00
+							a4 1d63 dbc5 3b8e 4ab8 071e <- some guid from some where.
+				15e5 5750 ce
+							64 00 20 00
+												00 0000  J....åWPÎd......
+				00
+				  81 2b1f a4be a310 199d 6e00 dd01 0f54  ..........n.Ý..T
+				0200 0001 8064 0069 0073 0074 0020 006e  .....d.i.s.t...n
+				0061 006d 0065 0020 0031 0000 0053 004d  .a.m.e...1...S.M
+				0054 0050 0000 0064 0069 0073 0074 0031  .T.P...d.i.s.t.1
+				0040 0072 006a 006f 0068 006e 0073 006f  ...r.j.o.h.n.s.o
+				006e 002e 0069 0064 002e 0061 0075 0000  .n...i.d...a.u..
+				00
+				  00 0000 00
+							81 2b1f a4be a310 199d 6e00  ..............n.
+				dd01 0f54 0200 0001 8064 0069 0073 0074  Ý..T.....d.i.s.t
+				0020 006e 0061 006d 0065 0020 0032 0000  ...n.a.m.e...2..
+				0053 004d 0054 0050 0000 0064 0069 0073  .S.M.T.P...d.i.s
+				0074 0032 0040 0072 006a 006f 0068 006e  .t.2...r.j.o.h.n
+				0073 006f 006e 002e 0069 0064 002e 0061  .s.o.n...i.d...a
+				0075 0000 00 .u...
+				 */
+				// http://msdn.microsoft.com/en-us/library/ee218661(v=exchg.80).aspx
+				// http://msdn.microsoft.com/en-us/library/ee200559(v=exchg.80).aspx
 				int flags = (int)PSTObject.convertLittleEndianBytesToLong(item.data, pos, pos+4);
 				pos += 4;
 
@@ -111,6 +142,7 @@ public class PSTDistList extends PSTMessage {
 				System.out.println("Version: "+version);
 				pos += 2;
 
+				// http://msdn.microsoft.com/en-us/library/ee202811(v=exchg.80).aspx
 				int additionalFlags = (int)PSTObject.convertLittleEndianBytesToLong(item.data, pos, pos+2);
 				PSTObject.printFormattedNumber("Additional flags: ",additionalFlags);
 				pos += 2;

@@ -34,36 +34,59 @@
 package com.pff;
 
 import java.io.IOException;
-import java.util.Date;
 import java.util.HashMap;
 import java.util.Arrays;
 
 /**
- * PST DistList contains methods for extracting Addresses from Distribution lists.
+ * PST DistList for extracting Addresses from Distribution lists.
  * @author Richard Johnson
  */
 public class PSTDistList extends PSTMessage {
 
-	PSTDistList(PSTFile theFile, DescriptorIndexNode descriptorIndexNode)
-			throws PSTException, IOException
-	{
-		super(theFile, descriptorIndexNode);
-	}
+    /**
+     * constructor.
+     * @param theFile pst file
+     * @param descriptorIndexNode index of the list
+     * @throws PSTException on parsing error
+     * @throws IOException on data access error
+     */
+    PSTDistList(PSTFile theFile, DescriptorIndexNode descriptorIndexNode)
+            throws PSTException, IOException {
+        super(theFile, descriptorIndexNode);
+    }
 
-	PSTDistList(PSTFile theFile, DescriptorIndexNode folderIndexNode, PSTTableBC table, HashMap<Integer, PSTDescriptorItem> localDescriptorItems)
-	{
-		super(theFile, folderIndexNode, table, localDescriptorItems);
-	}
-	
-	private int findNextNullChar(byte[] data, int start) {
-		for (; start < data.length; start += 2) {
-			if (data[start] == 0 && data[start+1] == 0) {
-				break;
-			}
-		}
-		return start;
-	}
+    /**
+     * Internal constructor for performance.
+     * @param theFile pst file
+     * @param folderIndexNode index of the list
+     * @param table the PSTTableBC this object is represented by
+     * @param localDescriptorItems additional external items that represent
+     *                             this object.
+     */
+    PSTDistList(PSTFile theFile, DescriptorIndexNode folderIndexNode,
+                PSTTableBC table,
+                HashMap<Integer, PSTDescriptorItem> localDescriptorItems) {
+        super(theFile, folderIndexNode, table, localDescriptorItems);
+    }
 
+    /**
+     * Find the next two null bytes in an array given start.
+     * @param data the array to search
+     * @param start the starting index
+     * @return position of the next null char
+     */
+    private int findNextNullChar(byte[] data, int start) {
+        for (; start < data.length; start += 2) {
+            if (data[start] == 0 && data[start + 1] == 0) {
+                break;
+            }
+        }
+        return start;
+    }
+
+    /**
+     * identifier for one-off entries.
+     */
     private byte[] oneOffEntryIdUid = {
         (byte)0x81, (byte)0x2b, (byte)0x1f, (byte)0xa4,
         (byte)0xbe, (byte)0xa3, (byte)0x10, (byte)0x19,
@@ -71,37 +94,76 @@ public class PSTDistList extends PSTMessage {
         (byte)0x01, (byte)0x0f, (byte)0x54, (byte)0x02
     };
 
-	private byte[] wrappedEntryIdUid = {
+    /**
+     * identifier for wrapped entries.
+     */
+    private byte[] wrappedEntryIdUid = {
         (byte)0xc0, (byte)0x91, (byte)0xad, (byte)0xd3,
         (byte)0x51, (byte)0x9d, (byte)0xcf, (byte)0x11,
         (byte)0xa4, (byte)0xa9, (byte)0x00, (byte)0xaa,
         (byte)0x00, (byte)0x47, (byte)0xfa, (byte)0xa4
     };
 
+    /**
+     * Inner class to represent distribution list one-off entries.
+     */
     public class OneOffEntry {
-        public String displayName = "";
-        public String addressType = "";
-        public String emailAddress = "";
-        int pos = 0;
-		public String toString() {
-			return String.format(
-				"Display Name: %s\n" +
-				"Address Type: %s\n" +
-				"Email Address: %s\n",
-				this.displayName,
-				this.addressType,
-				this.emailAddress);
-		}
+        /** display name. */
+        private String displayName = "";
+        /**
+         * @return display name
+         * */
+        public String getDisplayName() {
+            return this.displayName;
+        }
+        /** address type (smtp). */
+        private String addressType = "";
+        /**
+         * @return address type
+         * */
+        public String getAddressType() {
+            return this.addressType;
+        }
+        /** email address. */
+        private String emailAddress = "";
+        /**
+         * @return email address.
+         * */
+        public String getEmailAddress() {
+            return this.emailAddress;
+        }
+        /** ending position of this object in the data array. */
+        private int pos = 0;
+        /**
+         * @return formatted record
+         */
+        public String toString() {
+            return String.format(
+                "Display Name: %s\n"
+                + "Address Type: %s\n"
+                + "Email Address: %s\n",
+                this.displayName,
+                this.addressType,
+                this.emailAddress);
+        }
     }
 
+    /**
+     * Parse a one-off entry from this Distribution List.
+     * @param data the item data
+     * @param pos the current position in the data.
+     * @throws IOException on string reading fail
+     * @return the one-off entry
+     */
     private OneOffEntry parseOneOffEntry(byte[] data, int pos)
-        throws IOException
-    {
-        int version = (int)PSTObject.convertLittleEndianBytesToLong(data, pos, pos+2);
+        throws IOException {
+        int version = (int)PSTObject.convertLittleEndianBytesToLong(
+                data, pos, pos + 2);
         pos += 2;
 
         // http://msdn.microsoft.com/en-us/library/ee202811(v=exchg.80).aspx
-        int additionalFlags = (int)PSTObject.convertLittleEndianBytesToLong(data, pos, pos+2);
+        int additionalFlags = (int)PSTObject.convertLittleEndianBytesToLong(
+                data, pos, pos + 2);
         pos += 2;
 
         int pad = additionalFlags & 0x8000;
@@ -116,19 +178,22 @@ public class PSTDistList extends PSTMessage {
 
         int stringEnd = findNextNullChar(data, pos);
         byte[] displayNameBytes = new byte[stringEnd - pos];
-        System.arraycopy(data, pos, displayNameBytes, 0, displayNameBytes.length);
+        System.arraycopy(data, pos, displayNameBytes,
+                         0, displayNameBytes.length);
         String displayName = new String(displayNameBytes, "UTF-16LE");
         pos = stringEnd + 2;
 
         stringEnd = findNextNullChar(data, pos);
         byte[] addressTypeBytes = new byte[stringEnd - pos];
-        System.arraycopy(data, pos, addressTypeBytes, 0, addressTypeBytes.length);
+        System.arraycopy(data, pos, addressTypeBytes,
+                         0, addressTypeBytes.length);
         String addressType = new String(addressTypeBytes, "UTF-16LE");
         pos = stringEnd + 2;
 
         stringEnd = findNextNullChar(data, pos);
         byte[] emailAddressBytes = new byte[stringEnd - pos];
-        System.arraycopy(data, pos, emailAddressBytes, 0, emailAddressBytes.length);
+        System.arraycopy(data, pos, emailAddressBytes,
+                         0, emailAddressBytes.length);
         String emailAddress = new String(emailAddressBytes, "UTF-16LE");
         pos = stringEnd + 2;
 
@@ -140,22 +205,32 @@ public class PSTDistList extends PSTMessage {
         return out;
     }
 
-	public Object[] getDistributionListMembers()
-		throws PSTException, IOException
-	{
-		PSTTableBCItem item = this.items.get(pstFile.getNameToIdMapItem(0x8055, PSTFile.PSETID_Address));
-		Object[] out = {};
+    /**
+     * Get an array of the members in this distribution list.
+     * @throws PSTException on corrupted data
+     * @throws IOException on bad string reading
+     * @return array of entries that can either be PSTDistList.OneOffEntry
+     *         or a PSTObject, generally PSTContact.
+     */
+    public Object[] getDistributionListMembers()
+            throws PSTException, IOException {
+        PSTTableBCItem item = this.items.get(
+                pstFile.getNameToIdMapItem(0x8055, PSTFile.PSETID_Address));
+        Object[] out = {};
         if (item != null) {
             int pos = 0;
-            int count = (int)PSTObject.convertLittleEndianBytesToLong(item.data, pos, pos+4);
-			out = new Object[count];
+            int count = (int)PSTObject.convertLittleEndianBytesToLong(
+                    item.data, pos, pos + 4);
+            out = new Object[count];
             pos += 4;
-            pos = (int)PSTObject.convertLittleEndianBytesToLong(item.data, pos, pos+4);
+            pos = (int)PSTObject.convertLittleEndianBytesToLong(
+                    item.data, pos, pos + 4);
 
-			for (int x = 0; x < count; x++) {
+            for (int x = 0; x < count; x++) {
                 // http://msdn.microsoft.com/en-us/library/ee218661(v=exchg.80).aspx
                 // http://msdn.microsoft.com/en-us/library/ee200559(v=exchg.80).aspx
-                int flags = (int)PSTObject.convertLittleEndianBytesToLong(item.data, pos, pos+4);
+                int flags = (int)PSTObject.convertLittleEndianBytesToLong(
+                        item.data, pos, pos + 4);
                 pos += 4;
 
                 byte[] guid = new byte[16];
@@ -168,28 +243,30 @@ public class PSTDistList extends PSTMessage {
                     int entryAddressType = item.data[pos] & 0x70 >> 4;
                     boolean isOneOffEntryId = (item.data[pos] & 0x80) > 0;
                     pos++;
-					int wrappedflags = (int)PSTObject.convertLittleEndianBytesToLong(item.data, pos, pos+4);
-					pos += 4;
+                    int wrappedflags = (int)PSTObject.convertLittleEndianBytesToLong(
+                            item.data, pos, pos + 4);
+                    pos += 4;
 
-					byte[] guid2 = new byte[16];
-					System.arraycopy(item.data, pos, guid, 0, guid.length);
-					pos += 16;
+                    byte[] guid2 = new byte[16];
+                    System.arraycopy(item.data, pos, guid, 0, guid.length);
+                    pos += 16;
 
-					int descriptorIndex = (int)PSTObject.convertLittleEndianBytesToLong(item.data, pos, pos+3);
-					pos += 3;
+                    int descriptorIndex = (int)PSTObject.convertLittleEndianBytesToLong(
+                            item.data, pos, pos + 3);
+                    pos += 3;
 
-					byte empty = item.data[pos];
-					pos++;
+                    byte empty = item.data[pos];
+                    pos++;
 
-					out[x] = PSTObject.detectAndLoadPSTObject(this.pstFile, descriptorIndex);
+                    out[x] = PSTObject.detectAndLoadPSTObject(this.pstFile, descriptorIndex);
 
                 } else if (Arrays.equals(guid, oneOffEntryIdUid)) {
                     OneOffEntry entry = parseOneOffEntry(item.data, pos);
                     pos = entry.pos;
-					out[x] = entry;
+                    out[x] = entry;
                 }
             }
-		}
-		return out;
-	}
+        }
+        return out;
+    }
 }

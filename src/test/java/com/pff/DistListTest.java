@@ -1,12 +1,15 @@
 package com.pff;
 
-import org.junit.Test;
+import java.io.File;
+import java.io.IOException;
+import java.net.URISyntaxException;
 import java.net.URL;
-import java.io.*;
+import java.util.HashSet;
+import java.util.Arrays;
+import org.junit.Assert;
+import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.junit.runners.JUnit4;
-import com.pff.*;
-import java.util.*;
 
 /**
  * Tests for {@link PSTDistList}.
@@ -17,71 +20,44 @@ import java.util.*;
 public class DistListTest {
 
     /**
-     * Test that a click without `wv` (version) has with default value "".
-     * @throws ClickEntryParseException on parse error
+     * Test we can retrieve distribution lists from the PST.
      */
     @Test
-    public final void testGetDistList() {
-        try {
-            URL dir_url = ClassLoader.getSystemResource("dist-list.pst");
-            PSTFile pstFile = new PSTFile(new File(dir_url.toURI()));
-            PSTDistList obj = (PSTDistList)PSTObject.detectAndLoadPSTObject(pstFile, 2097188);
-            System.out.println(obj);
-            Object[] members = obj.getDistributionListMembers();
-            for (Object member : members) {
-                if (member instanceof PSTContact) {
-                    PSTContact contact = (PSTContact)member;
-                    System.out.println(contact);
-                } else {
-                    System.out.println(member);
-                }
-            }
-
-            //System.out.println(pstFile.getMessageStore().getDisplayName());
-            //processFolder(pstFile.getRootFolder());
-        } catch (Exception err) {
-            err.printStackTrace();
-        }
-        //org.junit.Assert.assertTrue(false);
-    }
-
-    int depth = -1;
-    public void processFolder(PSTFolder folder)
-            throws PSTException, java.io.IOException
-    {
-        depth++;
-        // the root folder doesn't have a display name
-        if (depth > 0) {
-            printDepth();
-            System.out.println(folder.getDisplayName());
-        }
-
-        // go through the folders...
-        if (folder.hasSubfolders()) {
-            Vector<PSTFolder> childFolders = folder.getSubFolders();
-            for (PSTFolder childFolder : childFolders) {
-                processFolder(childFolder);
+    public final void testGetDistList()
+            throws PSTException, IOException, URISyntaxException {
+        URL dirUrl = ClassLoader.getSystemResource("dist-list.pst");
+        PSTFile pstFile = new PSTFile(new File(dirUrl.toURI()));
+        PSTDistList obj = (PSTDistList)PSTObject.detectAndLoadPSTObject(pstFile, 2097188);
+        Object[] members = obj.getDistributionListMembers();
+        Assert.assertEquals("Correct number of members", members.length, 3);
+        int numberOfContacts = 0;
+        int numberOfOneOffRecords = 0;
+        HashSet<String> emailAddresses = new HashSet<String>();
+        HashSet<String> displayNames = new HashSet<String>();
+        for (Object member : members) {
+            if (member instanceof PSTContact) {
+                PSTContact contact = (PSTContact)member;
+                Assert.assertEquals("Contact email address",
+                                    contact.getEmail1EmailAddress(),
+                                    "contact1@rjohnson.id.au");
+                numberOfContacts++;
+            } else {
+                PSTDistList.OneOffEntry entry = (PSTDistList.OneOffEntry)member;
+                emailAddresses.add(entry.getEmailAddress());
+                displayNames.add(entry.getDisplayName());
+                numberOfOneOffRecords++;
             }
         }
-
-        // and now the emails for this folder
-        if (folder.getContentCount() > 0) {
-            depth++;
-            PSTMessage email = (PSTMessage)folder.getNextChild();
-            while (email != null) {
-                printDepth();
-                System.out.println("Email: "+email.getDescriptorNodeId()+" "+email.getSubject());
-                email = (PSTMessage)folder.getNextChild();
-            }
-            depth--;
-        }
-        depth--;
-    }
-
-    public void printDepth() {
-        for (int x = 0; x < depth-1; x++) {
-            System.out.print(" | ");
-        }
-        System.out.print(" |- ");
+        Assert.assertEquals("Correct number of members", members.length, 3);
+        Assert.assertEquals("Contains all display names",
+                            displayNames,
+                            new HashSet<String>(Arrays.asList(
+                                    new String[] {"dist name 2",
+                                                  "dist name 1"})));
+        Assert.assertEquals("Contains all email addresses",
+                            emailAddresses,
+                            new HashSet<String>(Arrays.asList(
+                                    new String[] {"dist1@rjohnson.id.au",
+                                                  "dist2@rjohnson.id.au"})));
     }
 }

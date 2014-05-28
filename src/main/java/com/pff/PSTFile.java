@@ -479,8 +479,6 @@ public class PSTFile {
 		return output;
 	}
 	
-
-	
 	PSTNodeInputStream readLeaf(long bid)
 		throws IOException, PSTException
 	{
@@ -900,6 +898,5 @@ public class PSTFile {
 			throw new PSTException("Unable to read descriptor node, is not a descriptor");
 		}
 	}
-
 
 }

@@ -84,8 +84,21 @@ public class PSTMessageStore extends PSTObject {
 	}
 
 
-	public String getDetails() {
-		return this.items.toString();
-	}
+    public String getDetails() {
+        return this.items.toString();
+    }
+
+    /**
+     * Is this pst file is password protected.
+     * @throws PSTException on corrupted pst
+     * @throws IOException on bad read
+     * @return - true if protected,false otherwise
+     * pstfile has the password stored against identifier 0x67FF.
+     * if there is no password the value stored is 0x00000000.
+     */
+    public boolean isPasswordProtected()
+            throws PSTException, IOException {
+        return (this.getLongItem(0x67FF) != 0);
+    }
 
 }

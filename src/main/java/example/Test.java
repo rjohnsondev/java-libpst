@@ -43,7 +43,7 @@ public class Test {
 			PSTMessage email = (PSTMessage)folder.getNextChild();
 			while (email != null) {
 				printDepth();
-				System.out.println("Email: "+email.getSubject());
+				System.out.println("Email: "+ email.getDescriptorNodeId() + " - " + email.getSubject());
 				email = (PSTMessage)folder.getNextChild();
 			}
 			depth--;

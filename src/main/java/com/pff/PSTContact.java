@@ -835,7 +835,7 @@ public class PSTContact extends PSTMessage {
 			"Display Name Prefix (Contact Title): "+getDisplayNamePrefix()+"\n"+
 			"Profession: "+getProfession()+"\n"+
 			"Preferred By Name: "+getPreferredByName()+"\n"+
-			"Spouse�s Name: "+getSpouseName()+"\n"+
+			"Spouse's Name: "+getSpouseName()+"\n"+
 			"Computer Network Name: "+getComputerNetworkName()+"\n"+
 			"Customer ID: "+getCustomerId()+"\n"+
 			"TTY/TDD Phone: "+getTtytddPhoneNumber()+"\n"+

@@ -78,10 +78,10 @@ class PSTTableItem {
 		if (stringType == VALUE_TYPE_PT_UNICODE) {
 			// we are a nice little-endian unicode string.
 			try {
-				if (isExternalValueReference ) {
+				if (isExternalValueReference) {
 					return "External string reference!";
 				}
-				return new String(data, "UTF-16LE");
+				return new String(data, "UTF-16LE").trim();
 			} catch (UnsupportedEncodingException e) {
 
 				System.err.println("Error decoding string: " + data.toString());
@@ -91,7 +91,7 @@ class PSTTableItem {
 		
 		if (stringType == VALUE_TYPE_PT_STRING8 ) {
 			//System.out.println("Warning! decoding string8 without charset: "+this.entryType + " - "+ Integer.toHexString(this.entryType));
-			return new String(data, Charset.forName("UTF-8"));
+			return new String(data, Charset.forName("UTF-8")).trim();
 		}
 		
 		StringBuffer outputBuffer = new StringBuffer();

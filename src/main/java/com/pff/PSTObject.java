@@ -670,8 +670,7 @@ public class PSTObject {
 
 		PSTTableBCItem item = table.getItems().get(0x001a);
 		String messageClass = "";
-		if ( item != null )
-		{
+		if ( item != null ) {
 			messageClass = item.getStringValue();
 		}
 

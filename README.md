@@ -15,7 +15,7 @@ Things that the library will most likely not do:
   * Provide write access to PST files
   * Recover deleted email items
 
-For example usage of the library please see the TestGui application stored in the examples folder.
+For example usage of the library please see the TestGui application stored in the examples folder.  Javadocs are available here: http://rjohnsondev.github.io/java-libpst/apidocs/
 
 Accessing the contents of a PSTFile is a matter of following the folder structure down to the desired email.  This example reads a PST and prints the tree structure to the console:
 

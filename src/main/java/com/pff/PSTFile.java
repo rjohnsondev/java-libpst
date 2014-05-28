@@ -280,13 +280,6 @@ public class PSTFile {
 				String key = new String(keyByteValue, "UTF-16LE");
 				stringToId.put(key, wPropIdx);
 				idToString.put(wPropIdx, key);
-				/*
-				if (wPropIdx == 32784) {
-					System.out.println("here!" + dwPropertyId);
-					System.out.println(key);
-					//System.out.println(32784 - 0x8000);
-				}
-				*/
 			}
 		}
 	}

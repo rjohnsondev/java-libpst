@@ -206,6 +206,8 @@
 00000029=PidLidOldWhenStartWhole
 0000002A=PidLidOldWhenEndWhole
 000048CC=Unknown_000048CC
+00008054=PidLidDistributionListOneOffMembers
+00008055=PidLidDistributionListMembers
 00008101=PidLidTaskStatus
 00008102=PidLidPercentComplete
 00008103=PidLidTeamTask

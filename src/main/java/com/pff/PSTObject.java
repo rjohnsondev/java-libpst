@@ -424,6 +424,23 @@ public class PSTObject {
 	};
 	
 	/**
+	 * Output a number in a variety of formats for easier consumption
+	 * @param data
+	 */
+	public static void printFormattedNumber(String pref, long number) {
+		System.out.print(pref);
+		printFormattedNumber(number);
+	}
+	public static void printFormattedNumber(long number) {
+		System.out.print("dec: ");
+		System.out.print(number);
+		System.out.print(", hex: ");
+		System.out.print(Long.toHexString(number));
+		System.out.print(", bin: ");
+		System.out.println(Long.toBinaryString(number));
+	}
+
+	/**
 	 * Output a dump of data in hex format in the order it was read in
 	 * @param data
 	 * @param pretty
@@ -653,8 +670,7 @@ public class PSTObject {
 
 		PSTTableBCItem item = table.getItems().get(0x001a);
 		String messageClass = "";
-		if ( item != null )
-		{
+		if ( item != null ) {
 			messageClass = item.getStringValue();
 		}
 
@@ -672,6 +688,8 @@ public class PSTObject {
 			return new PSTActivity(theFile, folderIndexNode, table, localDescriptorItems);
 		} else if (messageClass.equals("IPM.Post.Rss")) {
 			return new PSTRss(theFile, folderIndexNode, table, localDescriptorItems);
+		} else if (messageClass.equals("IPM.DistList")) {
+			return new PSTDistList(theFile, folderIndexNode, table, localDescriptorItems);
 		} else {
 			System.err.println("Unknown message type: "+messageClass);
 		}

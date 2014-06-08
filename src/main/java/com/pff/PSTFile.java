@@ -591,11 +591,9 @@ public class PSTFile {
 		} else {
             fileTypeAdjustment = 496;
 		}
-        PSTObject.printFormattedNumber(btreeStartOffset);
-        PSTObject.printFormattedNumber(btreeStartOffset + fileTypeAdjustment);
         in.seek(btreeStartOffset + fileTypeAdjustment);
 		in.read(temp);
-        PSTObject.printHexFormatted(temp, true);
+
 		while	((temp[0] == 0xffffff80 && temp[1] == 0xffffff80 && !descTree) ||
 				 (temp[0] == 0xffffff81 && temp[1] == 0xffffff81 && descTree))
 		{
@@ -611,7 +609,6 @@ public class PSTFile {
 			}
 			in.seek(btreeStartOffset);
 			in.read(branchNodeItems);
-            PSTObject.printHexFormatted(branchNodeItems, true);
 
 			long numberOfItems = 0;
             if (this.getPSTFileType() == PST_TYPE_2013_UNICODE) {
@@ -624,7 +621,7 @@ public class PSTFile {
                 numberOfItems = in.read();
                 in.read(); // maxNumberOfItems
             }
-			System.out.println("ITEM SIZE: "+in.read()); // itemSize
+			int itemSize = (int)in.read(); // itemSize
 			int levelsToLeaf = in.read();
 
 			if (levelsToLeaf > 0) {
@@ -664,10 +661,8 @@ public class PSTFile {
 						in.read(temp);
 					}
 				}
-			}
-			else
-			{
-                System.out.println(String.format("At bottom, looking through %d items", numberOfItems));
+			} else {
+                //System.out.println(String.format("At bottom, looking through %d items", numberOfItems));
 				// we are at the bottom of the tree...
 				// we want to get our file offset!
 				for (long x = 0; x < numberOfItems; x++) {
@@ -711,8 +706,8 @@ public class PSTFile {
 								in.seek(btreeStartOffset + (x * 32));
 								temp = new byte[32];
 								in.read(temp);
-								System.out.println("item found!!!");
-                                PSTObject.printHexFormatted(temp, true);
+								//System.out.println("item found!!!");
+                                //PSTObject.printHexFormatted(temp, true);
 								return temp;
 							}
 						} else {
@@ -721,7 +716,7 @@ public class PSTFile {
 
 							if (indexIdOfFirstChildNode == index) {
 								// we found it!!!! OMG
-								System.out.println("item found as item #"+x);
+								//System.out.println("item found as item #"+x + " size (should be 24): "+itemSize);
 								in.seek(btreeStartOffset + (x * 24));
 
 								temp = new byte[24];

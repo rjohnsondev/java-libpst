@@ -911,4 +911,9 @@ public class PSTFile {
 		}
 	}
 
+    public void close() throws IOException
+    {
+        in.close();
+    }
+
 }

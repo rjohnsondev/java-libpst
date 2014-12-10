@@ -36,6 +36,7 @@ package com.pff;
 
 import java.io.*;
 import java.util.*;
+import java.util.zip.*;
 
 /**
  * this input stream basically "maps" an input stream on top of the random access file
@@ -56,19 +57,25 @@ public class PSTNodeInputStream extends InputStream {
 
 	private boolean encrypted = false;
 
-	PSTNodeInputStream(PSTFile pstFile, byte[] attachmentData) {
+	PSTNodeInputStream(PSTFile pstFile, byte[] attachmentData)
+        throws PSTException
+    {
 		this.allData = attachmentData;
 		this.length = this.allData.length;
 		encrypted = pstFile.getEncryptionType() == PSTFile.ENCRYPTION_TYPE_COMPRESSIBLE;
 		this.currentBlock = 0;
 		this.currentLocation = 0;
+        this.detectZlib();
 	}
-	PSTNodeInputStream(PSTFile pstFile, byte[] attachmentData, boolean encrypted) {
+	PSTNodeInputStream(PSTFile pstFile, byte[] attachmentData, boolean encrypted)
+        throws PSTException
+    {
 		this.allData = attachmentData;
 		this.encrypted = encrypted;
 		this.length = this.allData.length;
 		this.currentBlock = 0;
 		this.currentLocation = 0;
+        this.detectZlib();
 	}
 
 	PSTNodeInputStream(PSTFile pstFile, PSTDescriptorItem descriptorItem)
@@ -83,7 +90,7 @@ public class PSTNodeInputStream extends InputStream {
 		loadFromOffsetItem(offsetItem);
 		this.currentBlock = 0;
 		this.currentLocation = 0;
-
+        this.detectZlib();
 	}
 
 	PSTNodeInputStream(PSTFile pstFile, OffsetIndexItem offsetItem)
@@ -92,10 +99,53 @@ public class PSTNodeInputStream extends InputStream {
 		this.in = pstFile.getFileHandle();
 		this.pstFile = pstFile;
 		this.encrypted = pstFile.getEncryptionType() == PSTFile.ENCRYPTION_TYPE_COMPRESSIBLE;
+		//this.encrypted = true;
 		loadFromOffsetItem(offsetItem);
 		this.currentBlock = 0;
 		this.currentLocation = 0;
+        this.detectZlib();
 	}
+
+    private boolean isZlib = false;
+    private void detectZlib()
+        throws PSTException {
+        // not really sure how this is meant to work, kind of going by feel here.
+        if (this.length < 4) {
+            return;
+        }
+        try {
+            if (this.read() == 0x78 && this.read() == 0x9c) {
+                // we are a compressed block, decompress the whole thing into a buffer
+                // and replace our contents with that.
+                Inflater inflater = new Inflater();
+                byte[] inData = new byte[(int)this.length]; // TODO: make this stream correctly.
+                this.seek(0);
+                int lengthRead = this.read(inData); 
+                if (lengthRead != this.length) {
+                    throw new PSTException("Bad assumption: " + lengthRead);
+                }
+                inflater.setInput(inData);
+
+                ByteArrayOutputStream outputStream = new ByteArrayOutputStream(inData.length);
+                byte[] buffer = new byte[1024];
+                while (!inflater.finished()) {
+                    int count = inflater.inflate(buffer);
+                    outputStream.write(buffer, 0, count);
+                }
+                outputStream.close();
+                this.allData = outputStream.toByteArray();
+                inflater.end();
+                this.currentLocation = 0;
+                this.currentBlock = 0;
+                this.length = this.allData.length;
+            }
+            this.seek(0);
+        } catch (IOException err) {
+            throw new PSTException("Unable to compress reportedly compressed block", err);
+        } catch (DataFormatException err) {
+            throw new PSTException("Unable to compress reportedly compressed block", err);
+        }
+    }
 
 	private void loadFromOffsetItem(OffsetIndexItem offsetItem)
 			throws IOException, PSTException

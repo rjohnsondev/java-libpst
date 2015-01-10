@@ -587,23 +587,28 @@ public class PSTFile {
 		if (this.getPSTFileType() == PST_TYPE_ANSI) {
             fileTypeAdjustment = 500;
 		} else if (this.getPSTFileType() == PST_TYPE_2013_UNICODE) {
-            fileTypeAdjustment = 0x1000 - 24;
+                fileTypeAdjustment = 0x1000 - 24;
 		} else {
             fileTypeAdjustment = 496;
 		}
+        if (descTree) {
+            //System.out.println("Starting at 1: " + (btreeStartOffset + fileTypeAdjustment));
+        }
+
         in.seek(btreeStartOffset + fileTypeAdjustment);
+        ////PSTObject.printFormattedNumber("btreeStartOffset ("+descTree+")", btreeStartOffset);
+        //PSTObject.printFormattedNumber("destination", btreeStartOffset+fileTypeAdjustment);
 		in.read(temp);
+        //PSTObject.printHexFormatted(temp, true);
 
 		while	((temp[0] == 0xffffff80 && temp[1] == 0xffffff80 && !descTree) ||
-				 (temp[0] == 0xffffff81 && temp[1] == 0xffffff81 && descTree))
-		{
-
+				 (temp[0] == 0xffffff81 && temp[1] == 0xffffff81 && descTree)) {
 			// get the rest of the data....
 			byte[] branchNodeItems;
 			if (this.getPSTFileType() == PST_TYPE_ANSI) {
 				branchNodeItems = new byte[496];
             } else if (this.getPSTFileType() == PST_TYPE_2013_UNICODE) {
-                branchNodeItems = new byte[0x1000 - 24 - 16]; // this is wrong I think
+                branchNodeItems = new byte[4056];
 			} else {
 				branchNodeItems = new byte[488];
 			}
@@ -726,11 +731,11 @@ public class PSTFile {
 						}
 					}
 				}
-				throw new PSTException("Unable to find "+index);
+				throw new PSTException("Unable to find "+index + " is desc: " + descTree);
 			}
 		}
 
-		throw new PSTException("Unable to find node: "+index);
+        throw new PSTException("Unable to find node: "+index + " is desc: " + descTree);
 	}
 
 	/**
@@ -840,29 +845,45 @@ public class PSTFile {
 	private void processDescriptorBTree(long btreeStartOffset)
 			throws IOException, PSTException
 	{
+        int fileTypeAdjustment;
+
 		byte[] temp = new byte[2];
 		if (this.getPSTFileType() == PST_TYPE_ANSI) {
-			in.seek(btreeStartOffset+500);
+            fileTypeAdjustment = 500;
+		} else if (this.getPSTFileType() == PST_TYPE_2013_UNICODE) {
+                fileTypeAdjustment = 0x1000 - 24;
 		} else {
-			in.seek(btreeStartOffset+496);
+            fileTypeAdjustment = 496;
 		}
+        in.seek(btreeStartOffset + fileTypeAdjustment);
 		in.read(temp);
 
 		if ((temp[0] == 0xffffff81 && temp[1] == 0xffffff81)) {
 
 			if (this.getPSTFileType() == PST_TYPE_ANSI) {
-				in.seek(btreeStartOffset+496);
+                in.seek(btreeStartOffset+496);
+            } else if (this.getPSTFileType() == PST_TYPE_2013_UNICODE) {
+                in.seek(btreeStartOffset+4056);
 			} else {
-				in.seek(btreeStartOffset+488);
+                in.seek(btreeStartOffset+488);
 			}
 
-			int numberOfItems = in.read();
-			in.read(); // maxNumberOfItems
+			long numberOfItems = 0;
+            if (this.getPSTFileType() == PST_TYPE_2013_UNICODE) {
+                byte[] numberOfItemsBytes = new byte[2];
+                in.read(numberOfItemsBytes);
+                numberOfItems = PSTObject.convertLittleEndianBytesToLong(numberOfItemsBytes);
+                in.read(numberOfItemsBytes);
+                long maxNumberOfItems = PSTObject.convertLittleEndianBytesToLong(numberOfItemsBytes);
+            } else {
+                numberOfItems = in.read();
+                in.read(); // maxNumberOfItems
+            }
 			in.read(); // itemSize
 			int levelsToLeaf = in.read();
 
 			if (levelsToLeaf > 0) {
-				for (int x = 0; x < numberOfItems; x++) {
+				for (long x = 0; x < numberOfItems; x++) {
 					if (this.getPSTFileType() == PST_TYPE_ANSI) {
 						long branchNodeItemStartIndex = (btreeStartOffset + (12*x));
 						long nextLevelStartsAt =  this.extractLEFileOffset(branchNodeItemStartIndex+8);
@@ -874,7 +895,7 @@ public class PSTFile {
 					}
 				}
 			} else {
-				for (int x = 0; x < numberOfItems; x++) {
+				for (long x = 0; x < numberOfItems; x++) {
 					// The 64-bit descriptor index b-tree leaf node item
 					// give me the offset index please!
 					if (this.getPSTFileType() == PSTFile.PST_TYPE_ANSI) {

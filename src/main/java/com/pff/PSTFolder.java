@@ -349,14 +349,16 @@ public class PSTFolder extends PSTObject {
 	 * @return number of emails in this folder (as counted)
 	 * @throws IOException
 	 * @throws PSTException
+     */
 	public int getEmailCount()
 		throws IOException, PSTException
 	{
 		this.initEmailsTable();
+        if (emailsTable == null) {
+            return -1;
+        }
 		return this.emailsTable.getRowCount();
 	}
-	 */
-
 	
 	public int getFolderType() {
 		return this.getIntItem(0x3601);

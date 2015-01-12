@@ -38,6 +38,9 @@ import java.io.*;
 import java.util.*;
 import java.util.zip.*;
 
+import java.nio.file.Files;
+import java.nio.file.Paths;
+
 /**
  * this input stream basically "maps" an input stream on top of the random access file
  * @author richard
@@ -117,32 +120,35 @@ public class PSTNodeInputStream extends InputStream {
             if (this.read() == 0x78 && this.read() == 0x9c) {
                 // we are a compressed block, decompress the whole thing into a buffer
                 // and replace our contents with that.
-                Inflater inflater = new Inflater();
-                byte[] inData = new byte[(int)this.length]; // TODO: make this stream correctly.
+                // firstly, if we have blocks, use that as the length
+                int uncompressedLength = (int)this.length;
+                if (this.indexItems.size() > 0) {
+                    uncompressedLength = 0;
+                    for (OffsetIndexItem i : this.indexItems) {
+                        uncompressedLength += i.size;
+                    }
+                }
+                byte[] inData = new byte[uncompressedLength]; // TODO: make this stream correctly.
                 this.seek(0);
                 int lengthRead = this.read(inData); 
-                if (lengthRead != this.length) {
+                if (lengthRead != uncompressedLength) {
                     throw new PSTException("Bad assumption: " + lengthRead);
                 }
-                inflater.setInput(inData);
 
-                ByteArrayOutputStream outputStream = new ByteArrayOutputStream(inData.length);
-                byte[] buffer = new byte[1024];
-                while (!inflater.finished()) {
-                    int count = inflater.inflate(buffer);
-                    outputStream.write(buffer, 0, count);
-                }
+                Inflater inflater = new Inflater();  
+                ByteArrayOutputStream outputStream = new ByteArrayOutputStream((int)this.length); 
+                InflaterOutputStream inflaterStream = new InflaterOutputStream(outputStream);
+                inflaterStream.write(inData); 
+                inflaterStream.close();
                 outputStream.close();
-                this.allData = outputStream.toByteArray();
-                inflater.end();
+                byte[] output = outputStream.toByteArray(); 
+                this.allData = output;
                 this.currentLocation = 0;
                 this.currentBlock = 0;
                 this.length = this.allData.length;
             }
             this.seek(0);
         } catch (IOException err) {
-            throw new PSTException("Unable to compress reportedly compressed block", err);
-        } catch (DataFormatException err) {
             throw new PSTException("Unable to compress reportedly compressed block", err);
         }
     }
@@ -155,6 +161,7 @@ public class PSTNodeInputStream extends InputStream {
 		in.seek(offsetItem.fileOffset);
 		byte[] data = new byte[offsetItem.size];
 		in.read(data);
+        //PSTObject.printHexFormatted(data, true);
 
 		if ( bInternal ) {
 			// All internal blocks are at least 8 bytes long...
@@ -162,11 +169,11 @@ public class PSTNodeInputStream extends InputStream {
 				throw new PSTException("Invalid internal block size");
 			}
 
-			if ( data[0] == 1 )
+			if ( data[0] == 0x1 )
 			{
 				bInternal = false;
 				// we are a block, or xxblock
-				length = PSTObject.convertLittleEndianBytesToLong(data, 4, 8);
+				this.length = PSTObject.convertLittleEndianBytesToLong(data, 4, 8);
 				// go through all of the blocks and create skip points.
 				this.getBlockSkipPoints(data);
 				return;

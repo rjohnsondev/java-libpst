@@ -161,7 +161,7 @@ public class PSTFile {
 			}
 			
 			// build out name to id map.
-			//processNameToIdMap(in);
+			processNameToIdMap(in);
 			
 		}  catch (IOException err) {
 			throw new PSTException("Unable to read PST Sig", err);
@@ -591,15 +591,8 @@ public class PSTFile {
 		} else {
             fileTypeAdjustment = 496;
 		}
-        if (descTree) {
-            //System.out.println("Starting at 1: " + (btreeStartOffset + fileTypeAdjustment));
-        }
-
         in.seek(btreeStartOffset + fileTypeAdjustment);
-        ////PSTObject.printFormattedNumber("btreeStartOffset ("+descTree+")", btreeStartOffset);
-        //PSTObject.printFormattedNumber("destination", btreeStartOffset+fileTypeAdjustment);
 		in.read(temp);
-        //PSTObject.printHexFormatted(temp, true);
 
 		while	((temp[0] == 0xffffff80 && temp[1] == 0xffffff80 && !descTree) ||
 				 (temp[0] == 0xffffff81 && temp[1] == 0xffffff81 && descTree)) {

@@ -317,8 +317,8 @@ public class PSTMessage extends PSTObject {
 	/**
 	 * Message addressed to me ASCII or Unicode string
 	 */
-	public String getMessageRecipMe () {
-		return this.getStringItem(0x0059);
+	public boolean getMessageRecipMe () {
+		return this.getIntItem(0x0059) != 0;
 	}
 	/**
 	 * Response requested Boolean

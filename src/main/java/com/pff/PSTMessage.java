@@ -315,7 +315,7 @@ public class PSTMessage extends PSTObject {
 		return (this.getIntItem(0x0058) != 0);
 	}
 	/**
-	 * Message addressed to me ASCII or Unicode string
+	 * Indicates that the receiving mailbox owner is a primary or a carbon copy (Cc) recipient
 	 */
 	public boolean getMessageRecipMe () {
 		return this.getIntItem(0x0059) != 0;

@@ -999,6 +999,63 @@ public class PSTMessage extends PSTObject {
 		
 		return "No recipients table!";
 	}
+
+	public byte[] getConversationId() {
+		return getBinaryItem(0x3013);
+	}
+
+	public byte[] getConversationIndex() {
+		byte[] conversationIndex = getBinaryItem(0x0071);
+		return conversationIndex;
+	}
+
+	public String getConversationIndexAsString() {
+		byte[] conversationId = getConversationIndex();
+
+		if(conversationId != null && conversationId.length >= 22) {
+			// Header 22 Bytes
+			int reservedheaderMarker = (int) PSTObject.convertBigEndianBytesToLong(conversationId, 0, 1);
+			// TODO: According to the Spec the first byte is not included, this works better but still out by 1 day (ish)!
+			int deliveryTimeHigh = (int) PSTObject.convertBigEndianBytesToLong(conversationId, 0, 4);
+			int deliveryTimeLow = (int) (PSTObject.convertBigEndianBytesToLong(conversationId, 4, 6) << 8);
+			Date deliveryTime = PSTObject.filetimeToDate(deliveryTimeHigh, deliveryTimeLow);
+
+			// Mon Mar 24 16:02:21 GMT 2014
+			// deliveryTime = PSTObject.filetimeToDate(0x01CF477A, 0x70530000);
+
+			byte[] guidData = new byte[16];
+			System.arraycopy(conversationId, 6, guidData, 0, guidData.length);
+			String guid = guidToString(guidData);
+
+			return deliveryTime.toString() + " " + guid;
+		}
+		return null;
+	}
+
+	public String guidToString(byte[] guidData) {
+		// Hex digits		Description
+		//	8 				Data1
+		//	4 				Data2
+		//	4 				Data3
+		//	4 				Initial two bytes from Data4
+		//	12 				Remaining six bytes from Data4
+		// TODO: Is this correct
+
+		if(guidData.length == 16) {
+			int data1 = (int)PSTObject.convertBigEndianBytesToLong(guidData, 0, 4);
+			int data2 = (int)PSTObject.convertBigEndianBytesToLong(guidData, 4, 6);
+			int data3 = (int)PSTObject.convertBigEndianBytesToLong(guidData, 6, 8);
+			int data41 = (int)PSTObject.convertBigEndianBytesToLong(guidData, 8, 10);
+			int data42 = (int)PSTObject.convertBigEndianBytesToLong(guidData, 10, 16);
+			String guidString = String.format("%08X-%04X-%04X-%04X-%012X", data1, data2, data3, data41, data42);
+			return guidString;
+		}
+		return "";
+	}
+
+	public boolean isConversationIndexTracking() {
+		return getBooleanItem(0x3016, false);
+	}
 	
 
 	/**

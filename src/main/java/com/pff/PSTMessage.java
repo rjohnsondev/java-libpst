@@ -1015,7 +1015,7 @@ public class PSTMessage extends PSTObject {
 		if(conversationId != null && conversationId.length >= 22) {
 			// Header 22 Bytes
 			int reservedheaderMarker = (int) PSTObject.convertBigEndianBytesToLong(conversationId, 0, 1);
-			// According to the Spec the first byte is not included, but I beleive the spec is incorrect!
+			// According to the Spec the first byte is not included, but I believe the spec is incorrect!
 			long deliveryTimeHigh = PSTObject.convertBigEndianBytesToLong(conversationId, 0, 4);
 			long deliveryTimeLow = PSTObject.convertBigEndianBytesToLong(conversationId, 4, 6) << 16;
 			Date deliveryTime = PSTObject.filetimeToDate((int)deliveryTimeHigh, (int)deliveryTimeLow);

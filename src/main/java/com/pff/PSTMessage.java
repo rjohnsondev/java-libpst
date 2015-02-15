@@ -588,6 +588,9 @@ public class PSTMessage extends PSTObject {
 	/**
 	 * Message content properties
 	 */
+	public int getNativeBodyType() {
+		return this.getIntItem(0x1016);
+	}
 	
 	/**
 	 * Plain text e-mail body
@@ -991,7 +994,6 @@ public class PSTMessage extends PSTObject {
 		return null;
 	}
 
-	
 	public String getRecipientsString() {
 		if ( recipientTable != null ) {
 			return recipientTable.getItemsString();
@@ -1004,51 +1006,13 @@ public class PSTMessage extends PSTObject {
 		return getBinaryItem(0x3013);
 	}
 
-	public byte[] getConversationIndex() {
-		byte[] conversationIndex = getBinaryItem(0x0071);
-		return conversationIndex;
-	}
-
-	public String getConversationIndexAsString() {
-		byte[] conversationId = getConversationIndex();
-
-		if(conversationId != null && conversationId.length >= 22) {
-			// Header 22 Bytes
-			int reservedheaderMarker = (int) PSTObject.convertBigEndianBytesToLong(conversationId, 0, 1);
-			// According to the Spec the first byte is not included, but I believe the spec is incorrect!
-			long deliveryTimeHigh = PSTObject.convertBigEndianBytesToLong(conversationId, 0, 4);
-			long deliveryTimeLow = PSTObject.convertBigEndianBytesToLong(conversationId, 4, 6) << 16;
-			Date deliveryTime = PSTObject.filetimeToDate((int)deliveryTimeHigh, (int)deliveryTimeLow);
-
-
-			byte[] guidData = new byte[16];
-			System.arraycopy(conversationId, 6, guidData, 0, guidData.length);
-			String guid = guidToString(guidData);
-
-			return deliveryTime.toString() + " " + guid;
-		}
-		return null;
-	}
-
-	public String guidToString(byte[] guidData) {
-
-
-		if(guidData.length == 16) {
-			int data1 = (int)PSTObject.convertBigEndianBytesToLong(guidData, 0, 4);
-			int data2 = (int)PSTObject.convertBigEndianBytesToLong(guidData, 4, 6);
-			int data3 = (int)PSTObject.convertBigEndianBytesToLong(guidData, 6, 8);
-			int data41 = (int)PSTObject.convertBigEndianBytesToLong(guidData, 8, 10);
-			long data42 = PSTObject.convertBigEndianBytesToLong(guidData, 10, 16);
-			String guidString = String.format("%08X-%04X-%04X-%04X-%012X", data1, data2, data3, data41, data42);
-			return guidString;
-		}
-		return "";
+	public PSTConversationIndex getConversationIndex() {
+		return new PSTConversationIndex(getBinaryItem(0x0071));
 	}
 
 	public boolean isConversationIndexTracking() {
 		return getBooleanItem(0x3016, false);
 	}
-	
 
 	/**
 	 * string representation of this email

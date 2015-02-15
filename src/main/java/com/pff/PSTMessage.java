@@ -315,10 +315,10 @@ public class PSTMessage extends PSTObject {
 		return (this.getIntItem(0x0058) != 0);
 	}
 	/**
-	 * Message addressed to me ASCII or Unicode string
+	 * Indicates that the receiving mailbox owner is a primary or a carbon copy (Cc) recipient
 	 */
-	public String getMessageRecipMe () {
-		return this.getStringItem(0x0059);
+	public boolean getMessageRecipMe () {
+		return this.getIntItem(0x0059) != 0;
 	}
 	/**
 	 * Response requested Boolean
@@ -588,6 +588,9 @@ public class PSTMessage extends PSTObject {
 	/**
 	 * Message content properties
 	 */
+	public int getNativeBodyType() {
+		return this.getIntItem(0x1016);
+	}
 	
 	/**
 	 * Plain text e-mail body
@@ -991,7 +994,6 @@ public class PSTMessage extends PSTObject {
 		return null;
 	}
 
-	
 	public String getRecipientsString() {
 		if ( recipientTable != null ) {
 			return recipientTable.getItemsString();
@@ -999,7 +1001,18 @@ public class PSTMessage extends PSTObject {
 		
 		return "No recipients table!";
 	}
-	
+
+	public byte[] getConversationId() {
+		return getBinaryItem(0x3013);
+	}
+
+	public PSTConversationIndex getConversationIndex() {
+		return new PSTConversationIndex(getBinaryItem(0x0071));
+	}
+
+	public boolean isConversationIndexTracking() {
+		return getBooleanItem(0x3016, false);
+	}
 
 	/**
 	 * string representation of this email

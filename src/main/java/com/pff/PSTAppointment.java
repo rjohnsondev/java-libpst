@@ -135,7 +135,7 @@ public class PSTAppointment extends PSTMessage {
 	public int getAppointmentSequence() {
 		return getIntItem(pstFile.getNameToIdMapItem(0x00008201, PSTFile.PSETID_Appointment));
 	}
-	
+
 	// online meeting properties
 	public boolean isOnlineMeeting() {
 		return (getBooleanItem(pstFile.getNameToIdMapItem(0x00008240, PSTFile.PSETID_Appointment)));
@@ -187,7 +187,11 @@ public class PSTAppointment extends PSTMessage {
 		return getIntItem(0x3ff1);
 	}
 
-	public byte[] getGlobalObjectId() {
-		return getBinaryItem(pstFile.getNameToIdMapItem(0x00000003, PSTFile.PSETID_Meeting));
+	public PSTGlobalObjectId getGlobalObjectId() {
+		return new PSTGlobalObjectId(getBinaryItem(pstFile.getNameToIdMapItem(0x00000003, PSTFile.PSETID_Meeting)));
+	}
+
+	public PSTGlobalObjectId getCleanGlobalObjectId() {
+		return new PSTGlobalObjectId(getBinaryItem(pstFile.getNameToIdMapItem(0x00000023, PSTFile.PSETID_Meeting)));
 	}
 }

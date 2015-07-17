@@ -58,6 +58,14 @@ public class PSTAppointmentRecurrence {
 
 	// Access methods
 
+	public Calendar[] getDeletedInstanceDates() {
+		return DeletedInstanceDates;
+	}
+	
+	public Calendar[] getModifiedInstanceDates() {
+		return ModifiedInstanceDates;
+	}
+	
 	public short getExceptionCount() {
 		return ExceptionCount;
 	}

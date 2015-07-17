@@ -38,6 +38,7 @@ import java.util.Date;
 import java.util.HashMap;
 
 import com.pff.exceptions.PSTException;
+import com.pff.objects.sub.PSTGlobalObjectId;
 import com.pff.objects.sub.PSTTimeZone;
 import com.pff.parsing.DescriptorIndexNode;
 import com.pff.parsing.PSTDescriptorItem;
@@ -194,7 +195,14 @@ public class PSTAppointment extends PSTMessage {
 		return getIntItem(0x3ff1);
 	}
 
-	public byte[] getGlobalObjectId() {
+	/*public byte[] getGlobalObjectId() {
 		return getBinaryItem(pstFile.getNameToIdMapItem(0x00000003, PSTSource.PSETID_Meeting));
+	}*/
+	public PSTGlobalObjectId getGlobalObjectId() {
+	return new PSTGlobalObjectId(getBinaryItem(pstFile.getNameToIdMapItem(0x00000003, PSTSource.PSETID_Meeting)));
+	}
+	
+	public PSTGlobalObjectId getCleanGlobalObjectId() {
+		return new PSTGlobalObjectId(getBinaryItem(pstFile.getNameToIdMapItem(0x00000023, PSTSource.PSETID_Meeting)));
 	}
 }

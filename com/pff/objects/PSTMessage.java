@@ -39,6 +39,7 @@ import java.util.HashMap;
 
 import com.pff.PSTUtils;
 import com.pff.exceptions.PSTException;
+import com.pff.objects.sub.PSTConversationIndex;
 import com.pff.objects.sub.PSTRecipient;
 import com.pff.parsing.DescriptorIndexNode;
 import com.pff.parsing.PSTDescriptorItem;
@@ -329,8 +330,8 @@ public class PSTMessage extends PSTObject {
 	/**
 	 * Message addressed to me ASCII or Unicode string
 	 */
-	public String getMessageRecipMe () {
-		return this.getStringItem(0x0059);
+	public boolean getMessageRecipMe () {
+		return this.getIntItem(0x0059) != 0;
 	}
 	/**
 	 * Response requested Boolean
@@ -596,6 +597,10 @@ public class PSTMessage extends PSTObject {
 //	public boolean isRemoteDelMarked() {
 //		return (this.getIntItem(0x0e17) & 0x2000) != 0;
 //	}
+	
+	public int getNativeBodyType() {
+		return this.getIntItem(0x1016);
+	}
 	
 	/**
 	 * Message content properties
@@ -1026,4 +1031,16 @@ public class PSTMessage extends PSTObject {
 			this.localDescriptorItems;
 	}
 	
+	
+	public byte[] getConversationId() {
+		return getBinaryItem(0x3013);
+	}
+	
+	public PSTConversationIndex getConversationIndex() {
+		return new PSTConversationIndex(getBinaryItem(0x0071));
+	}
+	
+	public boolean isConversationIndexTracking() {
+		return getBooleanItem(0x3016, false);
+	}
 }

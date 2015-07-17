@@ -139,7 +139,11 @@ public class PSTObject {
 	 * @return item's descriptor node identifier
 	 */
 	public long getDescriptorNodeId() {
-		return this.descriptorIndexNode.descriptorIdentifier;
+		//return this.descriptorIndexNode.descriptorIdentifier;
+		if (this.descriptorIndexNode != null) { // Prevent null pointer exceptions for embedded messages
+			return this.descriptorIndexNode.descriptorIdentifier;
+		}
+		return 0;
 	}
 
 	public int getNodeType() {

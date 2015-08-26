@@ -1,4 +1,7 @@
 # Configuration for Travis CI http://travis-ci.org
 sudo: false
 language: java
-
+jdk:
+  - oraclejdk8
+  - oraclejdk7
+  - openjdk6

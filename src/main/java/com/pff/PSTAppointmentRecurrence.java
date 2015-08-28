@@ -238,8 +238,7 @@ public class PSTAppointmentRecurrence {
 						Calendar c = Calendar.getInstance(stz);
 						c.setTime(replaceTime);
 						if ( c.get(Calendar.YEAR) == ModifiedInstanceDates[i].get(Calendar.YEAR) &&
-							 c.get(Calendar.MONTH) == ModifiedInstanceDates[i].get(Calendar.MONTH) &&
-							 c.get(Calendar.YEAR) == ModifiedInstanceDates[i].get(Calendar.YEAR) )
+							 c.get(Calendar.MONTH) == ModifiedInstanceDates[i].get(Calendar.MONTH))
 						{
 							Exceptions[i].setEmbeddedMessage(embeddedMessage);
 							break;

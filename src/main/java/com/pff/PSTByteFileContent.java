@@ -9,7 +9,14 @@ public class PSTByteFileContent extends PSTFileContent{
         this.content = content;
         this.index = 0;
     }
-     
+    
+    public byte[] getBytes(){
+        return this.content;
+    }
+    public void setBytes(byte[] content){
+        this.content = content;
+    }
+    
     public void seek(long index){
         this.index = (int) index;
     }

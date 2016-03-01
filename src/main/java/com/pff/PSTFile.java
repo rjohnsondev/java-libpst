@@ -33,6 +33,7 @@
  */
 package com.pff;
 import java.io.File;
+import java.io.RandomAccessFile;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
@@ -129,7 +130,7 @@ public class PSTFile {
 	public PSTFile(File file)
 		throws FileNotFoundException, PSTException, IOException
 	{
-		this(new PSTRAFFileContent(file));
+		this(new PSTRAFileContent(file));
 	}
 	
 	public PSTFile(byte[] bytes)
@@ -465,12 +466,22 @@ public class PSTFile {
 	}
 	
 	/**
-	 * get the handle to the file we are currently accessing
+	 * get the handle to the RandomAccessFile we are currently accessing (if any)
 	 */
-	public PSTFileContent getFileHandle() {
-		return this.in;
+	public RandomAccessFile getFileHandle() {
+		if(this.in instanceof PSTRAFileContent){
+			return ((PSTRAFileContent) this.in).getFile();
+		}else{
+			return null;
+		}
 	}
 	
+	/**
+	 * get the handle to the file content we are currently accessing
+	 */
+	public PSTFileContent getContentHandle() {
+		return this.in;
+	}
 	
 	/**
 	 * get the message store of the PST file.

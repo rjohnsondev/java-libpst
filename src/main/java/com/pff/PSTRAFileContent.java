@@ -4,12 +4,19 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 
-public class PSTRAFFileContent extends PSTFileContent{
+public class PSTRAFileContent extends PSTFileContent{
     
     protected RandomAccessFile file;
     
-    public PSTRAFFileContent(File file) throws FileNotFoundException{
+    public PSTRAFileContent(File file) throws FileNotFoundException{
         this.file = new RandomAccessFile(file, "r");
+    }
+    
+    public RandomAccessFile getFile(){
+        return this.file;
+    }
+    public void setFile(RandomAccessFile file){
+        this.file = file;
     }
      
     public void seek(long index) throws IOException{

@@ -43,7 +43,7 @@ import java.util.*;
  */
 public class PSTNodeInputStream extends InputStream {
 
-	private RandomAccessFile in;
+	private PSTFileContent in;
 	private PSTFile pstFile;
 	private LinkedList<Long> skipPoints = new LinkedList<Long>();
 	private LinkedList<OffsetIndexItem> indexItems = new LinkedList<OffsetIndexItem>();

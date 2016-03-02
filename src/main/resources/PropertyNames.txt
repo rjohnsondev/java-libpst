@@ -135,6 +135,7 @@
 3FDE=PidTagInternetCodepage
 3FF1=PidTagMessageLocaleId
 3FFD=PidTagMessageCodepage
+3ff9=PidTagCreatorName
 4019=PidTagSenderFlags
 401A=PidTagSentRepresentingFlags
 401B=PidTagReceivedByFlags
@@ -170,6 +171,8 @@
 7FFD=PidTagAttachmentFlags
 7FFE=PidTagAttachmentHidden
 7FFF=PidTagAttachmentContactPhoto
+3FFA=PidTagLastModifiedName_W
+3FFB=PidTagLastModifierEntryId
 00000001=PidLidAttendeeCriticalChange
 00000002=PidLidWhere
 00000003=PidLidGlobalObjectId

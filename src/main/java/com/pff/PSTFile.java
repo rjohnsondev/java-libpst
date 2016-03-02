@@ -32,8 +32,16 @@
  *
  */
 package com.pff;
-import java.io.*;
-import java.util.*;
+import java.io.File;
+import java.io.RandomAccessFile;
+import java.io.FileNotFoundException;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
+import java.util.Properties;
+import java.util.UUID;
 
 /**
  * PSTFile is the containing class that allows you to access items within a .pst file.
@@ -104,7 +112,7 @@ public class PSTFile {
 	
 	private int itemCount = 0;
 	
-	private RandomAccessFile in;
+	private PSTFileContent in;
 	
 	/**
 	 * constructor
@@ -118,11 +126,24 @@ public class PSTFile {
 	{
 		this(new File(fileName));
 	}
-	public PSTFile(File fileName)
+	
+	public PSTFile(File file)
+		throws FileNotFoundException, PSTException, IOException
+	{
+		this(new PSTRAFileContent(file));
+	}
+	
+	public PSTFile(byte[] bytes)
+		throws FileNotFoundException, PSTException, IOException
+	{
+		this(new PSTByteFileContent(bytes));
+	}
+	
+	public PSTFile(PSTFileContent content)
 		throws FileNotFoundException, PSTException, IOException
 	{
 		// attempt to open the file.
-		in = new RandomAccessFile(fileName, "r");
+		this.in = content;
 
 		// get the first 4 bytes, should be !BDN
 		try {
@@ -179,7 +200,7 @@ public class PSTFile {
 	 * @throws IOException
 	 * @throws PSTException
 	 */
-	private void processNameToIdMap(RandomAccessFile in)
+	private void processNameToIdMap(PSTFileContent in)
 		throws IOException, PSTException
 	{
 
@@ -445,12 +466,22 @@ public class PSTFile {
 	}
 	
 	/**
-	 * get the handle to the file we are currently accessing
+	 * get the handle to the RandomAccessFile we are currently accessing (if any)
 	 */
 	public RandomAccessFile getFileHandle() {
-		return this.in;
+		if(this.in instanceof PSTRAFileContent){
+			return ((PSTRAFileContent) this.in).getFile();
+		}else{
+			return null;
+		}
 	}
 	
+	/**
+	 * get the handle to the file content we are currently accessing
+	 */
+	public PSTFileContent getContentHandle() {
+		return this.in;
+	}
 	
 	/**
 	 * get the message store of the PST file.
@@ -561,7 +592,7 @@ public class PSTFile {
 	 * @throws IOException
 	 * @throws PSTException
 	 */
-	private byte[] findBtreeItem(RandomAccessFile in, long index, boolean descTree)
+	private byte[] findBtreeItem(PSTFileContent in, long index, boolean descTree)
 		throws IOException, PSTException
 	{
 

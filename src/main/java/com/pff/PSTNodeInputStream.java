@@ -43,7 +43,7 @@ import java.util.*;
  */
 public class PSTNodeInputStream extends InputStream {
 
-	private RandomAccessFile in;
+	private PSTFileContent in;
 	private PSTFile pstFile;
 	private LinkedList<Long> skipPoints = new LinkedList<Long>();
 	private LinkedList<OffsetIndexItem> indexItems = new LinkedList<OffsetIndexItem>();
@@ -74,7 +74,7 @@ public class PSTNodeInputStream extends InputStream {
 	PSTNodeInputStream(PSTFile pstFile, PSTDescriptorItem descriptorItem)
 			throws IOException, PSTException
 	{
-		this.in = pstFile.getFileHandle();
+		this.in = pstFile.getContentHandle();
 		this.pstFile = pstFile;
 		this.encrypted = pstFile.getEncryptionType() == PSTFile.ENCRYPTION_TYPE_COMPRESSIBLE;
 
@@ -89,7 +89,7 @@ public class PSTNodeInputStream extends InputStream {
 	PSTNodeInputStream(PSTFile pstFile, OffsetIndexItem offsetItem)
 			throws IOException, PSTException
 	{
-		this.in = pstFile.getFileHandle();
+		this.in = pstFile.getContentHandle();
 		this.pstFile = pstFile;
 		this.encrypted = pstFile.getEncryptionType() == PSTFile.ENCRYPTION_TYPE_COMPRESSIBLE;
 		loadFromOffsetItem(offsetItem);

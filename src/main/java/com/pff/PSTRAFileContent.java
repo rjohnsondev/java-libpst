@@ -18,23 +18,35 @@ public class PSTRAFileContent extends PSTFileContent{
     public void setFile(RandomAccessFile file){
         this.file = file;
     }
-     
+    
+    @Override
     public void seek(long index) throws IOException{
         this.file.seek(index);
     }
+    
+    @Override
     public long getFilePointer() throws IOException{
         return this.file.getFilePointer();
     }
+    
+    @Override
     public int read() throws IOException{
         return this.file.read();
     }
+    
+    @Override
     public int read(byte[] target) throws IOException{
         return this.file.read(target);
     }
+    
+    @Override
     public byte readByte() throws IOException{
         return this.file.readByte();
     }
+    
+    @Override
     public void close() throws IOException{
         this.file.close();
     }
+    
 }

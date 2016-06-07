@@ -80,20 +80,17 @@ public class PSTFolder extends PSTObject {
 	{
 		initSubfoldersTable();
 		Vector<PSTFolder> output = new Vector<PSTFolder>();
-		if (this.hasSubfolders()) {
-			try {
-				List<HashMap<Integer, PSTTable7CItem>> itemMapSet = subfoldersTable.getItems();
-				for (HashMap<Integer, PSTTable7CItem> itemMap : itemMapSet) {
-					PSTTable7CItem item = itemMap.get(26610);
-					PSTFolder folder = (PSTFolder)PSTObject.detectAndLoadPSTObject(pstFile, item.entryValueReference);
-					output.add(folder);
-				}
-			} catch (PSTException err) {
-				// hierachy node doesn't exist
-				throw new PSTException("Can't get child folders for folder "+this.getDisplayName()+"("+this.getDescriptorNodeId()+") child count: "+this.getContentCount()+ " - "+err.toString());
+		try {
+			List<HashMap<Integer, PSTTable7CItem>> itemMapSet = subfoldersTable.getItems();
+			for (HashMap<Integer, PSTTable7CItem> itemMap : itemMapSet) {
+				PSTTable7CItem item = itemMap.get(26610);
+				PSTFolder folder = (PSTFolder)PSTObject.detectAndLoadPSTObject(pstFile, item.entryValueReference);
+				output.add(folder);
 			}
+		} catch (PSTException err) {
+			// hierachy node doesn't exist
+			throw new PSTException("Can't get child folders for folder "+this.getDisplayName()+"("+this.getDescriptorNodeId()+") child count: "+this.getContentCount()+ " - "+err.toString());
 		}
-		// try and get subfolders?
 		return output;
 	}
 
@@ -104,22 +101,19 @@ public class PSTFolder extends PSTObject {
 			return;
 		}
 
-		if (this.hasSubfolders()) {
-			long folderDescriptorIndex = this.descriptorIndexNode.descriptorIdentifier + 11;
-			try {
-				DescriptorIndexNode folderDescriptor = this.pstFile.getDescriptorIndexNode(folderDescriptorIndex);
-				HashMap<Integer, PSTDescriptorItem> tmp = null;
-				if (folderDescriptor.localDescriptorsOffsetIndexIdentifier > 0) {
-					//tmp = new PSTDescriptor(pstFile, folderDescriptor.localDescriptorsOffsetIndexIdentifier).getChildren();
-					tmp = pstFile.getPSTDescriptorItems(folderDescriptor.localDescriptorsOffsetIndexIdentifier);
-				}
-				subfoldersTable = new PSTTable7C(new PSTNodeInputStream(pstFile, pstFile.getOffsetIndexNode(folderDescriptor.dataOffsetIndexIdentifier)), tmp);
-			} catch (PSTException err) {
-				// hierachy node doesn't exist
-				throw new PSTException("Can't get child folders for folder "+this.getDisplayName()+"("+this.getDescriptorNodeId()+") child count: "+this.getContentCount()+ " - "+err.toString());
+		long folderDescriptorIndex = this.descriptorIndexNode.descriptorIdentifier + 11;
+		try {
+			DescriptorIndexNode folderDescriptor = this.pstFile.getDescriptorIndexNode(folderDescriptorIndex);
+			HashMap<Integer, PSTDescriptorItem> tmp = null;
+			if (folderDescriptor.localDescriptorsOffsetIndexIdentifier > 0) {
+				//tmp = new PSTDescriptor(pstFile, folderDescriptor.localDescriptorsOffsetIndexIdentifier).getChildren();
+				tmp = pstFile.getPSTDescriptorItems(folderDescriptor.localDescriptorsOffsetIndexIdentifier);
 			}
+			subfoldersTable = new PSTTable7C(new PSTNodeInputStream(pstFile, pstFile.getOffsetIndexNode(folderDescriptor.dataOffsetIndexIdentifier)), tmp);
+		} catch (PSTException err) {
+			// hierachy node doesn't exist
+			throw new PSTException("Can't get child folders for folder "+this.getDisplayName()+"("+this.getDescriptorNodeId()+") child count: "+this.getContentCount()+ " - "+err.toString());
 		}
-
 	}
 
 	/**
@@ -349,14 +343,16 @@ public class PSTFolder extends PSTObject {
 	 * @return number of emails in this folder (as counted)
 	 * @throws IOException
 	 * @throws PSTException
+     */
 	public int getEmailCount()
 		throws IOException, PSTException
 	{
 		this.initEmailsTable();
+		if (emailsTable == null) {
+			return -1;
+		}
 		return this.emailsTable.getRowCount();
 	}
-	 */
-
 	
 	public int getFolderType() {
 		return this.getIntItem(0x3601);
@@ -403,3 +399,4 @@ public class PSTFolder extends PSTObject {
 	}
 	
 }
+// vim: set noexpandtab:

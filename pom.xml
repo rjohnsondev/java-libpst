@@ -12,7 +12,7 @@
     <packaging>jar</packaging>
 
     <name>java-libpst</name>
-    <version>0.8.1</version>
+    <version>0.9.1</version>
     <description>A library to read PST files with java, without need for external libraries.</description>
     <url>https://code.google.com/p/java-libpst/</url>
 
@@ -25,17 +25,17 @@
     </licenses>
 
     <scm>
-        <url>https://github.com/rjohnsondev/java-libpst/tags/java-libpst-0.8.1</url>
-        <connection>scm:https://github.com/rjohnsondev/java-libpst.git/tags/java-libpst-0.8.1</connection>
+        <url>https://github.com/rjohnsondev/java-libpst/tags/java-libpst-0.9.1</url>
+        <connection>scm:https://github.com/rjohnsondev/java-libpst.git/tags/java-libpst-0.9.1</connection>
     </scm>
 
     <developers>
         <developer>
             <name>Richard Johnson</name>
             <email>@rjohnsondev</email>
-            <organization>Skimlinks</organization>
+            <organization></organization>
         </developer>
-    </developers> 
+    </developers>
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>

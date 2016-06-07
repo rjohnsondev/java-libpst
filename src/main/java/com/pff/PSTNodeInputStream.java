@@ -36,6 +36,10 @@ package com.pff;
 
 import java.io.*;
 import java.util.*;
+import java.util.zip.*;
+
+import java.nio.file.Files;
+import java.nio.file.Paths;
 
 /**
  * this input stream basically "maps" an input stream on top of the random access file
@@ -56,19 +60,25 @@ public class PSTNodeInputStream extends InputStream {
 
 	private boolean encrypted = false;
 
-	PSTNodeInputStream(PSTFile pstFile, byte[] attachmentData) {
+	PSTNodeInputStream(PSTFile pstFile, byte[] attachmentData)
+        throws PSTException
+    {
 		this.allData = attachmentData;
 		this.length = this.allData.length;
 		encrypted = pstFile.getEncryptionType() == PSTFile.ENCRYPTION_TYPE_COMPRESSIBLE;
 		this.currentBlock = 0;
 		this.currentLocation = 0;
+        this.detectZlib();
 	}
-	PSTNodeInputStream(PSTFile pstFile, byte[] attachmentData, boolean encrypted) {
+	PSTNodeInputStream(PSTFile pstFile, byte[] attachmentData, boolean encrypted)
+        throws PSTException
+    {
 		this.allData = attachmentData;
 		this.encrypted = encrypted;
 		this.length = this.allData.length;
 		this.currentBlock = 0;
 		this.currentLocation = 0;
+        this.detectZlib();
 	}
 
 	PSTNodeInputStream(PSTFile pstFile, PSTDescriptorItem descriptorItem)
@@ -83,7 +93,7 @@ public class PSTNodeInputStream extends InputStream {
 		loadFromOffsetItem(offsetItem);
 		this.currentBlock = 0;
 		this.currentLocation = 0;
-
+        this.detectZlib();
 	}
 
 	PSTNodeInputStream(PSTFile pstFile, OffsetIndexItem offsetItem)
@@ -92,10 +102,56 @@ public class PSTNodeInputStream extends InputStream {
 		this.in = pstFile.getContentHandle();
 		this.pstFile = pstFile;
 		this.encrypted = pstFile.getEncryptionType() == PSTFile.ENCRYPTION_TYPE_COMPRESSIBLE;
+		//this.encrypted = true;
 		loadFromOffsetItem(offsetItem);
 		this.currentBlock = 0;
 		this.currentLocation = 0;
+        this.detectZlib();
 	}
+
+    private boolean isZlib = false;
+    private void detectZlib()
+        throws PSTException {
+        // not really sure how this is meant to work, kind of going by feel here.
+        if (this.length < 4) {
+            return;
+        }
+        try {
+            if (this.read() == 0x78 && this.read() == 0x9c) {
+                // we are a compressed block, decompress the whole thing into a buffer
+                // and replace our contents with that.
+                // firstly, if we have blocks, use that as the length
+                int uncompressedLength = (int)this.length;
+                if (this.indexItems.size() > 0) {
+                    uncompressedLength = 0;
+                    for (OffsetIndexItem i : this.indexItems) {
+                        uncompressedLength += i.size;
+                    }
+                }
+                byte[] inData = new byte[uncompressedLength]; // TODO: make this stream correctly.
+                this.seek(0);
+                int lengthRead = this.read(inData); 
+                if (lengthRead != uncompressedLength) {
+                    throw new PSTException("Bad assumption: " + lengthRead);
+                }
+
+                Inflater inflater = new Inflater();  
+                ByteArrayOutputStream outputStream = new ByteArrayOutputStream((int)this.length); 
+                InflaterOutputStream inflaterStream = new InflaterOutputStream(outputStream);
+                inflaterStream.write(inData); 
+                inflaterStream.close();
+                outputStream.close();
+                byte[] output = outputStream.toByteArray(); 
+                this.allData = output;
+                this.currentLocation = 0;
+                this.currentBlock = 0;
+                this.length = this.allData.length;
+            }
+            this.seek(0);
+        } catch (IOException err) {
+            throw new PSTException("Unable to compress reportedly compressed block", err);
+        }
+    }
 
 	private void loadFromOffsetItem(OffsetIndexItem offsetItem)
 			throws IOException, PSTException
@@ -105,6 +161,7 @@ public class PSTNodeInputStream extends InputStream {
 		in.seek(offsetItem.fileOffset);
 		byte[] data = new byte[offsetItem.size];
 		in.read(data);
+        //PSTObject.printHexFormatted(data, true);
 
 		if ( bInternal ) {
 			// All internal blocks are at least 8 bytes long...
@@ -112,11 +169,11 @@ public class PSTNodeInputStream extends InputStream {
 				throw new PSTException("Invalid internal block size");
 			}
 
-			if ( data[0] == 1 )
+			if ( data[0] == 0x1 )
 			{
 				bInternal = false;
 				// we are a block, or xxblock
-				length = PSTObject.convertLittleEndianBytesToLong(data, 4, 8);
+				this.length = PSTObject.convertLittleEndianBytesToLong(data, 4, 8);
 				// go through all of the blocks and create skip points.
 				this.getBlockSkipPoints(data);
 				return;

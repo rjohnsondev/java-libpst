@@ -44,8 +44,8 @@ import java.util.SimpleTimeZone;
 /**
  * Class containing recurrence information for a recurring appointment
  * @author Orin Eman
- * 
- * 
+ *
+ *
  */
 
 public class PSTAppointmentRecurrence {
@@ -63,6 +63,14 @@ public class PSTAppointmentRecurrence {
 		return Exceptions[i];
 	}
 
+	public Calendar[] getDeletedInstanceDates() {
+		return DeletedInstanceDates;
+	}
+
+	public Calendar[] getModifiedInstanceDates() {
+		return ModifiedInstanceDates;
+	}
+
 	public short getCalendarType() {
 		return CalendarType;
 	}
@@ -70,51 +78,51 @@ public class PSTAppointmentRecurrence {
 	public short getPatternType() {
 		return PatternType;
 	}
-	
+
 	public int getPeriod() {
 		return Period;
 	}
-	
+
 	public int getPatternSpecific() {
 		return PatternSpecific;
 	}
-	
+
 	public int getFirstDOW() {
 		return FirstDOW;
 	}
-	
+
 	public int getPatternSpecificNth() {
 		return PatternSpecificNth;
 	}
-	
+
 	public int getFirstDateTime() {
 		return FirstDateTime;
 	}
-	
+
 	public int getEndType() {
 		return EndType;
 	}
-	
+
 	public int getOccurrenceCount() {
 		return OccurrenceCount;
 	}
-	
+
 	public int getEndDate() {
 		return EndDate;
 	}
-	
+
 	public int getStartTimeOffset() {
 		return StartTimeOffset;
 	}
-	
+
 	public PSTTimeZone getTimeZone() {
 		return RecurrenceTimeZone;
 	}
-	
+
 	public int getRecurFrequency() {
 		return RecurFrequency;
 	}
-	
+
 	public int getSlidingFlag() {
 		return SlidingFlag;
 	}
@@ -122,7 +130,7 @@ public class PSTAppointmentRecurrence {
 	public int getStartDate() {
 		return StartDate;
 	}
-	
+
 	public int getEndTimeOffset() {
 		return EndTimeOffset;
 	}
@@ -166,9 +174,9 @@ public class PSTAppointmentRecurrence {
 			SimpleDateFormat f = new SimpleDateFormat("yyyyMMdd'T'HHmmss");
 			f.setTimeZone(RecurrenceTimeZone.getSimpleTimeZone());
 			System.out.printf("DeletedInstanceDates[%d]: %s\n", i, f.format(DeletedInstanceDates[i].getTime()));
-/**/		
+/**/
 		}
-		
+
 		ModifiedInstanceCount = (int)PSTObject.convertLittleEndianBytesToLong(recurrencePattern, offset, offset+4);
 		offset += 4;
 		ModifiedInstanceDates = new Calendar[ModifiedInstanceCount];
@@ -181,14 +189,14 @@ public class PSTAppointmentRecurrence {
 			SimpleDateFormat f = new SimpleDateFormat("yyyyMMdd'T'HHmmss");
 			f.setTimeZone(RecurrenceTimeZone.getSimpleTimeZone());
 			System.out.printf("ModifiedInstanceDates[%d]: %s\n", i, f.format(ModifiedInstanceDates[i].getTime()));
-/**/		
+/**/
 		}
-		
+
 		StartDate = (int)PSTObject.convertLittleEndianBytesToLong(recurrencePattern, offset, offset+4);
 		offset += 4;
 		EndDate = (int)PSTObject.convertLittleEndianBytesToLong(recurrencePattern, offset, offset+4);
 		offset += 4 + 4;	// Skip ReaderVersion2
-		
+
 		writerVersion2 = (int)PSTObject.convertLittleEndianBytesToLong(recurrencePattern, offset, offset+4);
 		offset += 4;
 
@@ -205,12 +213,12 @@ public class PSTAppointmentRecurrence {
 			Exceptions[i] = new PSTAppointmentException(recurrencePattern, offset, writerVersion2, appt);
 			offset += Exceptions[i].getLength();
 		}
-		
+
 		if ( (offset + 4) <= recurrencePattern.length ) {
 			int ReservedBlock1Size = (int)PSTObject.convertLittleEndianBytesToLong(recurrencePattern, offset, offset+4);
 			offset += 4 + (ReservedBlock1Size * 4);
 		}
-		
+
 		// Read extended exception info
 		for ( int i = 0; i < ExceptionCount; ++i ) {
 			Exceptions[i].ExtendedException(recurrencePattern, offset);

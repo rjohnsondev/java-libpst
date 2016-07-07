@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *    http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -24,484 +24,475 @@
  *
  * java-libpst is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public License
- * along with java-libpst.  If not, see <http://www.gnu.org/licenses/>.
+ * along with java-libpst. If not, see <http://www.gnu.org/licenses/>.
  *
  */
 
 package com.pff;
 
-import java.io.*;
-import java.util.*;
-import java.util.zip.*;
-
-import java.nio.file.Files;
-import java.nio.file.Paths;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.LinkedList;
+import java.util.zip.Inflater;
+import java.util.zip.InflaterOutputStream;
 
 /**
- * this input stream basically "maps" an input stream on top of the random access file
+ * this input stream basically "maps" an input stream on top of the random
+ * access file
+ * 
  * @author richard
  */
 public class PSTNodeInputStream extends InputStream {
 
-	private PSTFileContent in;
-	private PSTFile pstFile;
-	private LinkedList<Long> skipPoints = new LinkedList<Long>();
-	private LinkedList<OffsetIndexItem> indexItems = new LinkedList<OffsetIndexItem>();
-	private int currentBlock = 0;
-	private long currentLocation = 0;
+    private PSTFileContent in;
+    private PSTFile pstFile;
+    private final LinkedList<Long> skipPoints = new LinkedList<>();
+    private final LinkedList<OffsetIndexItem> indexItems = new LinkedList<>();
+    private int currentBlock = 0;
+    private long currentLocation = 0;
 
-	private byte[] allData = null;
+    private byte[] allData = null;
 
-	private long length = 0;
+    private long length = 0;
 
-	private boolean encrypted = false;
+    private boolean encrypted = false;
 
-	PSTNodeInputStream(PSTFile pstFile, byte[] attachmentData)
-        throws PSTException
-    {
-		this.allData = attachmentData;
-		this.length = this.allData.length;
-		encrypted = pstFile.getEncryptionType() == PSTFile.ENCRYPTION_TYPE_COMPRESSIBLE;
-		this.currentBlock = 0;
-		this.currentLocation = 0;
+    PSTNodeInputStream(final PSTFile pstFile, final byte[] attachmentData) throws PSTException {
+        this.allData = attachmentData;
+        this.length = this.allData.length;
+        this.encrypted = pstFile.getEncryptionType() == PSTFile.ENCRYPTION_TYPE_COMPRESSIBLE;
+        this.currentBlock = 0;
+        this.currentLocation = 0;
         this.detectZlib();
-	}
-	PSTNodeInputStream(PSTFile pstFile, byte[] attachmentData, boolean encrypted)
-        throws PSTException
-    {
-		this.allData = attachmentData;
-		this.encrypted = encrypted;
-		this.length = this.allData.length;
-		this.currentBlock = 0;
-		this.currentLocation = 0;
-        this.detectZlib();
-	}
+    }
 
-	PSTNodeInputStream(PSTFile pstFile, PSTDescriptorItem descriptorItem)
-			throws IOException, PSTException
-	{
-		this.in = pstFile.getContentHandle();
-		this.pstFile = pstFile;
-		this.encrypted = pstFile.getEncryptionType() == PSTFile.ENCRYPTION_TYPE_COMPRESSIBLE;
-
-		// we want to get the first block of data and see what we are dealing with
-		OffsetIndexItem offsetItem = pstFile.getOffsetIndexNode(descriptorItem.offsetIndexIdentifier);
-		loadFromOffsetItem(offsetItem);
-		this.currentBlock = 0;
-		this.currentLocation = 0;
-        this.detectZlib();
-	}
-
-	PSTNodeInputStream(PSTFile pstFile, OffsetIndexItem offsetItem)
-			throws IOException, PSTException
-	{
-		this.in = pstFile.getContentHandle();
-		this.pstFile = pstFile;
-		this.encrypted = pstFile.getEncryptionType() == PSTFile.ENCRYPTION_TYPE_COMPRESSIBLE;
-		//this.encrypted = true;
-		loadFromOffsetItem(offsetItem);
-		this.currentBlock = 0;
-		this.currentLocation = 0;
-        this.detectZlib();
-	}
-
-    private boolean isZlib = false;
-    private void detectZlib()
+    PSTNodeInputStream(final PSTFile pstFile, final byte[] attachmentData, final boolean encrypted)
         throws PSTException {
-        // not really sure how this is meant to work, kind of going by feel here.
+        this.allData = attachmentData;
+        this.encrypted = encrypted;
+        this.length = this.allData.length;
+        this.currentBlock = 0;
+        this.currentLocation = 0;
+        this.detectZlib();
+    }
+
+    PSTNodeInputStream(final PSTFile pstFile, final PSTDescriptorItem descriptorItem) throws IOException, PSTException {
+        this.in = pstFile.getContentHandle();
+        this.pstFile = pstFile;
+        this.encrypted = pstFile.getEncryptionType() == PSTFile.ENCRYPTION_TYPE_COMPRESSIBLE;
+
+        // we want to get the first block of data and see what we are dealing
+        // with
+        final OffsetIndexItem offsetItem = pstFile.getOffsetIndexNode(descriptorItem.offsetIndexIdentifier);
+        this.loadFromOffsetItem(offsetItem);
+        this.currentBlock = 0;
+        this.currentLocation = 0;
+        this.detectZlib();
+    }
+
+    PSTNodeInputStream(final PSTFile pstFile, final OffsetIndexItem offsetItem) throws IOException, PSTException {
+        this.in = pstFile.getContentHandle();
+        this.pstFile = pstFile;
+        this.encrypted = pstFile.getEncryptionType() == PSTFile.ENCRYPTION_TYPE_COMPRESSIBLE;
+        // this.encrypted = true;
+        this.loadFromOffsetItem(offsetItem);
+        this.currentBlock = 0;
+        this.currentLocation = 0;
+        this.detectZlib();
+    }
+
+    private final boolean isZlib = false;
+
+    private void detectZlib() throws PSTException {
+        // not really sure how this is meant to work, kind of going by feel
+        // here.
         if (this.length < 4) {
             return;
         }
         try {
             if (this.read() == 0x78 && this.read() == 0x9c) {
-                // we are a compressed block, decompress the whole thing into a buffer
+                // we are a compressed block, decompress the whole thing into a
+                // buffer
                 // and replace our contents with that.
                 // firstly, if we have blocks, use that as the length
-                int uncompressedLength = (int)this.length;
+                int uncompressedLength = (int) this.length;
                 if (this.indexItems.size() > 0) {
                     uncompressedLength = 0;
-                    for (OffsetIndexItem i : this.indexItems) {
+                    for (final OffsetIndexItem i : this.indexItems) {
                         uncompressedLength += i.size;
                     }
                 }
-                byte[] inData = new byte[uncompressedLength]; // TODO: make this stream correctly.
+                final byte[] inData = new byte[uncompressedLength]; // TODO:
+                                                                    // make this
+                                                                    // stream
+                                                                    // correctly.
                 this.seek(0);
-                int lengthRead = this.read(inData); 
+                final int lengthRead = this.read(inData);
                 if (lengthRead != uncompressedLength) {
                     throw new PSTException("Bad assumption: " + lengthRead);
                 }
 
-                Inflater inflater = new Inflater();  
-                ByteArrayOutputStream outputStream = new ByteArrayOutputStream((int)this.length); 
-                InflaterOutputStream inflaterStream = new InflaterOutputStream(outputStream);
-                inflaterStream.write(inData); 
+                final Inflater inflater = new Inflater();
+                final ByteArrayOutputStream outputStream = new ByteArrayOutputStream((int) this.length);
+                final InflaterOutputStream inflaterStream = new InflaterOutputStream(outputStream);
+                inflaterStream.write(inData);
                 inflaterStream.close();
                 outputStream.close();
-                byte[] output = outputStream.toByteArray(); 
+                final byte[] output = outputStream.toByteArray();
                 this.allData = output;
                 this.currentLocation = 0;
                 this.currentBlock = 0;
                 this.length = this.allData.length;
             }
             this.seek(0);
-        } catch (IOException err) {
+        } catch (final IOException err) {
             throw new PSTException("Unable to compress reportedly compressed block", err);
         }
     }
 
-	private void loadFromOffsetItem(OffsetIndexItem offsetItem)
-			throws IOException, PSTException
-	{
-		boolean bInternal = (offsetItem.indexIdentifier & 0x02) != 0;
+    private void loadFromOffsetItem(final OffsetIndexItem offsetItem) throws IOException, PSTException {
+        boolean bInternal = (offsetItem.indexIdentifier & 0x02) != 0;
 
-		in.seek(offsetItem.fileOffset);
-		byte[] data = new byte[offsetItem.size];
-		in.read(data);
-        //PSTObject.printHexFormatted(data, true);
+        this.in.seek(offsetItem.fileOffset);
+        final byte[] data = new byte[offsetItem.size];
+        this.in.read(data);
+        // PSTObject.printHexFormatted(data, true);
 
-		if ( bInternal ) {
-			// All internal blocks are at least 8 bytes long...
-			if ( offsetItem.size < 8 ) {
-				throw new PSTException("Invalid internal block size");
-			}
+        if (bInternal) {
+            // All internal blocks are at least 8 bytes long...
+            if (offsetItem.size < 8) {
+                throw new PSTException("Invalid internal block size");
+            }
 
-			if ( data[0] == 0x1 )
-			{
-				bInternal = false;
-				// we are a block, or xxblock
-				this.length = PSTObject.convertLittleEndianBytesToLong(data, 4, 8);
-				// go through all of the blocks and create skip points.
-				this.getBlockSkipPoints(data);
-				return;
-			}
-		}
+            if (data[0] == 0x1) {
+                bInternal = false;
+                // we are a block, or xxblock
+                this.length = PSTObject.convertLittleEndianBytesToLong(data, 4, 8);
+                // go through all of the blocks and create skip points.
+                this.getBlockSkipPoints(data);
+                return;
+            }
+        }
 
-		// (Internal blocks aren't compressed)
-		if (bInternal) {
-			this.encrypted = false;
-		}
-		this.allData = data;
-		this.length = this.allData.length;
+        // (Internal blocks aren't compressed)
+        if (bInternal) {
+            this.encrypted = false;
+        }
+        this.allData = data;
+        this.length = this.allData.length;
 
-	}
+    }
 
-	public boolean isEncrypted() {
-		return this.encrypted;
-	}
+    public boolean isEncrypted() {
+        return this.encrypted;
+    }
 
-	private void getBlockSkipPoints(byte[] data)
-			throws IOException, PSTException
-	{
-		if (data[0] != 0x1) {
-			throw new PSTException("Unable to process XBlock, incorrect identifier");
-		}
+    private void getBlockSkipPoints(final byte[] data) throws IOException, PSTException {
+        if (data[0] != 0x1) {
+            throw new PSTException("Unable to process XBlock, incorrect identifier");
+        }
 
-		int numberOfEntries = (int)PSTObject.convertLittleEndianBytesToLong(data, 2, 4);
+        final int numberOfEntries = (int) PSTObject.convertLittleEndianBytesToLong(data, 2, 4);
 
-		int arraySize = 8;
-		if (this.pstFile.getPSTFileType() == PSTFile.PST_TYPE_ANSI) {
-			arraySize = 4;
-		}
-		if (data[1] == 0x2) {
-			// XXBlock
-			int offset = 8;
-			for (int x = 0; x < numberOfEntries; x++) {
-				long bid = PSTObject.convertLittleEndianBytesToLong(data, offset, offset+arraySize);
-				bid &= 0xfffffffe;
-				// get the details in this block and
-				OffsetIndexItem offsetItem = this.pstFile.getOffsetIndexNode(bid);
-				in.seek(offsetItem.fileOffset);
-				byte[] blockData = new byte[offsetItem.size];
-				in.read(blockData);
-				this.getBlockSkipPoints(blockData);
-				offset += arraySize;
-			}
-		} else if (data[1] == 0x1) {
-			// normal XBlock
-			int offset = 8;
-			for (int x = 0; x < numberOfEntries; x++) {
-				long bid = PSTObject.convertLittleEndianBytesToLong(data, offset, offset+arraySize);
-				bid &= 0xfffffffe;
-				// get the details in this block and add it to the list
-				OffsetIndexItem offsetItem = pstFile.getOffsetIndexNode(bid);
-				this.indexItems.add(offsetItem);
-				this.skipPoints.add(this.currentLocation);
-				this.currentLocation += offsetItem.size;
-				offset += arraySize;
-			}
-		}
-	}
+        int arraySize = 8;
+        if (this.pstFile.getPSTFileType() == PSTFile.PST_TYPE_ANSI) {
+            arraySize = 4;
+        }
+        if (data[1] == 0x2) {
+            // XXBlock
+            int offset = 8;
+            for (int x = 0; x < numberOfEntries; x++) {
+                long bid = PSTObject.convertLittleEndianBytesToLong(data, offset, offset + arraySize);
+                bid &= 0xfffffffe;
+                // get the details in this block and
+                final OffsetIndexItem offsetItem = this.pstFile.getOffsetIndexNode(bid);
+                this.in.seek(offsetItem.fileOffset);
+                final byte[] blockData = new byte[offsetItem.size];
+                this.in.read(blockData);
+                this.getBlockSkipPoints(blockData);
+                offset += arraySize;
+            }
+        } else if (data[1] == 0x1) {
+            // normal XBlock
+            int offset = 8;
+            for (int x = 0; x < numberOfEntries; x++) {
+                long bid = PSTObject.convertLittleEndianBytesToLong(data, offset, offset + arraySize);
+                bid &= 0xfffffffe;
+                // get the details in this block and add it to the list
+                final OffsetIndexItem offsetItem = this.pstFile.getOffsetIndexNode(bid);
+                this.indexItems.add(offsetItem);
+                this.skipPoints.add(this.currentLocation);
+                this.currentLocation += offsetItem.size;
+                offset += arraySize;
+            }
+        }
+    }
 
-	public long length() {
-		return this.length;
-	}
+    public long length() {
+        return this.length;
+    }
 
-	@Override
-	public int read()
-			throws IOException
-	{
+    @Override
+    public int read() throws IOException {
 
-		// first deal with items < 8K and we have all the data already
-		if (this.allData != null) {
-			if (this.currentLocation == this.length) {
-				// EOF
-				return -1;
-			}
-			int value = this.allData[(int)this.currentLocation] & 0xFF;
-			this.currentLocation++;
-			if (this.encrypted) {
-				value = PSTObject.compEnc[value];
-			}
-			return value;
-		}
+        // first deal with items < 8K and we have all the data already
+        if (this.allData != null) {
+            if (this.currentLocation == this.length) {
+                // EOF
+                return -1;
+            }
+            int value = this.allData[(int) this.currentLocation] & 0xFF;
+            this.currentLocation++;
+            if (this.encrypted) {
+                value = PSTObject.compEnc[value];
+            }
+            return value;
+        }
 
-		OffsetIndexItem item = this.indexItems.get(this.currentBlock);
-		long skipPoint = this.skipPoints.get(currentBlock);
-		if (this.currentLocation+1 > skipPoint+item.size) {
-			// got to move to the next block
-			this.currentBlock++;
+        OffsetIndexItem item = this.indexItems.get(this.currentBlock);
+        long skipPoint = this.skipPoints.get(this.currentBlock);
+        if (this.currentLocation + 1 > skipPoint + item.size) {
+            // got to move to the next block
+            this.currentBlock++;
 
-			if (this.currentBlock >= this.indexItems.size()) {
-				return -1;
-			}
+            if (this.currentBlock >= this.indexItems.size()) {
+                return -1;
+            }
 
-			item = this.indexItems.get(this.currentBlock);
-			skipPoint = this.skipPoints.get(currentBlock);
-		}
+            item = this.indexItems.get(this.currentBlock);
+            skipPoint = this.skipPoints.get(this.currentBlock);
+        }
 
-		// get the next byte.
-		long pos = (item.fileOffset + (this.currentLocation - skipPoint));
-		if (in.getFilePointer()  != pos) {
-			in.seek(pos);
-		}
+        // get the next byte.
+        final long pos = (item.fileOffset + (this.currentLocation - skipPoint));
+        if (this.in.getFilePointer() != pos) {
+            this.in.seek(pos);
+        }
 
-		int output = in.read();
-		if (output < 0) {
-			return -1;
-		}
-		if (this.encrypted) {
-			output = PSTObject.compEnc[output];
-		}
+        int output = this.in.read();
+        if (output < 0) {
+            return -1;
+        }
+        if (this.encrypted) {
+            output = PSTObject.compEnc[output];
+        }
 
-		this.currentLocation++;
+        this.currentLocation++;
 
-		return output;
-	}
+        return output;
+    }
 
-	private int totalLoopCount = 0;
+    private int totalLoopCount = 0;
 
-	/**
-	 * Read a block from the input stream.
-	 * Recommended block size = 8176 (size used internally by PSTs)
-	 * @param output
-	 * @return
-	 * @throws IOException
-	 */
-	@Override
-	public int read(byte[] output)
-			throws IOException
-	{
-		// this method is implemented in an attempt to make things a bit faster than the byte-by-byte read() crap above.
-		// it's tricky 'cause we have to copy blocks from a few different areas.
+    /**
+     * Read a block from the input stream.
+     * Recommended block size = 8176 (size used internally by PSTs)
+     * 
+     * @param output
+     * @return
+     * @throws IOException
+     */
+    @Override
+    public int read(final byte[] output) throws IOException {
+        // this method is implemented in an attempt to make things a bit faster
+        // than the byte-by-byte read() crap above.
+        // it's tricky 'cause we have to copy blocks from a few different areas.
 
+        if (this.currentLocation == this.length) {
+            // EOF
+            return -1;
+        }
 
-		if (this.currentLocation == this.length) {
-			// EOF
-			return -1;
-		}
+        // first deal with the small stuff
+        if (this.allData != null) {
+            final int bytesRemaining = (int) (this.length - this.currentLocation);
+            if (output.length >= bytesRemaining) {
+                System.arraycopy(this.allData, (int) this.currentLocation, output, 0, bytesRemaining);
+                if (this.encrypted) {
+                    PSTObject.decode(output);
+                }
+                this.currentLocation += bytesRemaining; // should be = to
+                                                        // this.length
+                return bytesRemaining;
+            } else {
+                System.arraycopy(this.allData, (int) this.currentLocation, output, 0, output.length);
+                if (this.encrypted) {
+                    PSTObject.decode(output);
+                }
+                this.currentLocation += output.length;
+                return output.length;
+            }
+        }
 
-		// first deal with the small stuff
-		if (this.allData != null) {
-			int bytesRemaining = (int)(this.length - this.currentLocation);
-			if (output.length >= bytesRemaining) {
-				System.arraycopy(this.allData, (int)this.currentLocation, output, 0, bytesRemaining);
-				if (this.encrypted) {
-					PSTObject.decode(output);
-				}
-				this.currentLocation += bytesRemaining; // should be = to this.length
-				return bytesRemaining;
-			} else {
-				System.arraycopy(this.allData, (int)this.currentLocation, output, 0, output.length);
-				if (this.encrypted) {
-					PSTObject.decode(output);
-				}
-				this.currentLocation += output.length;
-				return output.length;
-			}
-		}
+        boolean filled = false;
+        int totalBytesFilled = 0;
+        // while we still need to fill the array
+        while (!filled) {
 
-		boolean filled = false;
-		int totalBytesFilled = 0;
-		// while we still need to fill the array
-		while (!filled) {
+            // fill up the output from where we are
+            // get the current block, either to the end, or until the length of
+            // the output
+            final OffsetIndexItem offset = this.indexItems.get(this.currentBlock);
+            final long skipPoint = this.skipPoints.get(this.currentBlock);
+            final int currentPosInBlock = (int) (this.currentLocation - skipPoint);
+            this.in.seek(offset.fileOffset + currentPosInBlock);
 
-			// fill up the output from where we are
-			// get the current block, either to the end, or until the length of the output
-			OffsetIndexItem offset = this.indexItems.get(this.currentBlock);
-			long skipPoint = this.skipPoints.get(currentBlock);
-			int currentPosInBlock = (int)(this.currentLocation - skipPoint);
-			in.seek(offset.fileOffset + currentPosInBlock);
+            final long nextSkipPoint = skipPoint + offset.size;
+            int bytesRemaining = (output.length - totalBytesFilled);
+            // if the total bytes remaining if going to take us past our size
+            if (bytesRemaining > ((int) (this.length - this.currentLocation))) {
+                // we only have so much to give
+                bytesRemaining = (int) (this.length - this.currentLocation);
+            }
 
-			long nextSkipPoint = skipPoint + offset.size;
-			int bytesRemaining = (output.length - totalBytesFilled);
-			// if the total bytes remaining if going to take us past our size
-			if (bytesRemaining > ((int)(this.length - this.currentLocation))) {
-				// we only have so much to give
-				bytesRemaining = (int)(this.length - this.currentLocation);
-			}
+            if (nextSkipPoint >= this.currentLocation + bytesRemaining) {
+                // we can fill the output with the rest of our current block!
+                final byte[] chunk = new byte[bytesRemaining];
+                this.in.read(chunk);
 
-			if (nextSkipPoint >= this.currentLocation + bytesRemaining) {
-				// we can fill the output with the rest of our current block!
-				byte[] chunk = new byte[bytesRemaining];
-				in.read(chunk);
+                System.arraycopy(chunk, 0, output, totalBytesFilled, bytesRemaining);
+                totalBytesFilled += bytesRemaining;
+                // we are done!
+                filled = true;
+                this.currentLocation += bytesRemaining;
+            } else {
+                // we need to read out a whole chunk and keep going
+                final int bytesToRead = offset.size - currentPosInBlock;
+                final byte[] chunk = new byte[bytesToRead];
+                this.in.read(chunk);
+                System.arraycopy(chunk, 0, output, totalBytesFilled, bytesToRead);
+                totalBytesFilled += bytesToRead;
+                this.currentBlock++;
+                this.currentLocation += bytesToRead;
+            }
+            this.totalLoopCount++;
+        }
 
-				System.arraycopy(chunk, 0, output, totalBytesFilled, bytesRemaining);
-				totalBytesFilled += bytesRemaining;
-				// we are done!
-				filled = true;
-				this.currentLocation += bytesRemaining;
-			} else {
-				// we need to read out a whole chunk and keep going
-				int bytesToRead = offset.size - currentPosInBlock;
-				byte[] chunk = new byte[bytesToRead];
-				in.read(chunk);
-				System.arraycopy(chunk, 0, output, totalBytesFilled, bytesToRead);
-				totalBytesFilled += bytesToRead;
-				this.currentBlock++;
-				this.currentLocation += bytesToRead;
-			}
-			totalLoopCount++;
-		}
+        // decode the array if required
+        if (this.encrypted) {
+            PSTObject.decode(output);
+        }
 
-		// decode the array if required
-		if (this.encrypted) {
-			PSTObject.decode(output);
-		}
+        // fill up our chunk
+        // move to the next chunk
+        return totalBytesFilled;
+    }
 
-		// fill up our chunk
-		// move to the next chunk
-		return totalBytesFilled;
-	}
+    @Override
+    public int read(final byte[] output, final int offset, int length) throws IOException {
+        if (this.currentLocation == this.length) {
+            // EOF
+            return -1;
+        }
 
-	@Override
-	public int read(byte[] output, int offset, int length)
-			throws IOException
-	{
-		if (this.currentLocation == this.length) {
-			// EOF
-			return -1;
-		}
+        if (output.length < length) {
+            length = output.length;
+        }
 
-		if (output.length < length) {
-			length = output.length;
-		}
+        final byte[] buf = new byte[length];
+        final int lengthRead = this.read(buf);
 
-		byte[] buf = new byte[length];
-		int lengthRead = this.read(buf);
+        System.arraycopy(buf, 0, output, offset, lengthRead);
 
-		System.arraycopy(buf, 0, output, offset, lengthRead);
+        return lengthRead;
+    }
 
-		return lengthRead;
-	}
+    @Override
+    public void reset() {
+        this.currentBlock = 0;
+        this.currentLocation = 0;
+    }
 
+    @Override
+    public boolean markSupported() {
+        return false;
+    }
 
-	@Override
-	public void reset() {
-		this.currentBlock = 0;
-		this.currentLocation = 0;
-	}
+    /**
+     * Get the offsets (block positions) used in the array
+     * 
+     * @return
+     */
+    public Long[] getBlockOffsets() {
+        if (this.skipPoints.size() == 0) {
+            final Long[] output = new Long[1];
+            output[0] = this.length;
+            return output;
+        } else {
+            final Long[] output = new Long[this.skipPoints.size()];
+            for (int x = 0; x < output.length; x++) {
+                output[x] = new Long(this.skipPoints.get(x) + this.indexItems.get(x).size);
+            }
+            return output;
+        }
+    }
 
-	@Override
-	public boolean markSupported() {
-		return false;
-	}
+    /*
+     * public int[] getBlockOffsetsInts() {
+     * int[] out = new int[this.skipPoints.size()];
+     * for (int x = 0; x < this.skipPoints.size(); x++) {
+     * out[x] = this.skipPoints.get(x).intValue();
+     * }
+     * return out;
+     * }
+     *
+     */
 
-	/**
-	 * Get the offsets (block positions) used in the array
-	 * @return
-	 */
-	public Long[] getBlockOffsets() {
-		if (this.skipPoints.size() == 0) {
-			Long[] output = new Long[1];
-			output[0]=this.length;
-			return output;
-		} else {
-			Long[] output = new Long[this.skipPoints.size()];
-			for (int x =0 ; x < output.length; x++) {
-				output[x] = new Long(this.skipPoints.get(x) + this.indexItems.get(x).size);
-			}
-			return output;
-		}
-	}
+    public void seek(final long location) throws IOException, PSTException {
+        // not past the end!
+        if (location > this.length) {
+            throw new PSTException(
+                "Unable to seek past end of item! size = " + this.length + ", seeking to:" + location);
+        }
 
-	/*
-	public int[] getBlockOffsetsInts() {
-		int[] out = new int[this.skipPoints.size()];
-		for (int x = 0; x < this.skipPoints.size(); x++) {
-			out[x] = this.skipPoints.get(x).intValue();
-		}
-		return out;
-	}
-	 *
-	 */
+        // are we already there?
+        if (this.currentLocation == location) {
+            return;
+        }
 
-	public void seek(long location)
-			throws IOException, PSTException
-	{
-		// not past the end!
-		if (location > this.length) {
-			throw new PSTException("Unable to seek past end of item! size = "+this.length+", seeking to:"+location);
-		}
+        // get us to the right block
+        long skipPoint = 0;
+        this.currentBlock = 0;
+        if (this.allData == null) {
+            skipPoint = this.skipPoints.get(this.currentBlock + 1);
+            while (location >= skipPoint) {
+                this.currentBlock++;
+                // is this the last block?
+                if (this.currentBlock == this.skipPoints.size() - 1) {
+                    // that's all folks
+                    break;
+                } else {
+                    skipPoint = this.skipPoints.get(this.currentBlock + 1);
+                }
+            }
+        }
 
-		// are we already there?
-		if (this.currentLocation == location) {
-			return;
-		}
+        // now move us to the right position in there
+        this.currentLocation = location;
 
-		// get us to the right block
-		long skipPoint = 0;
-		this.currentBlock = 0;
-		if (this.allData == null) {
-			skipPoint = this.skipPoints.get(this.currentBlock + 1);
-			while (location >= skipPoint) {
-				this.currentBlock++;
-				// is this the last block?
-				if (this.currentBlock == this.skipPoints.size()-1) {
-					// that's all folks
-					break;
-				} else {
-					skipPoint = this.skipPoints.get(this.currentBlock + 1);
-				}
-			}
-		}
+        long blockStart = 0;
+        if (this.allData == null) {
+            blockStart = this.indexItems.get(this.currentBlock).fileOffset;
+        }
+        final long newFilePos = blockStart + (location - skipPoint);
+        this.in.seek(newFilePos);
 
-		// now move us to the right position in there
-		this.currentLocation = location;
+    }
 
-		long blockStart = 0;
-		if (this.allData == null) {
-			blockStart = this.indexItems.get(currentBlock).fileOffset;
-		}
-		long newFilePos = blockStart + (location - skipPoint);
-		this.in.seek(newFilePos);
+    public long seekAndReadLong(final long location, final int bytes) throws IOException, PSTException {
+        this.seek(location);
+        final byte[] buffer = new byte[bytes];
+        this.read(buffer);
+        return PSTObject.convertLittleEndianBytesToLong(buffer);
+    }
 
-	}
-
-	public long seekAndReadLong(long location, int bytes)
-			throws IOException, PSTException
-	{
-		this.seek(location);
-		byte[] buffer = new byte[bytes];
-		this.read(buffer);
-		return PSTObject.convertLittleEndianBytesToLong(buffer);
-	}
-
-	public PSTFile getPSTFile() {
-		return this.pstFile;
-	}
+    public PSTFile getPSTFile() {
+        return this.pstFile;
+    }
 
 }

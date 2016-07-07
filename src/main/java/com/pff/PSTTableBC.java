@@ -62,7 +62,7 @@ class PSTTableBC extends PSTTable {
         final NodeInfo keyTableInfoNodeInfo = this.getNodeInfo(this.hidRoot);
         final byte[] keyTableInfo = new byte[keyTableInfoNodeInfo.length()];
         keyTableInfoNodeInfo.in.seek(keyTableInfoNodeInfo.startOffset);
-        keyTableInfoNodeInfo.in.read(keyTableInfo);
+        keyTableInfoNodeInfo.in.readCompletely(keyTableInfo);
 
         // PSTObject.printHexFormatted(keyTableInfo, true);
         // System.out.println(in.length());
@@ -139,7 +139,7 @@ class PSTTableBC extends PSTTable {
                     // byte[nodeInfo.endOffset-nodeInfo.startOffset];
                     final byte[] nodeInfo = new byte[nodeInfoNodeInfo.length()];
                     nodeInfoNodeInfo.in.seek(nodeInfoNodeInfo.startOffset);
-                    nodeInfoNodeInfo.in.read(nodeInfo);
+                    nodeInfoNodeInfo.in.readCompletely(nodeInfo);
                     item.data = nodeInfo; // should be new array, so just use it
                     // System.arraycopy(nodeInfo.data, nodeInfo.startOffset,
                     // item.data, 0, item.data.length);

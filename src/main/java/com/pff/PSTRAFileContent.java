@@ -42,6 +42,19 @@ public class PSTRAFileContent extends PSTFileContent {
     }
 
     @Override
+    public void readCompletely(final byte[] target) throws IOException {
+        int offset = 0;
+        int numRead = 0;
+        while (offset < target.length) {
+            numRead = this.file.read(target, offset, target.length - offset);
+            if (numRead == -1) {
+                throw new IOException("unexpected EOF encountered attempting to read from RandomAccessFile");
+            }
+            offset += numRead;
+        }
+    }
+
+    @Override
     public byte readByte() throws IOException {
         return this.file.readByte();
     }

@@ -68,7 +68,7 @@ class PSTDescriptorItem {
 
         final PSTNodeInputStream in = this.pstFile.readLeaf(this.offsetIndexIdentifier);
         final byte[] out = new byte[(int) in.length()];
-        in.read(out);
+        in.readCompletely(out);
         this.dataBlockData = out;
         return this.dataBlockData;
     }

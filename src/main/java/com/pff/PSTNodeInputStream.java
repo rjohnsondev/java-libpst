@@ -132,10 +132,7 @@ public class PSTNodeInputStream extends InputStream {
                                                                     // stream
                                                                     // correctly.
                 this.seek(0);
-                final int lengthRead = this.read(inData);
-                if (lengthRead != uncompressedLength) {
-                    throw new PSTException("Bad assumption: " + lengthRead);
-                }
+                this.readCompletely(inData);
 
                 final Inflater inflater = new Inflater();
                 final ByteArrayOutputStream outputStream = new ByteArrayOutputStream((int) this.length);
@@ -160,7 +157,7 @@ public class PSTNodeInputStream extends InputStream {
 
         this.in.seek(offsetItem.fileOffset);
         final byte[] data = new byte[offsetItem.size];
-        this.in.read(data);
+        this.in.readCompletely(data);
         // PSTObject.printHexFormatted(data, true);
 
         if (bInternal) {
@@ -213,7 +210,7 @@ public class PSTNodeInputStream extends InputStream {
                 final OffsetIndexItem offsetItem = this.pstFile.getOffsetIndexNode(bid);
                 this.in.seek(offsetItem.fileOffset);
                 final byte[] blockData = new byte[offsetItem.size];
-                this.in.read(blockData);
+                this.in.readCompletely(blockData);
                 this.getBlockSkipPoints(blockData);
                 offset += arraySize;
             }
@@ -290,6 +287,25 @@ public class PSTNodeInputStream extends InputStream {
     private int totalLoopCount = 0;
 
     /**
+     * Read a block from the input stream, ensuring buffer is completely filled.
+     * Recommended block size = 8176 (size used internally by PSTs)
+     * 
+     * @param target buffer to fill
+     * @throws IOException
+     */
+    public void readCompletely(final byte[] target) throws IOException {
+        int offset = 0;
+        int numRead = 0;
+        while (offset < target.length) {
+            numRead = this.read(target, offset, target.length - offset);
+            if (numRead == -1) {
+                throw new IOException("unexpected EOF encountered attempting to read from PSTInputStream");
+            }
+            offset += numRead;
+        }
+    }
+
+    /**
      * Read a block from the input stream.
      * Recommended block size = 8176 (size used internally by PSTs)
      * 
@@ -353,7 +369,7 @@ public class PSTNodeInputStream extends InputStream {
             if (nextSkipPoint >= this.currentLocation + bytesRemaining) {
                 // we can fill the output with the rest of our current block!
                 final byte[] chunk = new byte[bytesRemaining];
-                this.in.read(chunk);
+                this.in.readCompletely(chunk);
 
                 System.arraycopy(chunk, 0, output, totalBytesFilled, bytesRemaining);
                 totalBytesFilled += bytesRemaining;
@@ -364,7 +380,7 @@ public class PSTNodeInputStream extends InputStream {
                 // we need to read out a whole chunk and keep going
                 final int bytesToRead = offset.size - currentPosInBlock;
                 final byte[] chunk = new byte[bytesToRead];
-                this.in.read(chunk);
+                this.in.readCompletely(chunk);
                 System.arraycopy(chunk, 0, output, totalBytesFilled, bytesToRead);
                 totalBytesFilled += bytesToRead;
                 this.currentBlock++;
@@ -487,7 +503,7 @@ public class PSTNodeInputStream extends InputStream {
     public long seekAndReadLong(final long location, final int bytes) throws IOException, PSTException {
         this.seek(location);
         final byte[] buffer = new byte[bytes];
-        this.read(buffer);
+        this.readCompletely(buffer);
         return PSTObject.convertLittleEndianBytesToLong(buffer);
     }
 

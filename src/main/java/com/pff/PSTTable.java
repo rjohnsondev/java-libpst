@@ -78,7 +78,7 @@ class PSTTable {
         // 0xEC is HN (Heap-on-Node)
         in.seek(0);
         final byte[] headdata = new byte[4];
-        in.read(headdata);
+        in.readCompletely(headdata);
         if (headdata[2] != 0xffffffec) {
             // System.out.println(in.isEncrypted());
             PSTObject.decode(headdata);
@@ -131,7 +131,7 @@ class PSTTable {
             headerByte = headerNodeInfo.in.read() & 0xFF;
             headerNodeInfo.in.seek(headerNodeInfo.startOffset);
             final byte[] tmp = new byte[1024];
-            headerNodeInfo.in.read(tmp);
+            headerNodeInfo.in.readCompletely(tmp);
             PSTObject.printHexFormatted(tmp, true);
             // System.out.println(PSTObject.compEnc[headerByte]);
             throw new PSTException("Unable to parse table, can't find BTHHEADER header information: " + headerByte);

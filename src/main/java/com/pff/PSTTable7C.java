@@ -233,7 +233,7 @@ class PSTTable7C extends PSTTable {
             // System.arraycopy(rowNodeInfo, currentValueArrayStart+TCI_1b,
             // bitmap, 0, bitmap.length);
             this.rowNodeInfo.in.seek(this.rowNodeInfo.startOffset + currentValueArrayStart + this.TCI_1b);
-            this.rowNodeInfo.in.read(bitmap);
+            this.rowNodeInfo.in.readCompletely(bitmap);
 
             // int id =
             // (int)PSTObject.convertLittleEndianBytesToLong(rowNodeInfo,
@@ -317,7 +317,7 @@ class PSTTable7C extends PSTTable {
                     // item.data, 0, 8);
                     this.rowNodeInfo.in.seek(
                         this.rowNodeInfo.startOffset + currentValueArrayStart + this.columnDescriptors[col].ibData);
-                    this.rowNodeInfo.in.read(item.data);
+                    this.rowNodeInfo.in.readCompletely(item.data);
                     /*
                      * System.out.printf("\tInteger64: %s\n",
                      * PSTFile.getPropertyDescription(item.entryType,
@@ -381,7 +381,7 @@ class PSTTable7C extends PSTTable {
                         // System.arraycopy(entryInfo, 0, item.data, 0,
                         // item.data.length);
                         entryInfo.in.seek(entryInfo.startOffset);
-                        entryInfo.in.read(item.data);
+                        entryInfo.in.readCompletely(item.data);
                     }
                     /*
                      * if ( item.entryValueType != 0x001F ) {

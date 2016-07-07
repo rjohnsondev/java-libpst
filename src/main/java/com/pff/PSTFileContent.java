@@ -11,6 +11,8 @@ public abstract class PSTFileContent {
 
     public abstract int read(byte[] target) throws IOException;
 
+    public abstract void readCompletely(byte[] target) throws IOException;
+
     public abstract byte readByte() throws IOException;
 
     public abstract void close() throws IOException;

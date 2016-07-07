@@ -146,7 +146,7 @@ public class PSTFile {
         // get the first 4 bytes, should be !BDN
         try {
             final byte[] temp = new byte[4];
-            this.in.read(temp);
+            this.in.readCompletely(temp);
             final String strValue = new String(temp);
             if (!strValue.equals("!BDN")) {
                 throw new PSTException("Invalid file header: " + strValue + ", expected: !BDN");
@@ -155,7 +155,7 @@ public class PSTFile {
             // make sure we are using a supported version of a PST...
             final byte[] fileTypeBytes = new byte[2];
             this.in.seek(10);
-            this.in.read(fileTypeBytes);
+            this.in.readCompletely(fileTypeBytes);
             // ANSI file types can be 14 or 15:
             if (fileTypeBytes[0] == PSTFile.PST_TYPE_ANSI_2) {
                 fileTypeBytes[0] = PSTFile.PST_TYPE_ANSI;
@@ -232,7 +232,7 @@ public class PSTFile {
         final OffsetIndexItem off = this.getOffsetIndexNode(nameToIdMapDescriptorNode.dataOffsetIndexIdentifier);
         final PSTNodeInputStream nodein = new PSTNodeInputStream(this, off);
         final byte[] tmp = new byte[1024];
-        nodein.read(tmp);
+        nodein.readCompletely(tmp);
         final PSTTableBC bcTable = new PSTTableBC(nodein);
 
         final HashMap<Integer, PSTTableBCItem> tableItems = (bcTable.getItems());
@@ -528,7 +528,7 @@ public class PSTFile {
         // we only need the first 8 bytes
         final byte[] data = new byte[8];
         this.in.seek(offsetItem.fileOffset);
-        this.in.read(data);
+        this.in.readCompletely(data);
 
         // we are an array, get the sum of the sizes...
         return (int) PSTObject.convertLittleEndianBytesToLong(data, 4, 8);
@@ -552,7 +552,7 @@ public class PSTFile {
         if (this.getPSTFileType() == PSTFile.PST_TYPE_ANSI) {
             this.in.seek(startOffset);
             final byte[] temp = new byte[4];
-            this.in.read(temp);
+            this.in.readCompletely(temp);
             offset |= temp[3] & 0xff;
             offset <<= 8;
             offset |= temp[2] & 0xff;
@@ -563,7 +563,7 @@ public class PSTFile {
         } else {
             this.in.seek(startOffset);
             final byte[] temp = new byte[8];
-            this.in.read(temp);
+            this.in.readCompletely(temp);
             offset = temp[7] & 0xff;
             long tmpLongValue;
             for (int x = 6; x >= 0; x--) {
@@ -617,7 +617,7 @@ public class PSTFile {
             fileTypeAdjustment = 496;
         }
         in.seek(btreeStartOffset + fileTypeAdjustment);
-        in.read(temp);
+        in.readCompletely(temp);
 
         while ((temp[0] == 0xffffff80 && temp[1] == 0xffffff80 && !descTree)
             || (temp[0] == 0xffffff81 && temp[1] == 0xffffff81 && descTree)) {
@@ -631,14 +631,14 @@ public class PSTFile {
                 branchNodeItems = new byte[488];
             }
             in.seek(btreeStartOffset);
-            in.read(branchNodeItems);
+            in.readCompletely(branchNodeItems);
 
             long numberOfItems = 0;
             if (this.getPSTFileType() == PST_TYPE_2013_UNICODE) {
                 final byte[] numberOfItemsBytes = new byte[2];
-                in.read(numberOfItemsBytes);
+                in.readCompletely(numberOfItemsBytes);
                 numberOfItems = PSTObject.convertLittleEndianBytesToLong(numberOfItemsBytes);
-                in.read(numberOfItemsBytes);
+                in.readCompletely(numberOfItemsBytes);
                 final long maxNumberOfItems = PSTObject.convertLittleEndianBytesToLong(numberOfItemsBytes);
             } else {
                 numberOfItems = in.read();
@@ -657,7 +657,7 @@ public class PSTFile {
                             // group
                             btreeStartOffset = this.extractLEFileOffset(btreeStartOffset + ((x - 1) * 12) + 8);
                             in.seek(btreeStartOffset + 500);
-                            in.read(temp);
+                            in.readCompletely(temp);
                             found = true;
                             break;
                         }
@@ -668,7 +668,7 @@ public class PSTFile {
                             // group
                             btreeStartOffset = this.extractLEFileOffset(btreeStartOffset + ((x - 1) * 24) + 16);
                             in.seek(btreeStartOffset + fileTypeAdjustment);
-                            in.read(temp);
+                            in.readCompletely(temp);
                             found = true;
                             break;
                         }
@@ -679,11 +679,11 @@ public class PSTFile {
                     if (this.getPSTFileType() == PST_TYPE_ANSI) {
                         btreeStartOffset = this.extractLEFileOffset(btreeStartOffset + ((numberOfItems - 1) * 12) + 8);
                         in.seek(btreeStartOffset + 500);
-                        in.read(temp);
+                        in.readCompletely(temp);
                     } else {
                         btreeStartOffset = this.extractLEFileOffset(btreeStartOffset + ((numberOfItems - 1) * 24) + 16);
                         in.seek(btreeStartOffset + fileTypeAdjustment);
-                        in.read(temp);
+                        in.readCompletely(temp);
                     }
                 }
             } else {
@@ -698,12 +698,12 @@ public class PSTFile {
                             // The 32-bit descriptor index b-tree leaf node item
                             in.seek(btreeStartOffset + (x * 16));
                             temp = new byte[4];
-                            in.read(temp);
+                            in.readCompletely(temp);
                             if (PSTObject.convertLittleEndianBytesToLong(temp) == index) {
                                 // give me the offset index please!
                                 in.seek(btreeStartOffset + (x * 16));
                                 temp = new byte[16];
-                                in.read(temp);
+                                in.readCompletely(temp);
                                 return temp;
                             }
                         } else {
@@ -716,7 +716,7 @@ public class PSTFile {
                                 in.seek(btreeStartOffset + (x * 12));
 
                                 temp = new byte[12];
-                                in.read(temp);
+                                in.readCompletely(temp);
                                 return temp;
                             }
                         }
@@ -726,12 +726,12 @@ public class PSTFile {
                             in.seek(btreeStartOffset + (x * 32));
 
                             temp = new byte[4];
-                            in.read(temp);
+                            in.readCompletely(temp);
                             if (PSTObject.convertLittleEndianBytesToLong(temp) == index) {
                                 // give me the offset index please!
                                 in.seek(btreeStartOffset + (x * 32));
                                 temp = new byte[32];
-                                in.read(temp);
+                                in.readCompletely(temp);
                                 // System.out.println("item found!!!");
                                 // PSTObject.printHexFormatted(temp, true);
                                 return temp;
@@ -747,7 +747,7 @@ public class PSTFile {
                                 in.seek(btreeStartOffset + (x * 24));
 
                                 temp = new byte[24];
-                                in.read(temp);
+                                in.readCompletely(temp);
                                 return temp;
                             }
                         }
@@ -814,7 +814,7 @@ public class PSTFile {
 
         final byte[] data = new byte[(int) in.length()];
         in.seek(0);
-        in.read(data);
+        in.readCompletely(data);
 
         for (int x = 0; x < numberOfItems; x++) {
             final PSTDescriptorItem item = new PSTDescriptorItem(data, offset, this);
@@ -875,7 +875,7 @@ public class PSTFile {
             fileTypeAdjustment = 496;
         }
         this.in.seek(btreeStartOffset + fileTypeAdjustment);
-        this.in.read(temp);
+        this.in.readCompletely(temp);
 
         if ((temp[0] == 0xffffff81 && temp[1] == 0xffffff81)) {
 
@@ -890,9 +890,9 @@ public class PSTFile {
             long numberOfItems = 0;
             if (this.getPSTFileType() == PST_TYPE_2013_UNICODE) {
                 final byte[] numberOfItemsBytes = new byte[2];
-                this.in.read(numberOfItemsBytes);
+                this.in.readCompletely(numberOfItemsBytes);
                 numberOfItems = PSTObject.convertLittleEndianBytesToLong(numberOfItemsBytes);
-                this.in.read(numberOfItemsBytes);
+                this.in.readCompletely(numberOfItemsBytes);
                 final long maxNumberOfItems = PSTObject.convertLittleEndianBytesToLong(numberOfItemsBytes);
             } else {
                 numberOfItems = this.in.read();
@@ -920,11 +920,11 @@ public class PSTFile {
                     if (this.getPSTFileType() == PSTFile.PST_TYPE_ANSI) {
                         this.in.seek(btreeStartOffset + (x * 16));
                         temp = new byte[16];
-                        this.in.read(temp);
+                        this.in.readCompletely(temp);
                     } else {
                         this.in.seek(btreeStartOffset + (x * 32));
                         temp = new byte[32];
-                        this.in.read(temp);
+                        this.in.readCompletely(temp);
                     }
 
                     final DescriptorIndexNode tempNode = new DescriptorIndexNode(temp, this.getPSTFileType());

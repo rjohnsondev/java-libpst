@@ -764,7 +764,8 @@ public class PSTObject {
             messageClass = item.getStringValue();
         }
 
-        if (messageClass.equals("IPM.Note")) {
+        if (messageClass.equals("IPM.Note")
+            || messageClass.equals("IPM.Note.SMIME.MultipartSigned")) {
             return new PSTMessage(theFile, folderIndexNode, table, localDescriptorItems);
         } else if (messageClass.equals("IPM.Appointment")
             || messageClass.equals("IPM.OLE.CLASS.{00061055-0000-0000-C000-000000000046}")

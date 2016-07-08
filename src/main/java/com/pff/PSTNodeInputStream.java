@@ -120,17 +120,14 @@ public class PSTNodeInputStream extends InputStream {
                 // buffer
                 // and replace our contents with that.
                 // firstly, if we have blocks, use that as the length
-                int uncompressedLength = (int) this.length;
+                int compressedLength = (int) this.length;
                 if (this.indexItems.size() > 0) {
-                    uncompressedLength = 0;
+                    compressedLength = 0;
                     for (final OffsetIndexItem i : this.indexItems) {
-                        uncompressedLength += i.size;
+                        compressedLength += i.size;
                     }
                 }
-                final byte[] inData = new byte[uncompressedLength]; // TODO:
-                                                                    // make this
-                                                                    // stream
-                                                                    // correctly.
+                final byte[] inData = new byte[compressedLength];
                 this.seek(0);
                 this.readCompletely(inData);
 
@@ -491,12 +488,11 @@ public class PSTNodeInputStream extends InputStream {
         // now move us to the right position in there
         this.currentLocation = location;
 
-        long blockStart = 0;
         if (this.allData == null) {
-            blockStart = this.indexItems.get(this.currentBlock).fileOffset;
+            long blockStart = this.indexItems.get(this.currentBlock).fileOffset;
+            final long newFilePos = blockStart + (location - skipPoint);
+            this.in.seek(newFilePos);
         }
-        final long newFilePos = blockStart + (location - skipPoint);
-        this.in.seek(newFilePos);
 
     }
 

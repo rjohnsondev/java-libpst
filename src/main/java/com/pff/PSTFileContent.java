@@ -11,7 +11,24 @@ public abstract class PSTFileContent {
 
     public abstract int read(byte[] target) throws IOException;
 
-    public abstract void readCompletely(byte[] target) throws IOException;
+    public final void readCompletely(final byte[] target) throws IOException {
+        int read =  this.read(target);
+        // bail in common case
+        if (read <= 0 || read == target.length) {
+            return;
+        }
+
+        byte[] buffer = new byte[8192];
+        int offset = read;
+        while (offset < target.length) {
+            read = this.read(buffer);
+            if (read <= 0) {
+                break;
+            }
+            System.arraycopy(buffer, 0, target, offset, read);
+            offset += read;
+        }
+    }
 
     public abstract byte readByte() throws IOException;
 

@@ -48,18 +48,6 @@ public class PSTByteFileContent extends PSTFileContent {
     }
 
     @Override
-    public void readCompletely(final byte[] target) throws IOException {
-        if (this.index >= this.content.length) {
-            throw new IOException(
-                    "unexpected EOF when attempting to read from ByteFileContent");
-        }
-        int targetindex = 0;
-        while (targetindex < target.length & this.index < this.content.length) {
-            target[targetindex++] = this.content[this.index++];
-        }
-    }
-
-    @Override
     public byte readByte() {
         return this.content[this.index++];
     }

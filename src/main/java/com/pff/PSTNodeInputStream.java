@@ -120,22 +120,28 @@ public class PSTNodeInputStream extends InputStream {
                 // buffer
                 // and replace our contents with that.
                 // firstly, if we have blocks, use that as the length
-                int compressedLength = (int) this.length;
-                if (this.indexItems.size() > 0) {
-                    compressedLength = 0;
-                    for (final OffsetIndexItem i : this.indexItems) {
-                        compressedLength += i.size;
-                    }
-                }
-                final byte[] inData = new byte[compressedLength];
-                this.seek(0);
-                this.readCompletely(inData);
-
-                final Inflater inflater = new Inflater();
                 final ByteArrayOutputStream outputStream = new ByteArrayOutputStream((int) this.length);
-                final InflaterOutputStream inflaterStream = new InflaterOutputStream(outputStream);
-                inflaterStream.write(inData);
-                inflaterStream.close();
+                if (this.indexItems.size() > 0) {
+                    for (final OffsetIndexItem i : this.indexItems) {
+                        final byte[] inData = new byte[i.size];
+                        this.in.seek(i.fileOffset);
+                        this.in.readCompletely(inData);
+                        final InflaterOutputStream inflaterStream = new InflaterOutputStream(outputStream);
+                        inflaterStream.write(inData);
+                        inflaterStream.close();
+                    }
+                    this.indexItems.clear();
+                    this.skipPoints.clear();
+                } else {
+                    int compressedLength = (int) this.length;
+                    final byte[] inData = new byte[compressedLength];
+                    this.seek(0);
+                    this.readCompletely(inData);
+
+                    final InflaterOutputStream inflaterStream = new InflaterOutputStream(outputStream);
+                    inflaterStream.write(inData);
+                    inflaterStream.close();
+                }
                 outputStream.close();
                 final byte[] output = outputStream.toByteArray();
                 this.allData = output;

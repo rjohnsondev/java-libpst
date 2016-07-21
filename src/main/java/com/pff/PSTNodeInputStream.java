@@ -116,24 +116,46 @@ public class PSTNodeInputStream extends InputStream {
         }
         try {
             if (this.read() == 0x78 && this.read() == 0x9c) {
+                boolean multiStreams = false;
+                if (this.indexItems.size() > 1) {
+                    final OffsetIndexItem i = this.indexItems.get(1);
+                    this.in.seek(i.fileOffset);
+                    multiStreams = (this.in.read() == 0x78 && this.in.read() == 0x9c);
+                }
                 // we are a compressed block, decompress the whole thing into a
                 // buffer
                 // and replace our contents with that.
                 // firstly, if we have blocks, use that as the length
                 final ByteArrayOutputStream outputStream = new ByteArrayOutputStream((int) this.length);
-                if (this.indexItems.size() > 0) {
+                if (multiStreams) {
+                    int y = 0;
                     for (final OffsetIndexItem i : this.indexItems) {
                         final byte[] inData = new byte[i.size];
                         this.in.seek(i.fileOffset);
                         this.in.readCompletely(inData);
                         final InflaterOutputStream inflaterStream = new InflaterOutputStream(outputStream);
-                        inflaterStream.write(inData);
-                        inflaterStream.close();
+                        //try {
+                            inflaterStream.write(inData);
+                            inflaterStream.close();
+                        //} catch (Exception err) {
+                        //    System.out.println("Y: " + y);
+                        //    System.out.println(err);
+                        //    PSTObject.printHexFormatted(inData, true);
+                        //    System.exit(0);
+                        //}
+                        y++;
                     }
                     this.indexItems.clear();
                     this.skipPoints.clear();
                 } else {
                     int compressedLength = (int) this.length;
+                    if (this.indexItems.size() > 0) {
+                        compressedLength = 0;
+                        for (final OffsetIndexItem i : this.indexItems) {
+                            //System.out.println(i);
+                            compressedLength += i.size;
+                        }
+                    }
                     final byte[] inData = new byte[compressedLength];
                     this.seek(0);
                     this.readCompletely(inData);
@@ -151,7 +173,7 @@ public class PSTNodeInputStream extends InputStream {
             }
             this.seek(0);
         } catch (final IOException err) {
-            throw new PSTException("Unable to compress reportedly compressed block", err);
+            throw new PSTException("Unable to decompress reportedly compressed block", err);
         }
     }
 
@@ -171,7 +193,7 @@ public class PSTNodeInputStream extends InputStream {
 
             if (data[0] == 0x1) {
                 bInternal = false;
-                // we are a block, or xxblock
+                // we are a xblock, or xxblock
                 this.length = PSTObject.convertLittleEndianBytesToLong(data, 4, 8);
                 // go through all of the blocks and create skip points.
                 this.getBlockSkipPoints(data);

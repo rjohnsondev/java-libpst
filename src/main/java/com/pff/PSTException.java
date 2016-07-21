@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *    http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -24,30 +24,31 @@
  *
  * java-libpst is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public License
- * along with java-libpst.  If not, see <http://www.gnu.org/licenses/>.
+ * along with java-libpst. If not, see <http://www.gnu.org/licenses/>.
  *
  */
 package com.pff;
 
 /**
  * Simple exception for PST File related errors
+ * 
  * @author Richard Johnson
  */
-public class PSTException extends Exception
-{
-	/**
-	 * eclipse generated serial UID
-	 */
-	private static final long serialVersionUID = 4284698344354718143L;
-	
-	PSTException(String error) {
-		super(error);
-	}
-	PSTException(String error, Exception orig) {
-		super(error, orig);
-	}
+public class PSTException extends Exception {
+    /**
+     * eclipse generated serial UID
+     */
+    private static final long serialVersionUID = 4284698344354718143L;
+
+    PSTException(final String error) {
+        super(error);
+    }
+
+    PSTException(final String error, final Exception orig) {
+        super(error, orig);
+    }
 }

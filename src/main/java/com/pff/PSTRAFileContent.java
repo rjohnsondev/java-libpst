@@ -1,52 +1,54 @@
 package com.pff;
-import java.io.RandomAccessFile;
+
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.RandomAccessFile;
 
-public class PSTRAFileContent extends PSTFileContent{
-    
+public class PSTRAFileContent extends PSTFileContent {
+
     protected RandomAccessFile file;
-    
-    public PSTRAFileContent(File file) throws FileNotFoundException{
+
+    public PSTRAFileContent(final File file) throws FileNotFoundException {
         this.file = new RandomAccessFile(file, "r");
     }
-    
-    public RandomAccessFile getFile(){
+
+    public RandomAccessFile getFile() {
         return this.file;
     }
-    public void setFile(RandomAccessFile file){
+
+    public void setFile(final RandomAccessFile file) {
         this.file = file;
     }
-    
+
     @Override
-    public void seek(long index) throws IOException{
+    public void seek(final long index) throws IOException {
         this.file.seek(index);
     }
-    
+
     @Override
-    public long getFilePointer() throws IOException{
+    public long getFilePointer() throws IOException {
         return this.file.getFilePointer();
     }
-    
+
     @Override
-    public int read() throws IOException{
+    public int read() throws IOException {
         return this.file.read();
     }
-    
+
     @Override
-    public int read(byte[] target) throws IOException{
+    public int read(final byte[] target) throws IOException {
         return this.file.read(target);
     }
-    
+
     @Override
-    public byte readByte() throws IOException{
+    public byte readByte() throws IOException {
         return this.file.readByte();
     }
-    
+
     @Override
-    public void close() throws IOException{
+    public void close() throws IOException {
         this.file.close();
     }
-    
+
 }

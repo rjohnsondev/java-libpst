@@ -231,8 +231,8 @@ public class PSTFile {
         // nameToIdMapDescriptorNode.dataBlock.blockOffsets);
         final OffsetIndexItem off = this.getOffsetIndexNode(nameToIdMapDescriptorNode.dataOffsetIndexIdentifier);
         final PSTNodeInputStream nodein = new PSTNodeInputStream(this, off);
-        final byte[] tmp = new byte[1024];
-        nodein.readCompletely(tmp);
+        //final byte[] tmp = new byte[off.size];
+        //nodein.readCompletely(tmp);
         final PSTTableBC bcTable = new PSTTableBC(nodein);
 
         final HashMap<Integer, PSTTableBCItem> tableItems = (bcTable.getItems());

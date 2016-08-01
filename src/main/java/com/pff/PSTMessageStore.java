@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *    http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -24,65 +24,65 @@
  *
  * java-libpst is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public License
- * along with java-libpst.  If not, see <http://www.gnu.org/licenses/>.
+ * along with java-libpst. If not, see <http://www.gnu.org/licenses/>.
  *
  */
 package com.pff;
 
-import java.io.*;
-import java.util.*;
-
+import java.io.IOException;
+import java.util.UUID;
 
 /**
  * Object that represents the message store.
  * Not much use other than to get the "name" of the PST file.
+ * 
  * @author Richard Johnson
  */
 public class PSTMessageStore extends PSTObject {
-	
-	PSTMessageStore(PSTFile theFile, DescriptorIndexNode descriptorIndexNode)
-		throws PSTException, IOException
-	{
-		super(theFile, descriptorIndexNode);
-	}
-	
-	/**
-	 * Get the tag record key, unique to this pst
-	 */
-	public UUID getTagRecordKeyAsUUID() {
-		// attempt to find in the table.
-		int guidEntryType = 0x0ff9;
-		if (this.items.containsKey(guidEntryType)) {
-			PSTTableBCItem item = this.items.get(guidEntryType);
-			int offset = 0;
-			byte[] bytes = item.data;
-			long mostSigBits = (PSTObject.convertLittleEndianBytesToLong(bytes, offset, offset+4) << 32) |
-								(PSTObject.convertLittleEndianBytesToLong(bytes, offset+4, offset+6) << 16) |
-								PSTObject.convertLittleEndianBytesToLong(bytes, offset+6, offset+8);
-			long leastSigBits = PSTObject.convertBigEndianBytesToLong(bytes, offset+8, offset+16);
-			return new UUID(mostSigBits, leastSigBits);
-		}
-		return null;
-	}
-	
-	/**
-	 * get the message store display name
-	 */
-	public String getDisplayName() {
-		// attempt to find in the table.
-		int displayNameEntryType = 0x3001;
-		if (this.items.containsKey(displayNameEntryType)) {
-			return this.getStringItem(displayNameEntryType);
-			//PSTTableBCItem item = (PSTTableBCItem)this.items.get(displayNameEntryType);
-			//return new String(item.getStringValue());
-		}
-		return "";
-	}
 
+    PSTMessageStore(final PSTFile theFile, final DescriptorIndexNode descriptorIndexNode)
+        throws PSTException, IOException {
+        super(theFile, descriptorIndexNode);
+    }
+
+    /**
+     * Get the tag record key, unique to this pst
+     */
+    public UUID getTagRecordKeyAsUUID() {
+        // attempt to find in the table.
+        final int guidEntryType = 0x0ff9;
+        if (this.items.containsKey(guidEntryType)) {
+            final PSTTableBCItem item = this.items.get(guidEntryType);
+            final int offset = 0;
+            final byte[] bytes = item.data;
+            final long mostSigBits = (PSTObject.convertLittleEndianBytesToLong(bytes, offset, offset + 4) << 32)
+                | (PSTObject.convertLittleEndianBytesToLong(bytes, offset + 4, offset + 6) << 16)
+                | PSTObject.convertLittleEndianBytesToLong(bytes, offset + 6, offset + 8);
+            final long leastSigBits = PSTObject.convertBigEndianBytesToLong(bytes, offset + 8, offset + 16);
+            return new UUID(mostSigBits, leastSigBits);
+        }
+        return null;
+    }
+
+    /**
+     * get the message store display name
+     */
+    @Override
+    public String getDisplayName() {
+        // attempt to find in the table.
+        final int displayNameEntryType = 0x3001;
+        if (this.items.containsKey(displayNameEntryType)) {
+            return this.getStringItem(displayNameEntryType);
+            // PSTTableBCItem item =
+            // (PSTTableBCItem)this.items.get(displayNameEntryType);
+            // return new String(item.getStringValue());
+        }
+        return "";
+    }
 
     public String getDetails() {
         return this.items.toString();
@@ -90,14 +90,16 @@ public class PSTMessageStore extends PSTObject {
 
     /**
      * Is this pst file is password protected.
-     * @throws PSTException on corrupted pst
-     * @throws IOException on bad read
+     * 
+     * @throws PSTException
+     *             on corrupted pst
+     * @throws IOException
+     *             on bad read
      * @return - true if protected,false otherwise
-     * pstfile has the password stored against identifier 0x67FF.
-     * if there is no password the value stored is 0x00000000.
+     *         pstfile has the password stored against identifier 0x67FF.
+     *         if there is no password the value stored is 0x00000000.
      */
-    public boolean isPasswordProtected()
-            throws PSTException, IOException {
+    public boolean isPasswordProtected() throws PSTException, IOException {
         return (this.getLongItem(0x67FF) != 0);
     }
 

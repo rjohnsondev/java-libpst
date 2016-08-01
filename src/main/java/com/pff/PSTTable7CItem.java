@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *    http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -24,23 +24,24 @@
  *
  * java-libpst is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public License
- * along with java-libpst.  If not, see <http://www.gnu.org/licenses/>.
+ * along with java-libpst. If not, see <http://www.gnu.org/licenses/>.
  *
  */
 package com.pff;
 
 /**
  * Items found in the 7c tables
+ * 
  * @author Richard Johnson
  */
-class PSTTable7CItem extends PSTTableItem
-{
-	
-	public String toString() {
-		return "7c Table Item: " + super.toString() + "\n";
-	}
+class PSTTable7CItem extends PSTTableItem {
+
+    @Override
+    public String toString() {
+        return "7c Table Item: " + super.toString() + "\n";
+    }
 }

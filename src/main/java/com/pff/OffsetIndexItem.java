@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *    http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -24,11 +24,11 @@
  *
  * java-libpst is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public License
- * along with java-libpst.  If not, see <http://www.gnu.org/licenses/>.
+ * along with java-libpst. If not, see <http://www.gnu.org/licenses/>.
  *
  */
 package com.pff;
@@ -36,36 +36,37 @@ package com.pff;
 /**
  * OffsetIndexItem is a leaf item from the Offset index b-tree
  * Only really used internally to get the file offset for items
+ * 
  * @author Richard Johnson
  */
 class OffsetIndexItem {
-	long indexIdentifier;
-	long fileOffset;
-	int size;
-	long cRef;
-	
-	OffsetIndexItem(byte[] data, int pstFileType) {
-		if (pstFileType == PSTFile.PST_TYPE_ANSI) {
-			indexIdentifier = PSTObject.convertLittleEndianBytesToLong(data, 0, 4);
-			fileOffset = PSTObject.convertLittleEndianBytesToLong(data, 4, 8);
-			size = (int)PSTObject.convertLittleEndianBytesToLong(data, 8, 10);
-			cRef = (int)PSTObject.convertLittleEndianBytesToLong(data, 10, 12);
-		} else {
-			indexIdentifier = PSTObject.convertLittleEndianBytesToLong(data, 0, 8);
-			fileOffset = PSTObject.convertLittleEndianBytesToLong(data, 8, 16);
-			size = (int)PSTObject.convertLittleEndianBytesToLong(data, 16, 18);
-			cRef = (int)PSTObject.convertLittleEndianBytesToLong(data, 16, 18);
-		}
-		//System.out.println("Data size: "+data.length);
-		
-	}
+    long indexIdentifier;
+    long fileOffset;
+    int size;
+    long cRef;
 
-	@Override
-	public String toString() {
-		return "OffsetIndexItem\n"+
-			"Index Identifier: "+indexIdentifier+" (0x"+Long.toHexString(indexIdentifier)+")\n"+
-			"File Offset: "+fileOffset+" (0x"+Long.toHexString(fileOffset)+")\n"+
-			"cRef: "+cRef+" (0x"+Long.toHexString(cRef)+" bin:"+Long.toBinaryString(cRef)+")\n"+
-			"Size: "+size+" (0x"+Long.toHexString(size)+")";
-	}
+    OffsetIndexItem(final byte[] data, final int pstFileType) {
+        if (pstFileType == PSTFile.PST_TYPE_ANSI) {
+            this.indexIdentifier = PSTObject.convertLittleEndianBytesToLong(data, 0, 4);
+            this.fileOffset = PSTObject.convertLittleEndianBytesToLong(data, 4, 8);
+            this.size = (int) PSTObject.convertLittleEndianBytesToLong(data, 8, 10);
+            this.cRef = (int) PSTObject.convertLittleEndianBytesToLong(data, 10, 12);
+        } else {
+            this.indexIdentifier = PSTObject.convertLittleEndianBytesToLong(data, 0, 8);
+            this.fileOffset = PSTObject.convertLittleEndianBytesToLong(data, 8, 16);
+            this.size = (int) PSTObject.convertLittleEndianBytesToLong(data, 16, 18);
+            this.cRef = (int) PSTObject.convertLittleEndianBytesToLong(data, 16, 18);
+        }
+        // System.out.println("Data size: "+data.length);
+
+    }
+
+    @Override
+    public String toString() {
+        return "OffsetIndexItem\n" + "Index Identifier: " + this.indexIdentifier + " (0x"
+            + Long.toHexString(this.indexIdentifier) + ")\n" + "File Offset: " + this.fileOffset + " (0x"
+            + Long.toHexString(this.fileOffset) + ")\n" + "cRef: " + this.cRef + " (0x" + Long.toHexString(this.cRef)
+            + " bin:" + Long.toBinaryString(this.cRef) + ")\n" + "Size: " + this.size + " (0x"
+            + Long.toHexString(this.size) + ")";
+    }
 }

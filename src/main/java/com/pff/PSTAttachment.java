@@ -39,7 +39,7 @@ import java.util.Date;
 import java.util.HashMap;
 
 /**
- * Class containing attachment information
+ * Class containing attachment information.
  * 
  * @author Richard Johnson
  */
@@ -79,8 +79,11 @@ public class PSTAttachment extends PSTObject {
                 // PSTObject.printHexFormatted(item.data, true);
                 final PSTDescriptorItem descriptorItemNested = this.localDescriptorItems.get(descriptorItem);
                 in = new PSTNodeInputStream(this.pstFile, descriptorItemNested);
-                this.localDescriptorItems
-                    .putAll(this.pstFile.getPSTDescriptorItems(descriptorItemNested.subNodeOffsetIndexIdentifier));
+                if (descriptorItemNested.subNodeOffsetIndexIdentifier > 0) {
+                    this.localDescriptorItems
+                        .putAll(this.pstFile
+                                    .getPSTDescriptorItems(descriptorItemNested.subNodeOffsetIndexIdentifier));
+                }
                 /*
                  * if ( descriptorItemNested != null ) {
                  * try {

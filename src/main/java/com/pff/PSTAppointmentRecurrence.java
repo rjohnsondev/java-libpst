@@ -289,7 +289,7 @@ public class PSTAppointmentRecurrence {
                         c.setTime(replaceTime);
                         if (c.get(Calendar.YEAR) == this.ModifiedInstanceDates[i].get(Calendar.YEAR)
                             && c.get(Calendar.MONTH) == this.ModifiedInstanceDates[i].get(Calendar.MONTH)
-                            && c.get(Calendar.YEAR) == this.ModifiedInstanceDates[i].get(Calendar.YEAR)) {
+                            && c.get(Calendar.DAY_OF_MONTH) == this.ModifiedInstanceDates[i].get(Calendar.DAY_OF_MONTH)) {
                             /*
                              * System.out.println("\tEmbedded Message matched");
                              * /

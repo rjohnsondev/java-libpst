@@ -5,7 +5,7 @@
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
- *    http://www.apache.org/licenses/LICENSE-2.0
+ * http://www.apache.org/licenses/LICENSE-2.0
  *
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
@@ -24,18 +24,19 @@
  *
  * java-libpst is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU Lesser General Public License for more details.
  *
  * You should have received a copy of the GNU Lesser General Public License
- * along with java-libpst.  If not, see <http://www.gnu.org/licenses/>.
+ * along with java-libpst. If not, see <http://www.gnu.org/licenses/>.
  *
  */
 package com.pff;
 
 /*
-import java.text.SimpleDateFormat;
-/**/
+ * import java.text.SimpleDateFormat;
+ * /
+ **/
 
 import java.util.Calendar;
 import java.util.Date;
@@ -43,6 +44,7 @@ import java.util.SimpleTimeZone;
 
 /**
  * Class containing recurrence information for a recurring appointment
+ * 
  * @author Orin Eman
  *
  *
@@ -50,269 +52,293 @@ import java.util.SimpleTimeZone;
 
 public class PSTAppointmentRecurrence {
 
-	// Access methods
+    // Access methods
 
-	public short getExceptionCount() {
-		return ExceptionCount;
-	}
+    public short getExceptionCount() {
+        return this.ExceptionCount;
+    }
 
-	public PSTAppointmentException getException(int i) {
-		if ( i < 0 || i >= ExceptionCount ) {
-			return null;
-		}
-		return Exceptions[i];
-	}
+    public PSTAppointmentException getException(final int i) {
+        if (i < 0 || i >= this.ExceptionCount) {
+            return null;
+        }
+        return this.Exceptions[i];
+    }
 
-	public Calendar[] getDeletedInstanceDates() {
-		return DeletedInstanceDates;
-	}
+    public Calendar[] getDeletedInstanceDates() {
+        return this.DeletedInstanceDates;
+    }
 
-	public Calendar[] getModifiedInstanceDates() {
-		return ModifiedInstanceDates;
-	}
+    public Calendar[] getModifiedInstanceDates() {
+        return this.ModifiedInstanceDates;
+    }
 
-	public short getCalendarType() {
-		return CalendarType;
-	}
+    public short getCalendarType() {
+        return this.CalendarType;
+    }
 
-	public short getPatternType() {
-		return PatternType;
-	}
+    public short getPatternType() {
+        return this.PatternType;
+    }
 
-	public int getPeriod() {
-		return Period;
-	}
+    public int getPeriod() {
+        return this.Period;
+    }
 
-	public int getPatternSpecific() {
-		return PatternSpecific;
-	}
+    public int getPatternSpecific() {
+        return this.PatternSpecific;
+    }
 
-	public int getFirstDOW() {
-		return FirstDOW;
-	}
+    public int getFirstDOW() {
+        return this.FirstDOW;
+    }
 
-	public int getPatternSpecificNth() {
-		return PatternSpecificNth;
-	}
+    public int getPatternSpecificNth() {
+        return this.PatternSpecificNth;
+    }
 
-	public int getFirstDateTime() {
-		return FirstDateTime;
-	}
+    public int getFirstDateTime() {
+        return this.FirstDateTime;
+    }
 
-	public int getEndType() {
-		return EndType;
-	}
+    public int getEndType() {
+        return this.EndType;
+    }
 
-	public int getOccurrenceCount() {
-		return OccurrenceCount;
-	}
+    public int getOccurrenceCount() {
+        return this.OccurrenceCount;
+    }
 
-	public int getEndDate() {
-		return EndDate;
-	}
+    public int getEndDate() {
+        return this.EndDate;
+    }
 
-	public int getStartTimeOffset() {
-		return StartTimeOffset;
-	}
+    public int getStartTimeOffset() {
+        return this.StartTimeOffset;
+    }
 
-	public PSTTimeZone getTimeZone() {
-		return RecurrenceTimeZone;
-	}
+    public PSTTimeZone getTimeZone() {
+        return this.RecurrenceTimeZone;
+    }
 
-	public int getRecurFrequency() {
-		return RecurFrequency;
-	}
+    public int getRecurFrequency() {
+        return this.RecurFrequency;
+    }
 
-	public int getSlidingFlag() {
-		return SlidingFlag;
-	}
+    public int getSlidingFlag() {
+        return this.SlidingFlag;
+    }
 
-	public int getStartDate() {
-		return StartDate;
-	}
+    public int getStartDate() {
+        return this.StartDate;
+    }
 
-	public int getEndTimeOffset() {
-		return EndTimeOffset;
-	}
+    public int getEndTimeOffset() {
+        return this.EndTimeOffset;
+    }
 
-	public PSTAppointmentRecurrence(byte[] recurrencePattern, PSTAppointment appt, PSTTimeZone tz) {
-		RecurrenceTimeZone = tz;
-		SimpleTimeZone stz = RecurrenceTimeZone.getSimpleTimeZone();
+    public PSTAppointmentRecurrence(final byte[] recurrencePattern, final PSTAppointment appt, final PSTTimeZone tz) {
+        this.RecurrenceTimeZone = tz;
+        final SimpleTimeZone stz = this.RecurrenceTimeZone.getSimpleTimeZone();
 
-		// Read the structure
-		RecurFrequency = (short)PSTObject.convertLittleEndianBytesToLong(recurrencePattern, 4, 6);
-		PatternType = (short)PSTObject.convertLittleEndianBytesToLong(recurrencePattern, 6, 8);
-		CalendarType = (short)PSTObject.convertLittleEndianBytesToLong(recurrencePattern, 8, 10);
-		FirstDateTime = (int)PSTObject.convertLittleEndianBytesToLong(recurrencePattern, 10, 14);
-		Period = (int)PSTObject.convertLittleEndianBytesToLong(recurrencePattern, 14, 18);
-		SlidingFlag = (int)PSTObject.convertLittleEndianBytesToLong(recurrencePattern, 18, 22);
-		int offset = 22;
-		if ( PatternType != 0 ) {
-			PatternSpecific = (int)PSTObject.convertLittleEndianBytesToLong(recurrencePattern, offset, offset+4);
-			offset += 4;
-			if ( PatternType == 0x0003 || PatternType == 0x000B ) {
-				PatternSpecificNth = (int)PSTObject.convertLittleEndianBytesToLong(recurrencePattern, offset, offset+4);
-				offset += 4;
-			}
-		}
-		EndType = (int)PSTObject.convertLittleEndianBytesToLong(recurrencePattern, offset, offset+4);
-		offset += 4;
-		OccurrenceCount = (int)PSTObject.convertLittleEndianBytesToLong(recurrencePattern, offset, offset+4);
-		offset += 4;
-		FirstDOW = (int)PSTObject.convertLittleEndianBytesToLong(recurrencePattern, offset, offset+4);
-		offset += 4;
+        // Read the structure
+        this.RecurFrequency = (short) PSTObject.convertLittleEndianBytesToLong(recurrencePattern, 4, 6);
+        this.PatternType = (short) PSTObject.convertLittleEndianBytesToLong(recurrencePattern, 6, 8);
+        this.CalendarType = (short) PSTObject.convertLittleEndianBytesToLong(recurrencePattern, 8, 10);
+        this.FirstDateTime = (int) PSTObject.convertLittleEndianBytesToLong(recurrencePattern, 10, 14);
+        this.Period = (int) PSTObject.convertLittleEndianBytesToLong(recurrencePattern, 14, 18);
+        this.SlidingFlag = (int) PSTObject.convertLittleEndianBytesToLong(recurrencePattern, 18, 22);
+        int offset = 22;
+        if (this.PatternType != 0) {
+            this.PatternSpecific = (int) PSTObject.convertLittleEndianBytesToLong(recurrencePattern, offset,
+                offset + 4);
+            offset += 4;
+            if (this.PatternType == 0x0003 || this.PatternType == 0x000B) {
+                this.PatternSpecificNth = (int) PSTObject.convertLittleEndianBytesToLong(recurrencePattern, offset,
+                    offset + 4);
+                offset += 4;
+            }
+        }
+        this.EndType = (int) PSTObject.convertLittleEndianBytesToLong(recurrencePattern, offset, offset + 4);
+        offset += 4;
+        this.OccurrenceCount = (int) PSTObject.convertLittleEndianBytesToLong(recurrencePattern, offset, offset + 4);
+        offset += 4;
+        this.FirstDOW = (int) PSTObject.convertLittleEndianBytesToLong(recurrencePattern, offset, offset + 4);
+        offset += 4;
 
-		DeletedInstanceCount = (int)PSTObject.convertLittleEndianBytesToLong(recurrencePattern, offset, offset+4);
-		offset += 4;
-		DeletedInstanceDates = new Calendar[DeletedInstanceCount];
-		for ( int i = 0; i < DeletedInstanceCount; ++i ) {
-			DeletedInstanceDates[i] = PSTObject.apptTimeToUTC(
-					(int)PSTObject.convertLittleEndianBytesToLong(recurrencePattern, offset, offset+4),
-					RecurrenceTimeZone);
-			offset += 4;
-/*
-			SimpleDateFormat f = new SimpleDateFormat("yyyyMMdd'T'HHmmss");
-			f.setTimeZone(RecurrenceTimeZone.getSimpleTimeZone());
-			System.out.printf("DeletedInstanceDates[%d]: %s\n", i, f.format(DeletedInstanceDates[i].getTime()));
-/**/
-		}
+        this.DeletedInstanceCount = (int) PSTObject.convertLittleEndianBytesToLong(recurrencePattern, offset,
+            offset + 4);
+        offset += 4;
+        this.DeletedInstanceDates = new Calendar[this.DeletedInstanceCount];
+        for (int i = 0; i < this.DeletedInstanceCount; ++i) {
+            this.DeletedInstanceDates[i] = PSTObject.apptTimeToUTC(
+                (int) PSTObject.convertLittleEndianBytesToLong(recurrencePattern, offset, offset + 4),
+                this.RecurrenceTimeZone);
+            offset += 4;
+            /*
+             * SimpleDateFormat f = new SimpleDateFormat("yyyyMMdd'T'HHmmss");
+             * f.setTimeZone(RecurrenceTimeZone.getSimpleTimeZone());
+             * System.out.printf("DeletedInstanceDates[%d]: %s\n", i,
+             * f.format(DeletedInstanceDates[i].getTime()));
+             * /
+             **/
+        }
 
-		ModifiedInstanceCount = (int)PSTObject.convertLittleEndianBytesToLong(recurrencePattern, offset, offset+4);
-		offset += 4;
-		ModifiedInstanceDates = new Calendar[ModifiedInstanceCount];
-		for ( int i = 0; i < ModifiedInstanceCount; ++i ) {
-			ModifiedInstanceDates[i] = PSTObject.apptTimeToUTC(
-					(int)PSTObject.convertLittleEndianBytesToLong(recurrencePattern, offset, offset+4),
-					RecurrenceTimeZone);
-			offset += 4;
-/*
-			SimpleDateFormat f = new SimpleDateFormat("yyyyMMdd'T'HHmmss");
-			f.setTimeZone(RecurrenceTimeZone.getSimpleTimeZone());
-			System.out.printf("ModifiedInstanceDates[%d]: %s\n", i, f.format(ModifiedInstanceDates[i].getTime()));
-/**/
-		}
+        this.ModifiedInstanceCount = (int) PSTObject.convertLittleEndianBytesToLong(recurrencePattern, offset,
+            offset + 4);
+        offset += 4;
+        this.ModifiedInstanceDates = new Calendar[this.ModifiedInstanceCount];
+        for (int i = 0; i < this.ModifiedInstanceCount; ++i) {
+            this.ModifiedInstanceDates[i] = PSTObject.apptTimeToUTC(
+                (int) PSTObject.convertLittleEndianBytesToLong(recurrencePattern, offset, offset + 4),
+                this.RecurrenceTimeZone);
+            offset += 4;
+            /*
+             * SimpleDateFormat f = new SimpleDateFormat("yyyyMMdd'T'HHmmss");
+             * f.setTimeZone(RecurrenceTimeZone.getSimpleTimeZone());
+             * System.out.printf("ModifiedInstanceDates[%d]: %s\n", i,
+             * f.format(ModifiedInstanceDates[i].getTime()));
+             * /
+             **/
+        }
 
-		StartDate = (int)PSTObject.convertLittleEndianBytesToLong(recurrencePattern, offset, offset+4);
-		offset += 4;
-		EndDate = (int)PSTObject.convertLittleEndianBytesToLong(recurrencePattern, offset, offset+4);
-		offset += 4 + 4;	// Skip ReaderVersion2
+        this.StartDate = (int) PSTObject.convertLittleEndianBytesToLong(recurrencePattern, offset, offset + 4);
+        offset += 4;
+        this.EndDate = (int) PSTObject.convertLittleEndianBytesToLong(recurrencePattern, offset, offset + 4);
+        offset += 4 + 4; // Skip ReaderVersion2
 
-		writerVersion2 = (int)PSTObject.convertLittleEndianBytesToLong(recurrencePattern, offset, offset+4);
-		offset += 4;
+        this.writerVersion2 = (int) PSTObject.convertLittleEndianBytesToLong(recurrencePattern, offset, offset + 4);
+        offset += 4;
 
-		StartTimeOffset = (int)PSTObject.convertLittleEndianBytesToLong(recurrencePattern, offset, offset+4);
-		offset += 4;
-		EndTimeOffset = (int)PSTObject.convertLittleEndianBytesToLong(recurrencePattern, offset, offset+4);
-		offset += 4;
-		ExceptionCount = (short)PSTObject.convertLittleEndianBytesToLong(recurrencePattern, offset, offset+2);
-		offset += 2;
+        this.StartTimeOffset = (int) PSTObject.convertLittleEndianBytesToLong(recurrencePattern, offset, offset + 4);
+        offset += 4;
+        this.EndTimeOffset = (int) PSTObject.convertLittleEndianBytesToLong(recurrencePattern, offset, offset + 4);
+        offset += 4;
+        this.ExceptionCount = (short) PSTObject.convertLittleEndianBytesToLong(recurrencePattern, offset, offset + 2);
+        offset += 2;
 
-		// Read exceptions
-		Exceptions = new PSTAppointmentException[ExceptionCount];
-		for ( int i = 0; i < ExceptionCount; ++i ) {
-			Exceptions[i] = new PSTAppointmentException(recurrencePattern, offset, writerVersion2, appt);
-			offset += Exceptions[i].getLength();
-		}
+        // Read exceptions
+        this.Exceptions = new PSTAppointmentException[this.ExceptionCount];
+        for (int i = 0; i < this.ExceptionCount; ++i) {
+            this.Exceptions[i] = new PSTAppointmentException(recurrencePattern, offset, this.writerVersion2, appt);
+            offset += this.Exceptions[i].getLength();
+        }
 
-		if ( (offset + 4) <= recurrencePattern.length ) {
-			int ReservedBlock1Size = (int)PSTObject.convertLittleEndianBytesToLong(recurrencePattern, offset, offset+4);
-			offset += 4 + (ReservedBlock1Size * 4);
-		}
+        if ((offset + 4) <= recurrencePattern.length) {
+            final int ReservedBlock1Size = (int) PSTObject.convertLittleEndianBytesToLong(recurrencePattern, offset,
+                offset + 4);
+            offset += 4 + (ReservedBlock1Size * 4);
+        }
 
-		// Read extended exception info
-		for ( int i = 0; i < ExceptionCount; ++i ) {
-			Exceptions[i].ExtendedException(recurrencePattern, offset);
-			offset += Exceptions[i].getExtendedLength();
-/*
-			Calendar c = PSTObject.apptTimeToUTC(Exceptions[i].getStartDateTime(), RecurrenceTimeZone);
-			System.out.printf("Exception[%d] start: %s\n", i, FormatUTC(c.getTime()));
-			c = PSTObject.apptTimeToUTC(Exceptions[i].getEndDateTime(), RecurrenceTimeZone);
-			System.out.printf("Exception[%d] end: %s\n", i, FormatUTC(c.getTime()));
-			c = PSTObject.apptTimeToUTC(Exceptions[i].getOriginalStartDate(), RecurrenceTimeZone);
-			System.out.printf("Exception[%d] original start: %s\n", i, FormatUTC(c.getTime()));
-/**/
-		}
-		// Ignore any extra data - see http://msdn.microsoft.com/en-us/library/cc979209(office.12).aspx
+        // Read extended exception info
+        for (int i = 0; i < this.ExceptionCount; ++i) {
+            this.Exceptions[i].ExtendedException(recurrencePattern, offset);
+            offset += this.Exceptions[i].getExtendedLength();
+            /*
+             * Calendar c =
+             * PSTObject.apptTimeToUTC(Exceptions[i].getStartDateTime(),
+             * RecurrenceTimeZone);
+             * System.out.printf("Exception[%d] start: %s\n", i,
+             * FormatUTC(c.getTime()));
+             * c = PSTObject.apptTimeToUTC(Exceptions[i].getEndDateTime(),
+             * RecurrenceTimeZone);
+             * System.out.printf("Exception[%d] end: %s\n", i,
+             * FormatUTC(c.getTime()));
+             * c = PSTObject.apptTimeToUTC(Exceptions[i].getOriginalStartDate(),
+             * RecurrenceTimeZone);
+             * System.out.printf("Exception[%d] original start: %s\n", i,
+             * FormatUTC(c.getTime()));
+             * /
+             **/
+        }
+        // Ignore any extra data - see
+        // http://msdn.microsoft.com/en-us/library/cc979209(office.12).aspx
 
-		// Get attachments, if any
-		PSTAttachment[] attachments = new PSTAttachment[appt.getNumberOfAttachments()];
-		for ( int i = 0; i < attachments.length; ++i ) {
-			try {
-				attachments[i] = appt.getAttachment(i);
-			} catch (Exception e) {
-				e.printStackTrace();
-				attachments[i] = null;
-			}
-		}
+        // Get attachments, if any
+        PSTAttachment[] attachments = new PSTAttachment[appt.getNumberOfAttachments()];
+        for (int i = 0; i < attachments.length; ++i) {
+            try {
+                attachments[i] = appt.getAttachment(i);
+            } catch (final Exception e) {
+                e.printStackTrace();
+                attachments[i] = null;
+            }
+        }
 
-		PSTAppointment embeddedMessage = null;
-		for ( int i = 0; i < ExceptionCount; ++i ) {
-			try {
-				// Match up an attachment to this exception...
-				for ( int iAttachment = 0; iAttachment < attachments.length; ++iAttachment ) {
-					 if ( attachments[iAttachment] != null ) {
-						PSTMessage message = attachments[iAttachment].getEmbeddedPSTMessage();
-						if ( !(message instanceof PSTAppointment) ) {
-							continue;
-						}
-						embeddedMessage = (PSTAppointment)message;
-						Date replaceTime = embeddedMessage.getRecurrenceBase();
-/*
-						SimpleDateFormat f = new SimpleDateFormat("yyyyMMdd'T'HHmmss");
-						f.setTimeZone(stz);
-						System.out.printf("Attachment[%d] time: %s\n", iAttachment, f.format(replaceTime));
-/**/
-						Calendar c = Calendar.getInstance(stz);
-						c.setTime(replaceTime);
-						if ( c.get(Calendar.YEAR) == ModifiedInstanceDates[i].get(Calendar.YEAR) &&
-							 c.get(Calendar.MONTH) == ModifiedInstanceDates[i].get(Calendar.MONTH) &&
-							 c.get(Calendar.YEAR) == ModifiedInstanceDates[i].get(Calendar.YEAR) )
-						{
-/*							System.out.println("\tEmbedded Message matched"); /**/
+        PSTAppointment embeddedMessage = null;
+        for (int i = 0; i < this.ExceptionCount; ++i) {
+            try {
+                // Match up an attachment to this exception...
+                for (final PSTAttachment attachment : attachments) {
+                    if (attachment != null) {
+                        final PSTMessage message = attachment.getEmbeddedPSTMessage();
+                        if (!(message instanceof PSTAppointment)) {
+                            continue;
+                        }
+                        embeddedMessage = (PSTAppointment) message;
+                        final Date replaceTime = embeddedMessage.getRecurrenceBase();
+                        /*
+                         * SimpleDateFormat f = new
+                         * SimpleDateFormat("yyyyMMdd'T'HHmmss");
+                         * f.setTimeZone(stz);
+                         * System.out.printf("Attachment[%d] time: %s\n",
+                         * iAttachment, f.format(replaceTime));
+                         * /
+                         **/
+                        final Calendar c = Calendar.getInstance(stz);
+                        c.setTime(replaceTime);
+                        if (c.get(Calendar.YEAR) == this.ModifiedInstanceDates[i].get(Calendar.YEAR)
+                            && c.get(Calendar.MONTH) == this.ModifiedInstanceDates[i].get(Calendar.MONTH)
+                            && c.get(Calendar.DAY_OF_MONTH) == this.ModifiedInstanceDates[i].get(Calendar.DAY_OF_MONTH)) {
+                            /*
+                             * System.out.println("\tEmbedded Message matched");
+                             * /
+                             **/
 
-							Exceptions[i].setEmbeddedMessage(embeddedMessage);
-							break;
-						}
-					}
-				}
-			} catch ( Exception e ) {
-				e.printStackTrace();
-			}
-		}
+                            this.Exceptions[i].setEmbeddedMessage(embeddedMessage);
+                            break;
+                        }
+                    }
+                }
+            } catch (final Exception e) {
+                e.printStackTrace();
+            }
+        }
 
-		attachments = null;
-	}
+        attachments = null;
+    }
 
-/*
-	private String FormatUTC(Date date) {
-		SimpleDateFormat f = new SimpleDateFormat("yyyyMMdd'T'HHmmss'Z'");
-		f.setTimeZone(PSTTimeZone.utcTimeZone);
-		return f.format(date);
-	}
-/**/
+    /*
+     * private String FormatUTC(Date date) {
+     * SimpleDateFormat f = new SimpleDateFormat("yyyyMMdd'T'HHmmss'Z'");
+     * f.setTimeZone(PSTTimeZone.utcTimeZone);
+     * return f.format(date);
+     * }
+     * /
+     **/
 
-	private short	RecurFrequency;
-	private short	PatternType;
-	private short	CalendarType;
-	private int		FirstDateTime;
-	private int		Period;
-	private int		SlidingFlag;
-	private int		PatternSpecific;
-	private int		PatternSpecificNth;
-	private int		EndType;
-	private int		OccurrenceCount;
-	private int		FirstDOW;
-	private int		DeletedInstanceCount;
-	private Calendar[]	DeletedInstanceDates = null;
-	private int		ModifiedInstanceCount;
-	private Calendar[]	ModifiedInstanceDates = null;
-	private int		StartDate;
-	private int		EndDate;
-	//private int	readerVersion2;
-	private int		writerVersion2;
-	private int		StartTimeOffset;
-	private int		EndTimeOffset;
-	private short	ExceptionCount;
-	private PSTAppointmentException[] Exceptions = null;
-	private PSTTimeZone RecurrenceTimeZone = null;
+    private final short RecurFrequency;
+    private final short PatternType;
+    private final short CalendarType;
+    private final int FirstDateTime;
+    private final int Period;
+    private final int SlidingFlag;
+    private int PatternSpecific;
+    private int PatternSpecificNth;
+    private final int EndType;
+    private final int OccurrenceCount;
+    private final int FirstDOW;
+    private final int DeletedInstanceCount;
+    private Calendar[] DeletedInstanceDates = null;
+    private final int ModifiedInstanceCount;
+    private Calendar[] ModifiedInstanceDates = null;
+    private final int StartDate;
+    private final int EndDate;
+    // private int readerVersion2;
+    private final int writerVersion2;
+    private final int StartTimeOffset;
+    private final int EndTimeOffset;
+    private final short ExceptionCount;
+    private PSTAppointmentException[] Exceptions = null;
+    private PSTTimeZone RecurrenceTimeZone = null;
 }

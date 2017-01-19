@@ -32,7 +32,10 @@ public class PSTByteFileContent extends PSTFileContent {
 
     @Override
     public int read() {
-        return (this.index >= this.content.length) ? -1 : (int) this.content[this.index++];
+        if (this.index >= this.content.length) {
+            return -1;
+        }
+        return ((int) this.content[this.index++]) & 0xFF;
     }
 
     @Override

@@ -12,7 +12,7 @@
     <packaging>jar</packaging>
 
     <name>java-libpst</name>
-    <version>0.9.3</version>
+    <version>0.9.4</version>
     <description>A library to read PST files with java, without need for external libraries.</description>
     <url>https://code.google.com/p/java-libpst/</url>
 
@@ -25,8 +25,8 @@
     </licenses>
 
     <scm>
-        <url>https://github.com/rjohnsondev/java-libpst/tags/java-libpst-0.9.3</url>
-        <connection>scm:https://github.com/rjohnsondev/java-libpst.git/tags/java-libpst-0.9.3</connection>
+        <url>https://github.com/rjohnsondev/java-libpst/tags/java-libpst-0.9.4</url>
+        <connection>scm:https://github.com/rjohnsondev/java-libpst.git/tags/java-libpst-0.9.4</connection>
     </scm>
 
     <developers>

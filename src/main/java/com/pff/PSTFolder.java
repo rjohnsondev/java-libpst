@@ -87,9 +87,9 @@ public class PSTFolder extends PSTObject {
      * @throws IOException
      */
     public Vector<PSTFolder> getSubFolders() throws PSTException, IOException {
-        this.initSubfoldersTable();
         final Vector<PSTFolder> output = new Vector<>();
         try {
+            this.initSubfoldersTable();
             final List<HashMap<Integer, PSTTable7CItem>> itemMapSet = this.subfoldersTable.getItems();
             for (final HashMap<Integer, PSTTable7CItem> itemMap : itemMapSet) {
                 final PSTTable7CItem item = itemMap.get(26610);
@@ -98,9 +98,19 @@ public class PSTFolder extends PSTObject {
                 output.add(folder);
             }
         } catch (final PSTException err) {
-            // hierachy node doesn't exist
-            throw new PSTException("Can't get child folders for folder " + this.getDisplayName() + "("
-                + this.getDescriptorNodeId() + ") child count: " + this.getContentCount() + " - " + err.toString());
+            // hierarchy node doesn't exist: This is OK if child count is 0.
+        	// Seen with special search folders at the top of the hierarchy:
+        	// "8739 - SPAM Search Folder 2", "8739 - Content.Filter".
+        	// this.subfoldersTable may remain uninitialized (null) in that case.
+        	if (this.getContentCount() != 0) {
+        		if (err.getMessage().startsWith("Can't get child folders")) {
+        			throw err;
+        		} else {
+                	//err.printStackTrace();
+                    throw new PSTException("Can't get child folders for folder " + this.getDisplayName() + "("
+                            + this.getDescriptorNodeId() + ") child count: " + this.getContentCount() + " - " + err.toString(), err);
+        		}
+        	}
         }
         return output;
     }
@@ -122,9 +132,9 @@ public class PSTFolder extends PSTObject {
             this.subfoldersTable = new PSTTable7C(new PSTNodeInputStream(this.pstFile,
                 this.pstFile.getOffsetIndexNode(folderDescriptor.dataOffsetIndexIdentifier)), tmp);
         } catch (final PSTException err) {
-            // hierachy node doesn't exist
+            // hierarchy node doesn't exist
             throw new PSTException("Can't get child folders for folder " + this.getDisplayName() + "("
-                + this.getDescriptorNodeId() + ") child count: " + this.getContentCount() + " - " + err.toString());
+                + this.getDescriptorNodeId() + ") child count: " + this.getContentCount() + " - " + err.toString(), err);
         }
     }
 

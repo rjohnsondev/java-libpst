@@ -322,7 +322,7 @@ public class PSTObject {
             if (codepage == null) {
                 return new String(data);
             } else {
-                codepage = codepage.toUpperCase();
+                codepage = codepage.toUpperCase(Locale.US);
                 return new String(data, codepage);
             }
             /*

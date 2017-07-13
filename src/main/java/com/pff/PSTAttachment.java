@@ -38,6 +38,8 @@ import java.io.InputStream;
 import java.util.Date;
 import java.util.HashMap;
 
+import java.io.ByteArrayInputStream;
+
 /**
  * Class containing attachment information.
  * 
@@ -119,8 +121,10 @@ public class PSTAttachment extends PSTObject {
     public InputStream getFileInputStream() throws IOException, PSTException {
 
         final PSTTableBCItem attachmentDataObject = this.items.get(0x3701);
-
-        if (attachmentDataObject.isExternalValueReference) {
+        
+        if (null == attachmentDataObject) {
+            return new ByteArrayInputStream(new byte[0]);
+        } else if (attachmentDataObject.isExternalValueReference) {
             final PSTDescriptorItem descriptorItemNested = this.localDescriptorItems
                 .get(attachmentDataObject.entryValueReference);
             return new PSTNodeInputStream(this.pstFile, descriptorItemNested);

@@ -38,6 +38,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.RandomAccessFile;
+import java.io.Closeable;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
@@ -52,7 +53,7 @@ import java.util.UUID;
  * 
  * @author Richard Johnson
  */
-public class PSTFile {
+public class PSTFile implements Closeable {
 
     public static final int ENCRYPTION_TYPE_NONE = 0;
     public static final int ENCRYPTION_TYPE_COMPRESSIBLE = 1;

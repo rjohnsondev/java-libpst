@@ -18,12 +18,12 @@ public class Version36Test {
             throws PSTException, IOException, URISyntaxException {
         URL dirUrl = ClassLoader.getSystemResource("example-2013.ost");
         PSTFile pstFile2 = new PSTFile(new File(dirUrl.toURI()));
-        PSTFolder inbox = (PSTFolder)PSTObject.detectAndLoadPSTObject(pstFile2, 8578);
+        IFolder inbox = (IFolder)PSTObject.detectAndLoadPSTObject(pstFile2, 8578);
         Assert.assertEquals(
                 "Number of emails in folder",
                 inbox.getContentCount(),
                 2);
-        PSTMessage msg = (PSTMessage)PSTObject.detectAndLoadPSTObject(pstFile2, 2097284);
+        IMessage msg = (IMessage)PSTObject.detectAndLoadPSTObject(pstFile2, 2097284);
         Assert.assertEquals(
                 "correct email text.",
                 "This is an e-mail message sent automatically by Microsoft "
@@ -33,7 +33,7 @@ public class Version36Test {
     }
 
     int depth = -1;
-    public void processFolder(PSTFolder folder)
+    public void processFolder(IFolder folder)
             throws PSTException, java.io.IOException {
         depth++;
         // the root folder doesn't have a display name
@@ -44,8 +44,8 @@ public class Version36Test {
 
         // go through the folders...
         if (folder.hasSubfolders()) {
-            Vector<PSTFolder> childFolders = folder.getSubFolders();
-            for (PSTFolder childFolder : childFolders) {
+            Vector<IFolder> childFolders = folder.getSubFolders();
+            for (IFolder childFolder : childFolders) {
                 processFolder(childFolder);
             }
         }

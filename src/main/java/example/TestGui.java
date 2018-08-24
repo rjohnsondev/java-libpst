@@ -38,16 +38,7 @@ import javax.swing.table.AbstractTableModel;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
 
-import com.pff.PSTActivity;
-import com.pff.PSTAttachment;
-import com.pff.PSTContact;
-import com.pff.PSTException;
-import com.pff.PSTFile;
-import com.pff.PSTFolder;
-import com.pff.PSTMessage;
-import com.pff.PSTMessageStore;
-import com.pff.PSTRss;
-import com.pff.PSTTask;
+import com.pff.*;
 
 /**
  * @author toweruser
@@ -61,7 +52,7 @@ public class TestGui implements ActionListener {
     private JPanel attachPanel;
     private JLabel attachLabel;
     private JTextField attachText;
-    private PSTMessage selectedMessage;
+    private IMessage selectedMessage;
     private JFrame f;
 
     public TestGui() throws PSTException, IOException {
@@ -251,7 +242,7 @@ public class TestGui implements ActionListener {
                 return;
             }
             if (node.getUserObject() instanceof PSTFolder) {
-                final PSTFolder folderValue = (PSTFolder) node.getUserObject();
+                final IFolder folderValue = (IFolder) node.getUserObject();
                 try {
                     TestGui.this.selectFolder(folderValue);
                 } catch (final Exception err) {
@@ -274,16 +265,16 @@ public class TestGui implements ActionListener {
                 final JTable source = emailTable;
                 TestGui.this.selectedMessage = TestGui.this.emailTableModel.getMessageAtRow(source.getSelectedRow());
                 if (TestGui.this.selectedMessage instanceof PSTContact) {
-                    final PSTContact contact = (PSTContact) TestGui.this.selectedMessage;
+                    final IContact contact = (IContact) TestGui.this.selectedMessage;
                     TestGui.this.emailText.setText(contact.toString());
                 } else if (TestGui.this.selectedMessage instanceof PSTTask) {
-                    final PSTTask task = (PSTTask) TestGui.this.selectedMessage;
+                    final ITask task = (ITask) TestGui.this.selectedMessage;
                     TestGui.this.emailText.setText(task.toString());
                 } else if (TestGui.this.selectedMessage instanceof PSTActivity) {
-                    final PSTActivity journalEntry = (PSTActivity) TestGui.this.selectedMessage;
+                    final IActivity journalEntry = (IActivity) TestGui.this.selectedMessage;
                     TestGui.this.emailText.setText(journalEntry.toString());
                 } else if (TestGui.this.selectedMessage instanceof PSTRss) {
-                    final PSTRss rss = (PSTRss) TestGui.this.selectedMessage;
+                    final IRss rss = (IRss) TestGui.this.selectedMessage;
                     TestGui.this.emailText.setText(rss.toString());
                 } else if (TestGui.this.selectedMessage != null) {
                     // System.out.println(selectedMessage.getMessageClass());
@@ -341,13 +332,13 @@ public class TestGui implements ActionListener {
         this.f.setExtendedState(this.f.getExtendedState() | Frame.MAXIMIZED_BOTH);
     }
 
-    private void buildTree(final DefaultMutableTreeNode top, final PSTFolder theFolder) {
+    private void buildTree(final DefaultMutableTreeNode top, final IFolder theFolder) {
         // this is recursive, try and keep up.
         try {
             final Vector children = theFolder.getSubFolders();
             final Iterator childrenIterator = children.iterator();
             while (childrenIterator.hasNext()) {
-                final PSTFolder folder = (PSTFolder) childrenIterator.next();
+                final IFolder folder = (IFolder) childrenIterator.next();
 
                 final DefaultMutableTreeNode node = new DefaultMutableTreeNode(folder);
 
@@ -370,7 +361,7 @@ public class TestGui implements ActionListener {
             if (this.selectedMessage != null) {
                 final int numAttach = this.selectedMessage.getNumberOfAttachments();
                 for (int x = 0; x < numAttach; x++) {
-                    final PSTAttachment attach = this.selectedMessage.getAttachment(x);
+                    final IAttachment attach = this.selectedMessage.getAttachment(x);
                     String filename = attach.getLongFilename();
                     if (filename.isEmpty()) {
                         filename = attach.getFilename();
@@ -389,7 +380,7 @@ public class TestGui implements ActionListener {
         this.attachText.setText(s.toString());
     }
 
-    void selectFolder(final PSTFolder folder) throws IOException, PSTException {
+    void selectFolder(final IFolder folder) throws IOException, PSTException {
         // load up the non-folder children.
 
         this.emailTableModel.setFolder(folder);
@@ -429,7 +420,7 @@ public class TestGui implements ActionListener {
             }
             try {
                 for (int x = 0; x < numAttach; x++) {
-                    final PSTAttachment attach = this.selectedMessage.getAttachment(x);
+                    final IAttachment attach = this.selectedMessage.getAttachment(x);
                     final InputStream attachmentStream = attach.getFileInputStream();
                     String filename = attach.getLongFilename();
                     if (filename.isEmpty()) {
@@ -474,12 +465,12 @@ public class TestGui implements ActionListener {
 
 class EmailTableModel extends AbstractTableModel {
 
-    PSTFolder theFolder = null;
+    IFolder theFolder = null;
     PSTFile theFile = null;
 
     HashMap cache = new HashMap();
 
-    public EmailTableModel(final PSTFolder theFolder, final PSTFile theFile) {
+    public EmailTableModel(final IFolder theFolder, final PSTFile theFile) {
         super();
 
         this.theFolder = theFolder;
@@ -569,7 +560,7 @@ class EmailTableModel extends AbstractTableModel {
         return false;
     }
 
-    public void setFolder(final PSTFolder theFolder) throws PSTException, IOException {
+    public void setFolder(final IFolder theFolder) throws PSTException, IOException {
         theFolder.moveChildCursorTo(0);
         this.theFolder = theFolder;
         this.cache = new HashMap();

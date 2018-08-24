@@ -5,7 +5,7 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.Calendar;
-import java.util.Arrays;
+
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -27,8 +27,8 @@ public class AppointmentTest {
             throws PSTException, IOException, URISyntaxException {
         URL dirUrl = ClassLoader.getSystemResource("dist-list.pst");
         PSTFile pstFile = new PSTFile(new File(dirUrl.toURI()));
-        PSTAppointment appt = (PSTAppointment) PSTObject.detectAndLoadPSTObject(pstFile, 2097348);
-        PSTAppointmentRecurrence r = new PSTAppointmentRecurrence(
+        IAppointment appt = (IAppointment) PSTObject.detectAndLoadPSTObject(pstFile, 2097348);
+        IAppointmentRecurrence r = new PSTAppointmentRecurrence(
                 appt.getRecurrenceStructure(), appt, appt.getRecurrenceTimeZone());
 
 

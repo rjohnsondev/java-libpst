@@ -42,7 +42,7 @@ import java.util.HashMap;
  * 
  * @author Richard Johnson
  */
-public class PSTDistList extends PSTMessage {
+public class PSTDistList extends PSTMessage implements IDistList {
 
     /**
      * constructor.
@@ -221,6 +221,7 @@ public class PSTDistList extends PSTMessage {
      * @return array of entries that can either be PSTDistList.OneOffEntry
      *         or a PSTObject, generally PSTContact.
      */
+    @Override
     public Object[] getDistributionListMembers() throws PSTException, IOException {
         final PSTTableBCItem item = this.items.get(this.pstFile.getNameToIdMapItem(0x8055, PSTFile.PSETID_Address));
         Object[] out = {};

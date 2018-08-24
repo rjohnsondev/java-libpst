@@ -45,13 +45,14 @@ import java.io.ByteArrayInputStream;
  * 
  * @author Richard Johnson
  */
-public class PSTAttachment extends PSTObject {
+public class PSTAttachment extends PSTObject implements IAttachment {
 
     PSTAttachment(final PSTFile theFile, final PSTTableBC table,
         final HashMap<Integer, PSTDescriptorItem> localDescriptorItems) {
         super(theFile, null, table, localDescriptorItems);
     }
 
+    @Override
     public int getSize() {
         return this.getIntItem(0x0e20);
     }
@@ -61,11 +62,13 @@ public class PSTAttachment extends PSTObject {
         return this.getDateItem(0x3007);
     }
 
+    @Override
     public Date getModificationTime() {
         return this.getDateItem(0x3008);
     }
 
-    public PSTMessage getEmbeddedPSTMessage() throws IOException, PSTException {
+    @Override
+    public IMessage getEmbeddedPSTMessage() throws IOException, PSTException {
         PSTNodeInputStream in = null;
         if (this.getIntItem(0x3705) == PSTAttachment.ATTACHMENT_METHOD_EMBEDDED) {
             final PSTTableBCItem item = this.items.get(0x3701);
@@ -118,6 +121,7 @@ public class PSTAttachment extends PSTObject {
         return null;
     }
 
+    @Override
     public InputStream getFileInputStream() throws IOException, PSTException {
 
         final PSTTableBCItem attachmentDataObject = this.items.get(0x3701);
@@ -135,6 +139,7 @@ public class PSTAttachment extends PSTObject {
 
     }
 
+    @Override
     public int getFilesize() throws PSTException, IOException {
         final PSTTableBCItem attachmentDataObject = this.items.get(0x3701);
         if (attachmentDataObject.isExternalValueReference) {
@@ -157,6 +162,7 @@ public class PSTAttachment extends PSTObject {
     /**
      * Attachment (short) filename ASCII or Unicode string
      */
+    @Override
     public String getFilename() {
         return this.getStringItem(0x3704);
     }
@@ -174,6 +180,7 @@ public class PSTAttachment extends PSTObject {
      * value 2 => By reference 3 => By reference resolve 4 => By reference only
      * 5 => Embedded message 6 => OLE
      */
+    @Override
     public int getAttachMethod() {
         return this.getIntItem(0x3705);
     }
@@ -181,6 +188,7 @@ public class PSTAttachment extends PSTObject {
     /**
      * Attachment size
      */
+    @Override
     public int getAttachSize() {
         return this.getIntItem(0x0e20);
     }
@@ -188,6 +196,7 @@ public class PSTAttachment extends PSTObject {
     /**
      * Attachment number
      */
+    @Override
     public int getAttachNum() {
         return this.getIntItem(0x0e21);
     }
@@ -195,6 +204,7 @@ public class PSTAttachment extends PSTObject {
     /**
      * Attachment long filename ASCII or Unicode string
      */
+    @Override
     public String getLongFilename() {
         return this.getStringItem(0x3707);
     }
@@ -202,6 +212,7 @@ public class PSTAttachment extends PSTObject {
     /**
      * Attachment (short) pathname ASCII or Unicode string
      */
+    @Override
     public String getPathname() {
         return this.getStringItem(0x3708);
     }
@@ -209,6 +220,7 @@ public class PSTAttachment extends PSTObject {
     /**
      * Attachment Position Integer 32-bit signed
      */
+    @Override
     public int getRenderingPosition() {
         return this.getIntItem(0x370b);
     }
@@ -216,6 +228,7 @@ public class PSTAttachment extends PSTObject {
     /**
      * Attachment long pathname ASCII or Unicode string
      */
+    @Override
     public String getLongPathname() {
         return this.getStringItem(0x370d);
     }
@@ -223,6 +236,7 @@ public class PSTAttachment extends PSTObject {
     /**
      * Attachment mime type ASCII or Unicode string
      */
+    @Override
     public String getMimeTag() {
         return this.getStringItem(0x370e);
     }
@@ -230,6 +244,7 @@ public class PSTAttachment extends PSTObject {
     /**
      * Attachment mime sequence
      */
+    @Override
     public int getMimeSequence() {
         return this.getIntItem(0x3710);
     }
@@ -237,6 +252,7 @@ public class PSTAttachment extends PSTObject {
     /**
      * Attachment Content ID
      */
+    @Override
     public String getContentId() {
         return this.getStringItem(0x3712);
     }
@@ -244,6 +260,7 @@ public class PSTAttachment extends PSTObject {
     /**
      * Attachment not available in HTML
      */
+    @Override
     public boolean isAttachmentInvisibleInHtml() {
         final int actionFlag = this.getIntItem(0x3714);
         return ((actionFlag & 0x1) > 0);
@@ -252,6 +269,7 @@ public class PSTAttachment extends PSTObject {
     /**
      * Attachment not available in RTF
      */
+    @Override
     public boolean isAttachmentInvisibleInRTF() {
         final int actionFlag = this.getIntItem(0x3714);
         return ((actionFlag & 0x2) > 0);
@@ -260,6 +278,7 @@ public class PSTAttachment extends PSTObject {
     /**
      * Attachment is MHTML REF
      */
+    @Override
     public boolean isAttachmentMhtmlRef() {
         final int actionFlag = this.getIntItem(0x3714);
         return ((actionFlag & 0x4) > 0);
@@ -268,6 +287,7 @@ public class PSTAttachment extends PSTObject {
     /**
      * Attachment content disposition
      */
+    @Override
     public String getAttachmentContentDisposition() {
         return this.getStringItem(0x3716);
     }

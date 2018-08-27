@@ -41,7 +41,7 @@ import java.util.HashMap;
  * 
  * @author Richard Johnson
  */
-public class PSTRss extends PSTMessage {
+public class PSTRss extends PSTMessage implements IRss {
 
     /**
      * @param theFile
@@ -68,6 +68,7 @@ public class PSTRss extends PSTMessage {
     /**
      * Channel
      */
+    @Override
     public String getPostRssChannelLink() {
         return this.getStringItem(this.pstFile.getNameToIdMapItem(0x00008900, PSTFile.PSETID_PostRss));
     }
@@ -75,6 +76,7 @@ public class PSTRss extends PSTMessage {
     /**
      * Item link
      */
+    @Override
     public String getPostRssItemLink() {
         return this.getStringItem(this.pstFile.getNameToIdMapItem(0x00008901, PSTFile.PSETID_PostRss));
     }
@@ -82,6 +84,7 @@ public class PSTRss extends PSTMessage {
     /**
      * Item hash Integer 32-bit signed
      */
+    @Override
     public int getPostRssItemHash() {
         return this.getIntItem(this.pstFile.getNameToIdMapItem(0x00008902, PSTFile.PSETID_PostRss));
     }
@@ -89,6 +92,7 @@ public class PSTRss extends PSTMessage {
     /**
      * Item GUID
      */
+    @Override
     public String getPostRssItemGuid() {
         return this.getStringItem(this.pstFile.getNameToIdMapItem(0x00008903, PSTFile.PSETID_PostRss));
     }
@@ -96,6 +100,7 @@ public class PSTRss extends PSTMessage {
     /**
      * Channel GUID
      */
+    @Override
     public String getPostRssChannel() {
         return this.getStringItem(this.pstFile.getNameToIdMapItem(0x00008904, PSTFile.PSETID_PostRss));
     }
@@ -103,6 +108,7 @@ public class PSTRss extends PSTMessage {
     /**
      * Item XML
      */
+    @Override
     public String getPostRssItemXml() {
         return this.getStringItem(this.pstFile.getNameToIdMapItem(0x00008905, PSTFile.PSETID_PostRss));
     }
@@ -110,6 +116,7 @@ public class PSTRss extends PSTMessage {
     /**
      * Subscription
      */
+    @Override
     public String getPostRssSubscription() {
         return this.getStringItem(this.pstFile.getNameToIdMapItem(0x00008906, PSTFile.PSETID_PostRss));
     }

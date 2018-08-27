@@ -194,12 +194,12 @@ public class PSTAppointmentException {
     // Allow access to an embedded message for
     // properties that don't have access methods here.
     //
-    public PSTAppointment getEmbeddedMessage() {
+    public IAppointment getEmbeddedMessage() {
         return this.embeddedMessage;
     }
 
     PSTAppointmentException(final byte[] recurrencePattern, int offset, final int writerVersion2,
-        final PSTAppointment appt) {
+        final IAppointment appt) {
         this.writerVersion2 = writerVersion2;
         final int initialOffset = offset;
         this.appt = appt;
@@ -339,7 +339,7 @@ public class PSTAppointmentException {
         this.extendedLength = offset - initialOffset;
     }
 
-    void setEmbeddedMessage(final PSTAppointment embeddedMessage) {
+    void setEmbeddedMessage(final IAppointment embeddedMessage) {
         this.embeddedMessage = embeddedMessage;
     }
 
@@ -363,8 +363,8 @@ public class PSTAppointmentException {
     private byte[] WideCharSubject = null;
     private int WideCharLocationLength = 0;
     private byte[] WideCharLocation = null;
-    private PSTAppointment embeddedMessage = null;
-    private final PSTAppointment appt;
+    private IAppointment embeddedMessage = null;
+    private final IAppointment appt;
     private final int length;
     private int extendedLength;
 

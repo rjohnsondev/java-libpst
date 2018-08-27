@@ -50,14 +50,16 @@ import java.util.SimpleTimeZone;
  *
  */
 
-public class PSTAppointmentRecurrence {
+public class PSTAppointmentRecurrence implements IAppointmentRecurrence {
 
     // Access methods
 
+    @Override
     public short getExceptionCount() {
         return this.ExceptionCount;
     }
 
+    @Override
     public PSTAppointmentException getException(final int i) {
         if (i < 0 || i >= this.ExceptionCount) {
             return null;
@@ -65,79 +67,97 @@ public class PSTAppointmentRecurrence {
         return this.Exceptions[i];
     }
 
+    @Override
     public Calendar[] getDeletedInstanceDates() {
         return this.DeletedInstanceDates;
     }
 
+    @Override
     public Calendar[] getModifiedInstanceDates() {
         return this.ModifiedInstanceDates;
     }
 
+    @Override
     public short getCalendarType() {
         return this.CalendarType;
     }
 
+    @Override
     public short getPatternType() {
         return this.PatternType;
     }
 
+    @Override
     public int getPeriod() {
         return this.Period;
     }
 
+    @Override
     public int getPatternSpecific() {
         return this.PatternSpecific;
     }
 
+    @Override
     public int getFirstDOW() {
         return this.FirstDOW;
     }
 
+    @Override
     public int getPatternSpecificNth() {
         return this.PatternSpecificNth;
     }
 
+    @Override
     public int getFirstDateTime() {
         return this.FirstDateTime;
     }
 
+    @Override
     public int getEndType() {
         return this.EndType;
     }
 
+    @Override
     public int getOccurrenceCount() {
         return this.OccurrenceCount;
     }
 
+    @Override
     public int getEndDate() {
         return this.EndDate;
     }
 
+    @Override
     public int getStartTimeOffset() {
         return this.StartTimeOffset;
     }
 
+    @Override
     public PSTTimeZone getTimeZone() {
         return this.RecurrenceTimeZone;
     }
 
+    @Override
     public int getRecurFrequency() {
         return this.RecurFrequency;
     }
 
+    @Override
     public int getSlidingFlag() {
         return this.SlidingFlag;
     }
 
+    @Override
     public int getStartDate() {
         return this.StartDate;
     }
 
+    @Override
     public int getEndTimeOffset() {
         return this.EndTimeOffset;
     }
 
-    public PSTAppointmentRecurrence(final byte[] recurrencePattern, final PSTAppointment appt, final PSTTimeZone tz) {
+    public PSTAppointmentRecurrence(final byte[] recurrencePattern, final IAppointment appt, final PSTTimeZone tz) {
         this.RecurrenceTimeZone = tz;
         final SimpleTimeZone stz = this.RecurrenceTimeZone.getSimpleTimeZone();
 
@@ -255,7 +275,7 @@ public class PSTAppointmentRecurrence {
         // http://msdn.microsoft.com/en-us/library/cc979209(office.12).aspx
 
         // Get attachments, if any
-        PSTAttachment[] attachments = new PSTAttachment[appt.getNumberOfAttachments()];
+        IAttachment[] attachments = new IAttachment[appt.getNumberOfAttachments()];
         for (int i = 0; i < attachments.length; ++i) {
             try {
                 attachments[i] = appt.getAttachment(i);
@@ -265,17 +285,17 @@ public class PSTAppointmentRecurrence {
             }
         }
 
-        PSTAppointment embeddedMessage = null;
+        IAppointment embeddedMessage = null;
         for (int i = 0; i < this.ExceptionCount; ++i) {
             try {
                 // Match up an attachment to this exception...
-                for (final PSTAttachment attachment : attachments) {
+                for (final IAttachment attachment : attachments) {
                     if (attachment != null) {
-                        final PSTMessage message = attachment.getEmbeddedPSTMessage();
+                        final IMessage message = attachment.getEmbeddedPSTMessage();
                         if (!(message instanceof PSTAppointment)) {
                             continue;
                         }
-                        embeddedMessage = (PSTAppointment) message;
+                        embeddedMessage = (IAppointment) message;
                         final Date replaceTime = embeddedMessage.getRecurrenceBase();
                         /*
                          * SimpleDateFormat f = new

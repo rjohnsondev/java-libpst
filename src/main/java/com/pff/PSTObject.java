@@ -52,7 +52,7 @@ import java.io.UnsupportedEncodingException;
  * 
  * @author Richard Johnson
  */
-public class PSTObject {
+public class PSTObject implements IObject {
 
     public static final int NID_TYPE_HID = 0x00; // Heap node
     public static final int NID_TYPE_INTERNAL = 0x01; // Internal node (section
@@ -115,6 +115,7 @@ public class PSTObject {
                                                                 // view-related
     public static final int NID_TYPE_LTP = 0x1F; // LTP
 
+    @Override
     public String getItemsString() {
         return this.items.toString();
     }
@@ -125,7 +126,7 @@ public class PSTObject {
     protected HashMap<Integer, PSTTableBCItem> items;
     protected HashMap<Integer, PSTDescriptorItem> localDescriptorItems = null;
 
-    protected LinkedHashMap<String, HashMap<DescriptorIndexNode, PSTObject>> children;
+    protected LinkedHashMap<String, HashMap<DescriptorIndexNode, IObject>> children;
 
     protected PSTObject(final PSTFile theFile, final DescriptorIndexNode descriptorIndexNode)
         throws PSTException, IOException {
@@ -173,6 +174,7 @@ public class PSTObject {
      * 
      * @return item's descriptor node
      */
+    @Override
     public DescriptorIndexNode getDescriptorNode() {
         return this.descriptorIndexNode;
     }
@@ -184,6 +186,7 @@ public class PSTObject {
      * 
      * @return item's descriptor node identifier
      */
+    @Override
     public long getDescriptorNodeId() {
         if (this.descriptorIndexNode != null) { // Prevent null pointer
                                                 // exceptions for embedded
@@ -193,6 +196,7 @@ public class PSTObject {
         return 0;
     }
 
+    @Override
     public int getNodeType() {
         return PSTObject.getNodeType(this.descriptorIndexNode.descriptorIdentifier);
     }
@@ -373,6 +377,7 @@ public class PSTObject {
         return null;
     }
 
+    @Override
     public Date getDateItem(final int identifier) {
         if (this.items.containsKey(identifier)) {
             final PSTTableBCItem item = this.items.get(identifier);
@@ -422,6 +427,7 @@ public class PSTObject {
         return null;
     }
 
+    @Override
     public String getMessageClass() {
         return this.getStringItem(0x001a);
     }
@@ -439,6 +445,7 @@ public class PSTObject {
     /**
      * get the display name
      */
+    @Override
     public String getDisplayName() {
         return this.getStringItem(0x3001);
     }
@@ -447,6 +454,7 @@ public class PSTObject {
      * Address type
      * Known values are SMTP, EX (Exchange) and UNKNOWN
      */
+    @Override
     public String getAddrType() {
         return this.getStringItem(0x3002);
     }
@@ -454,6 +462,7 @@ public class PSTObject {
     /**
      * E-mail address
      */
+    @Override
     public String getEmailAddress() {
         return this.getStringItem(0x3003);
     }
@@ -461,6 +470,7 @@ public class PSTObject {
     /**
      * Comment
      */
+    @Override
     public String getComment() {
         return this.getStringItem(0x3004);
     }
@@ -468,6 +478,7 @@ public class PSTObject {
     /**
      * Creation time
      */
+    @Override
     public Date getCreationTime() {
         return this.getDateItem(0x3007);
     }
@@ -475,6 +486,7 @@ public class PSTObject {
     /**
      * Modification time
      */
+    @Override
     public Date getLastModificationTime() {
         return this.getDateItem(0x3008);
     }
@@ -722,7 +734,7 @@ public class PSTObject {
      * @throws IOException
      * @throws PSTException
      */
-    public static PSTObject detectAndLoadPSTObject(final PSTFile theFile, final long descriptorIndex)
+    public static IObject detectAndLoadPSTObject(final PSTFile theFile, final long descriptorIndex)
         throws IOException, PSTException {
         return PSTObject.detectAndLoadPSTObject(theFile, theFile.getDescriptorIndexNode(descriptorIndex));
     }
@@ -737,7 +749,7 @@ public class PSTObject {
      * @throws IOException
      * @throws PSTException
      */
-    static PSTObject detectAndLoadPSTObject(final PSTFile theFile, final DescriptorIndexNode folderIndexNode)
+    static IObject detectAndLoadPSTObject(final PSTFile theFile, final DescriptorIndexNode folderIndexNode)
         throws IOException, PSTException {
         final int nidType = (folderIndexNode.descriptorIdentifier & 0x1F);
         if (nidType == 0x02 || nidType == 0x03 || nidType == 0x04) {
@@ -764,8 +776,8 @@ public class PSTObject {
     }
 
     static PSTMessage createAppropriatePSTMessageObject(final PSTFile theFile,
-        final DescriptorIndexNode folderIndexNode, final PSTTableBC table,
-        final HashMap<Integer, PSTDescriptorItem> localDescriptorItems) {
+                                                      final DescriptorIndexNode folderIndexNode, final PSTTableBC table,
+                                                      final HashMap<Integer, PSTDescriptorItem> localDescriptorItems) {
 
         final PSTTableBCItem item = table.getItems().get(0x001a);
         String messageClass = "";

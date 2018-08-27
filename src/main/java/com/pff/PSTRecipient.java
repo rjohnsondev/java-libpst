@@ -43,7 +43,7 @@ import java.util.HashMap;
  *
  *
  */
-public class PSTRecipient {
+public class PSTRecipient implements IRecipient {
     private final HashMap<Integer, PSTTable7CItem> details;
 
     public static final int MAPI_TO = 1;
@@ -54,30 +54,37 @@ public class PSTRecipient {
         this.details = recipientDetails;
     }
 
+    @Override
     public String getDisplayName() {
         return this.getString(0x3001);
     }
 
+    @Override
     public int getRecipientType() {
         return this.getInt(0x0c15);
     }
 
+    @Override
     public String getEmailAddressType() {
         return this.getString(0x3002);
     }
 
+    @Override
     public String getEmailAddress() {
         return this.getString(0x3003);
     }
 
+    @Override
     public int getRecipientFlags() {
         return this.getInt(0x5ffd);
     }
 
+    @Override
     public int getRecipientOrder() {
         return this.getInt(0x5fdf);
     }
 
+    @Override
     public String getSmtpAddress() {
         // If the recipient address type is SMTP,
         // we can simply return the recipient address.

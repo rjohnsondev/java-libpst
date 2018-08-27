@@ -2,10 +2,7 @@ package example;
 
 import java.util.Vector;
 
-import com.pff.PSTException;
-import com.pff.PSTFile;
-import com.pff.PSTFolder;
-import com.pff.PSTMessage;
+import com.pff.*;
 
 public class Test {
     public static void main(final String[] args) {
@@ -24,7 +21,7 @@ public class Test {
 
     int depth = -1;
 
-    public void processFolder(final PSTFolder folder) throws PSTException, java.io.IOException {
+    public void processFolder(final IFolder folder) throws PSTException, java.io.IOException {
         this.depth++;
         // the root folder doesn't have a display name
         if (this.depth > 0) {
@@ -34,8 +31,8 @@ public class Test {
 
         // go through the folders...
         if (folder.hasSubfolders()) {
-            final Vector<PSTFolder> childFolders = folder.getSubFolders();
-            for (final PSTFolder childFolder : childFolders) {
+            final Vector<IFolder> childFolders = folder.getSubFolders();
+            for (final IFolder childFolder : childFolders) {
                 this.processFolder(childFolder);
             }
         }

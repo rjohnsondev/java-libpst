@@ -42,7 +42,7 @@ import java.util.HashMap;
  * 
  * @author Richard Johnson
  */
-public class PSTActivity extends PSTMessage {
+public class PSTActivity extends PSTMessage implements IActivity {
 
     /**
      * @param theFile
@@ -69,6 +69,7 @@ public class PSTActivity extends PSTMessage {
     /**
      * Type
      */
+    @Override
     public String getLogType() {
         return this.getStringItem(this.pstFile.getNameToIdMapItem(0x00008700, PSTFile.PSETID_Log));
     }
@@ -76,6 +77,7 @@ public class PSTActivity extends PSTMessage {
     /**
      * Start
      */
+    @Override
     public Date getLogStart() {
         return this.getDateItem(this.pstFile.getNameToIdMapItem(0x00008706, PSTFile.PSETID_Log));
     }
@@ -83,6 +85,7 @@ public class PSTActivity extends PSTMessage {
     /**
      * Duration
      */
+    @Override
     public int getLogDuration() {
         return this.getIntItem(this.pstFile.getNameToIdMapItem(0x00008707, PSTFile.PSETID_Log));
     }
@@ -90,6 +93,7 @@ public class PSTActivity extends PSTMessage {
     /**
      * End
      */
+    @Override
     public Date getLogEnd() {
         return this.getDateItem(this.pstFile.getNameToIdMapItem(0x00008708, PSTFile.PSETID_Log));
     }
@@ -97,6 +101,7 @@ public class PSTActivity extends PSTMessage {
     /**
      * LogFlags
      */
+    @Override
     public int getLogFlags() {
         return this.getIntItem(this.pstFile.getNameToIdMapItem(0x0000870c, PSTFile.PSETID_Log));
     }
@@ -104,6 +109,7 @@ public class PSTActivity extends PSTMessage {
     /**
      * DocPrinted
      */
+    @Override
     public boolean isDocumentPrinted() {
         return (this.getBooleanItem(this.pstFile.getNameToIdMapItem(0x0000870e, PSTFile.PSETID_Log)));
     }
@@ -111,6 +117,7 @@ public class PSTActivity extends PSTMessage {
     /**
      * DocSaved
      */
+    @Override
     public boolean isDocumentSaved() {
         return (this.getBooleanItem(this.pstFile.getNameToIdMapItem(0x0000870f, PSTFile.PSETID_Log)));
     }
@@ -118,6 +125,7 @@ public class PSTActivity extends PSTMessage {
     /**
      * DocRouted
      */
+    @Override
     public boolean isDocumentRouted() {
         return (this.getBooleanItem(this.pstFile.getNameToIdMapItem(0x00008710, PSTFile.PSETID_Log)));
     }
@@ -125,6 +133,7 @@ public class PSTActivity extends PSTMessage {
     /**
      * DocPosted
      */
+    @Override
     public boolean isDocumentPosted() {
         return (this.getBooleanItem(this.pstFile.getNameToIdMapItem(0x00008711, PSTFile.PSETID_Log)));
     }
@@ -132,6 +141,7 @@ public class PSTActivity extends PSTMessage {
     /**
      * Type Description
      */
+    @Override
     public String getLogTypeDesc() {
         return this.getStringItem(this.pstFile.getNameToIdMapItem(0x00008712, PSTFile.PSETID_Log));
     }

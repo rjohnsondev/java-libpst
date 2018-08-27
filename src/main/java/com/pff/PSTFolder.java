@@ -51,7 +51,7 @@ import java.util.Vector;
  * 
  * @author Richard Johnson
  */
-public class PSTFolder extends PSTObject {
+public class PSTFolder extends PSTObject implements IFolder {
 
     /**
      * a constructor for the rest of us...
@@ -86,14 +86,15 @@ public class PSTFolder extends PSTObject {
      * @throws PSTException
      * @throws IOException
      */
-    public Vector<PSTFolder> getSubFolders() throws PSTException, IOException {
-        final Vector<PSTFolder> output = new Vector<>();
+    @Override
+    public Vector<IFolder> getSubFolders() throws PSTException, IOException {
+        final Vector<IFolder> output = new Vector<>();
         try {
             this.initSubfoldersTable();
             final List<HashMap<Integer, PSTTable7CItem>> itemMapSet = this.subfoldersTable.getItems();
             for (final HashMap<Integer, PSTTable7CItem> itemMap : itemMapSet) {
                 final PSTTable7CItem item = itemMap.get(26610);
-                final PSTFolder folder = (PSTFolder) PSTObject.detectAndLoadPSTObject(this.pstFile,
+                final IFolder folder = (IFolder) PSTObject.detectAndLoadPSTObject(this.pstFile,
                     item.entryValueReference);
                 output.add(folder);
             }
@@ -218,10 +219,11 @@ public class PSTFolder extends PSTObject {
      * @throws PSTException
      * @throws IOException
      */
-    public Vector<PSTObject> getChildren(final int numberToReturn) throws PSTException, IOException {
+    @Override
+    public Vector<IObject> getChildren(final int numberToReturn) throws PSTException, IOException {
         this.initEmailsTable();
 
-        final Vector<PSTObject> output = new Vector<>();
+        final Vector<IObject> output = new Vector<>();
         if (this.emailsTable != null) {
             final List<HashMap<Integer, PSTTable7CItem>> rows = this.emailsTable.getItems(this.currentEmailIndex,
                 numberToReturn);
@@ -235,7 +237,7 @@ public class PSTFolder extends PSTObject {
                 final PSTTable7CItem emailRow = rows.get(x).get(0x67F2);
                 final DescriptorIndexNode childDescriptor = this.pstFile
                     .getDescriptorIndexNode(emailRow.entryValueReference);
-                final PSTObject child = PSTObject.detectAndLoadPSTObject(this.pstFile, childDescriptor);
+                final IObject child = PSTObject.detectAndLoadPSTObject(this.pstFile, childDescriptor);
                 output.add(child);
                 this.currentEmailIndex++;
             }
@@ -249,7 +251,7 @@ public class PSTFolder extends PSTObject {
                     break;
                 }
                 final DescriptorIndexNode childDescriptor = iterator.next();
-                final PSTObject child = PSTObject.detectAndLoadPSTObject(this.pstFile, childDescriptor);
+                final IObject child = PSTObject.detectAndLoadPSTObject(this.pstFile, childDescriptor);
                 output.add(child);
                 this.currentEmailIndex++;
             }
@@ -258,6 +260,7 @@ public class PSTFolder extends PSTObject {
         return output;
     }
 
+    @Override
     public LinkedList<Integer> getChildDescriptorNodes() throws PSTException, IOException {
         this.initEmailsTable();
         if (this.emailsTable == null) {
@@ -289,7 +292,8 @@ public class PSTFolder extends PSTObject {
      * @throws PSTException
      * @throws IOException
      */
-    public PSTObject getNextChild() throws PSTException, IOException {
+    @Override
+    public IObject getNextChild() throws PSTException, IOException {
         this.initEmailsTable();
 
         if (this.emailsTable != null) {
@@ -303,7 +307,7 @@ public class PSTFolder extends PSTObject {
             final PSTTable7CItem emailRow = rows.get(0).get(0x67F2);
             final DescriptorIndexNode childDescriptor = this.pstFile
                 .getDescriptorIndexNode(emailRow.entryValueReference);
-            final PSTObject child = PSTObject.detectAndLoadPSTObject(this.pstFile, childDescriptor);
+            final IObject child = PSTObject.detectAndLoadPSTObject(this.pstFile, childDescriptor);
             this.currentEmailIndex++;
 
             return child;
@@ -315,7 +319,7 @@ public class PSTFolder extends PSTObject {
             }
             // get the emails from the rows
             final DescriptorIndexNode childDescriptor = this.fallbackEmailsTable.get(this.currentEmailIndex);
-            final PSTObject child = PSTObject.detectAndLoadPSTObject(this.pstFile, childDescriptor);
+            final IObject child = PSTObject.detectAndLoadPSTObject(this.pstFile, childDescriptor);
             this.currentEmailIndex++;
             return child;
         }
@@ -328,6 +332,7 @@ public class PSTFolder extends PSTObject {
      * 
      * @param newIndex
      */
+    @Override
     public void moveChildCursorTo(int newIndex) throws IOException, PSTException {
         this.initEmailsTable();
 
@@ -348,6 +353,7 @@ public class PSTFolder extends PSTObject {
      * @throws IOException
      * @throws PSTException
      */
+    @Override
     public int getSubFolderCount() throws IOException, PSTException {
         this.initSubfoldersTable();
         if (this.subfoldersTable != null) {
@@ -366,6 +372,7 @@ public class PSTFolder extends PSTObject {
      * @throws IOException
      * @throws PSTException
      */
+    @Override
     public int getEmailCount() throws IOException, PSTException {
         this.initEmailsTable();
         if (this.emailsTable == null) {
@@ -374,6 +381,7 @@ public class PSTFolder extends PSTObject {
         return this.emailsTable.getRowCount();
     }
 
+    @Override
     public int getFolderType() {
         return this.getIntItem(0x3601);
     }
@@ -385,6 +393,7 @@ public class PSTFolder extends PSTObject {
      * 
      * @return number of items as reported by PST File
      */
+    @Override
     public int getContentCount() {
         return this.getIntItem(0x3602);
     }
@@ -392,6 +401,7 @@ public class PSTFolder extends PSTObject {
     /**
      * Amount of unread content items Integer 32-bit signed
      */
+    @Override
     public int getUnreadCount() {
         return this.getIntItem(0x3603);
     }
@@ -403,14 +413,17 @@ public class PSTFolder extends PSTObject {
      * 
      * @return has subfolders as reported by the PST File
      */
+    @Override
     public boolean hasSubfolders() {
         return (this.getIntItem(0x360a) != 0);
     }
 
+    @Override
     public String getContainerClass() {
         return this.getStringItem(0x3613);
     }
 
+    @Override
     public int getAssociateContentCount() {
         return this.getIntItem(0x3617);
     }
@@ -418,6 +431,7 @@ public class PSTFolder extends PSTObject {
     /**
      * Container flags Integer 32-bit signed
      */
+    @Override
     public int getContainerFlags() {
         return this.getIntItem(0x3600);
     }

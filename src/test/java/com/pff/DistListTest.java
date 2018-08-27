@@ -27,7 +27,7 @@ public class DistListTest {
             throws PSTException, IOException, URISyntaxException {
         URL dirUrl = ClassLoader.getSystemResource("dist-list.pst");
         PSTFile pstFile = new PSTFile(new File(dirUrl.toURI()));
-        PSTDistList obj = (PSTDistList)PSTObject.detectAndLoadPSTObject(pstFile, 2097188);
+        IDistList obj = (IDistList)PSTObject.detectAndLoadPSTObject(pstFile, 2097188);
         Object[] members = obj.getDistributionListMembers();
         Assert.assertEquals("Correct number of members", members.length, 3);
         int numberOfContacts = 0;
@@ -36,7 +36,7 @@ public class DistListTest {
         HashSet<String> displayNames = new HashSet<String>();
         for (Object member : members) {
             if (member instanceof PSTContact) {
-                PSTContact contact = (PSTContact)member;
+                IContact contact = (IContact)member;
                 Assert.assertEquals("Contact email address",
                                     contact.getEmail1EmailAddress(),
                                     "contact1@rjohnson.id.au");

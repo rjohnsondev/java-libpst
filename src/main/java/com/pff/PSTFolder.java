@@ -299,12 +299,12 @@ public class PSTFolder extends PSTObject {
                 // no more!
                 return null;
             }
+            this.currentEmailIndex++;
             // get the emails from the rows
             final PSTTable7CItem emailRow = rows.get(0).get(0x67F2);
             final DescriptorIndexNode childDescriptor = this.pstFile
                 .getDescriptorIndexNode(emailRow.entryValueReference);
             final PSTObject child = PSTObject.detectAndLoadPSTObject(this.pstFile, childDescriptor);
-            this.currentEmailIndex++;
 
             return child;
         } else if (this.fallbackEmailsTable != null) {
@@ -313,10 +313,10 @@ public class PSTFolder extends PSTObject {
                 // no more!
                 return null;
             }
+            this.currentEmailIndex++;
             // get the emails from the rows
             final DescriptorIndexNode childDescriptor = this.fallbackEmailsTable.get(this.currentEmailIndex);
             final PSTObject child = PSTObject.detectAndLoadPSTObject(this.pstFile, childDescriptor);
-            this.currentEmailIndex++;
             return child;
         }
         return null;

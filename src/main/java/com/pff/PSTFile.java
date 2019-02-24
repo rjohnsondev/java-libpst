@@ -852,6 +852,9 @@ public class PSTFile {
         return this.getPSTDescriptorItems(this.readLeaf(localDescriptorsOffsetIndexIdentifier));
     }
 
+    static final int SLBLOCK_ENTRY=0;
+    static final int SIBLOCK_ENTRY =1;
+
     HashMap<Integer, PSTDescriptorItem> getPSTDescriptorItems(final PSTNodeInputStream in)
         throws PSTException, IOException {
         // make sure the signature is correct
@@ -860,7 +863,11 @@ public class PSTFile {
         if (sig != 0x2) {
             throw new PSTException("Unable to process descriptor node, bad signature: " + sig);
         }
-
+        // NID nodes defines in subnode can be either SLBLOCK (0) or SIBLOCK_ENTRY (1)
+        int blockType = in.read();
+        if ((blockType != SLBLOCK_ENTRY) && (blockType != SIBLOCK_ENTRY)) {
+            throw new PSTException("Unable to process descriptor node, unknown BLOCK type: " + blockType);
+        }
         final HashMap<Integer, PSTDescriptorItem> output = new HashMap<>();
         final int numberOfItems = (int) in.seekAndReadLong(2, 2);
         int offset;
@@ -875,15 +882,23 @@ public class PSTFile {
         in.readCompletely(data);
 
         for (int x = 0; x < numberOfItems; x++) {
-            final PSTDescriptorItem item = new PSTDescriptorItem(data, offset, this);
-            output.put(item.descriptorIdentifier, item);
+            final PSTDescriptorItem item = new PSTDescriptorItem(data, offset, this,blockType);
+            if (blockType==SLBLOCK_ENTRY)
+                output.put(item.descriptorIdentifier, item);
+            else
+                output.putAll(getPSTDescriptorItems(item.offsetIndexIdentifier));
             if (this.getPSTFileType() == PSTFile.PST_TYPE_ANSI) {
-                offset += 12;
+                if (blockType==SLBLOCK_ENTRY)
+                    offset += 12;
+                else
+                    offset += 8;
             } else {
-                offset += 24;
+                if (blockType==SLBLOCK_ENTRY)
+                    offset += 24;
+                else
+                    offset += 16;
             }
         }
-
         return output;
     }
 

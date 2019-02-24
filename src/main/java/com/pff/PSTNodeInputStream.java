@@ -314,9 +314,9 @@ public class PSTNodeInputStream extends InputStream {
     /**
      * Read a block from the input stream, ensuring buffer is completely filled.
      * Recommended block size = 8176 (size used internally by PSTs)
-     * 
+     *
      * @param target buffer to fill
-     * @throws IOException
+     * @throws IOException the io exception
      */
     public void readCompletely(final byte[] target) throws IOException {
         int offset = 0;
@@ -334,9 +334,9 @@ public class PSTNodeInputStream extends InputStream {
      * Read a block from the input stream.
      * Recommended block size = 8176 (size used internally by PSTs)
      * 
-     * @param output
-     * @return
-     * @throws IOException
+     * @param output array to get data
+     * @return read size, or -1 if end
+     * @throws IOException the io exception
      */
     @Override
     public int read(final byte[] output) throws IOException {
@@ -457,7 +457,7 @@ public class PSTNodeInputStream extends InputStream {
     /**
      * Get the offsets (block positions) used in the array
      * 
-     * @return
+     * @return offsets (block positions)
      */
     public Long[] getBlockOffsets() {
         if (this.skipPoints.size() == 0) {

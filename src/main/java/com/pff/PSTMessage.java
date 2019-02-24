@@ -46,24 +46,56 @@ import java.util.HashMap;
  * objects. For properties where no value is set, a blank value is returned
  * (rather than
  * an exception being raised).
- * 
+ *
  * @author Richard Johnson
  */
 public class PSTMessage extends PSTObject {
 
+    /**
+     * The constant IMPORTANCE_LOW.
+     */
     public static final int IMPORTANCE_LOW = 0;
+    /**
+     * The constant IMPORTANCE_NORMAL.
+     */
     public static final int IMPORTANCE_NORMAL = 1;
+    /**
+     * The constant IMPORTANCE_HIGH.
+     */
     public static final int IMPORTANCE_HIGH = 2;
 
+    /**
+     * Instantiates a new Pst message.
+     *
+     * @param theFile             the the file
+     * @param descriptorIndexNode the descriptor index node
+     * @throws PSTException the pst exception
+     * @throws IOException  the io exception
+     */
     PSTMessage(final PSTFile theFile, final DescriptorIndexNode descriptorIndexNode) throws PSTException, IOException {
         super(theFile, descriptorIndexNode);
     }
 
+    /**
+     * Instantiates a new Pst message.
+     *
+     * @param theFile              the the file
+     * @param folderIndexNode      the folder index node
+     * @param table                the table
+     * @param localDescriptorItems the local descriptor items
+     */
     PSTMessage(final PSTFile theFile, final DescriptorIndexNode folderIndexNode, final PSTTableBC table,
         final HashMap<Integer, PSTDescriptorItem> localDescriptorItems) {
         super(theFile, folderIndexNode, table, localDescriptorItems);
     }
 
+    /**
+     * Gets rtf body.
+     *
+     * @return the rtf body
+     * @throws PSTException the pst exception
+     * @throws IOException  the io exception
+     */
     public String getRTFBody() throws PSTException, IOException {
         // do we have an entry for it?
         if (this.items.containsKey(0x1009)) {
@@ -84,7 +116,7 @@ public class PSTMessage extends PSTObject {
 
     /**
      * get the importance of the email
-     * 
+     *
      * @return IMPORTANCE_NORMAL if unknown
      */
     public int getImportance() {
@@ -103,7 +135,7 @@ public class PSTMessage extends PSTObject {
 
     /**
      * get the subject
-     * 
+     *
      * @return empty string if not found
      */
     public String getSubject() {
@@ -129,7 +161,7 @@ public class PSTMessage extends PSTObject {
 
     /**
      * get the client submit time
-     * 
+     *
      * @return null if not found
      */
     public Date getClientSubmitTime() {
@@ -138,7 +170,7 @@ public class PSTMessage extends PSTObject {
 
     /**
      * get received by name
-     * 
+     *
      * @return empty string if not found
      */
     public String getReceivedByName() {
@@ -147,7 +179,7 @@ public class PSTMessage extends PSTObject {
 
     /**
      * get sent representing name
-     * 
+     *
      * @return empty string if not found
      */
     public String getSentRepresentingName() {
@@ -157,7 +189,7 @@ public class PSTMessage extends PSTObject {
     /**
      * Sent representing address type
      * Known values are SMTP, EX (Exchange) and UNKNOWN
-     * 
+     *
      * @return empty string if not found
      */
     public String getSentRepresentingAddressType() {
@@ -166,7 +198,7 @@ public class PSTMessage extends PSTObject {
 
     /**
      * Sent representing email address
-     * 
+     *
      * @return empty string if not found
      */
     public String getSentRepresentingEmailAddress() {
@@ -176,7 +208,7 @@ public class PSTMessage extends PSTObject {
     /**
      * Conversation topic
      * This is basically the subject from which Fwd:, Re, etc. has been removed
-     * 
+     *
      * @return empty string if not found
      */
     public String getConversationTopic() {
@@ -186,7 +218,7 @@ public class PSTMessage extends PSTObject {
     /**
      * Received by address type
      * Known values are SMTP, EX (Exchange) and UNKNOWN
-     * 
+     *
      * @return empty string if not found
      */
     public String getReceivedByAddressType() {
@@ -195,7 +227,7 @@ public class PSTMessage extends PSTObject {
 
     /**
      * Received by email address
-     * 
+     *
      * @return empty string if not found
      */
     public String getReceivedByAddress() {
@@ -205,45 +237,89 @@ public class PSTMessage extends PSTObject {
     /**
      * Transport message headers ASCII or Unicode string These contain the SMTP
      * e-mail headers.
+     *
+     * @return the transport message headers
      */
     public String getTransportMessageHeaders() {
         return this.getStringItem(0x007d);
     }
 
+    /**
+     * Is read boolean.
+     *
+     * @return the boolean
+     */
     public boolean isRead() {
         return ((this.getIntItem(0x0e07) & 0x01) != 0);
     }
 
+    /**
+     * Is unmodified boolean.
+     *
+     * @return the boolean
+     */
     public boolean isUnmodified() {
         return ((this.getIntItem(0x0e07) & 0x02) != 0);
     }
 
+    /**
+     * Is submitted boolean.
+     *
+     * @return the boolean
+     */
     public boolean isSubmitted() {
         return ((this.getIntItem(0x0e07) & 0x04) != 0);
     }
 
+    /**
+     * Is unsent boolean.
+     *
+     * @return the boolean
+     */
     public boolean isUnsent() {
         return ((this.getIntItem(0x0e07) & 0x08) != 0);
     }
 
+    /**
+     * Has attachments boolean.
+     *
+     * @return the boolean
+     */
     public boolean hasAttachments() {
         return ((this.getIntItem(0x0e07) & 0x10) != 0);
     }
 
+    /**
+     * Is from me boolean.
+     *
+     * @return the boolean
+     */
     public boolean isFromMe() {
         return ((this.getIntItem(0x0e07) & 0x20) != 0);
     }
 
+    /**
+     * Is associated boolean.
+     *
+     * @return the boolean
+     */
     public boolean isAssociated() {
         return ((this.getIntItem(0x0e07) & 0x40) != 0);
     }
 
+    /**
+     * Is resent boolean.
+     *
+     * @return the boolean
+     */
     public boolean isResent() {
         return ((this.getIntItem(0x0e07) & 0x80) != 0);
     }
 
     /**
      * Acknowledgment mode Integer 32-bit signed
+     *
+     * @return the acknowledgement mode
      */
     public int getAcknowledgementMode() {
         return this.getIntItem(0x0001);
@@ -252,14 +328,19 @@ public class PSTMessage extends PSTObject {
     /**
      * Originator delivery report requested set if the sender wants a delivery
      * report from all recipients 0 = false 0 != true
+     *
+     * @return the originator delivery report requested
      */
     public boolean getOriginatorDeliveryReportRequested() {
         return (this.getIntItem(0x0023) != 0);
     }
 
     // 0x0025 0x0102 PR_PARENT_KEY Parent key Binary data Contains a GUID
+
     /**
      * Priority Integer 32-bit signed -1 = NonUrgent 0 = Normal 1 = Urgent
+     *
+     * @return the priority
      */
     public int getPriority() {
         return this.getIntItem(0x0026);
@@ -267,6 +348,8 @@ public class PSTMessage extends PSTObject {
 
     /**
      * Read Receipt Requested Boolean 0 = false 0 != true
+     *
+     * @return the read receipt requested
      */
     public boolean getReadReceiptRequested() {
         return (this.getIntItem(0x0029) != 0);
@@ -274,6 +357,8 @@ public class PSTMessage extends PSTObject {
 
     /**
      * Recipient Reassignment Prohibited Boolean 0 = false 0 != true
+     *
+     * @return the recipient reassignment prohibited
      */
     public boolean getRecipientReassignmentProhibited() {
         return (this.getIntItem(0x002b) != 0);
@@ -283,6 +368,8 @@ public class PSTMessage extends PSTObject {
      * Original sensitivity Integer 32-bit signed the sensitivity of the message
      * before being replied to or forwarded 0 = None 1 = Personal 2 = Private 3
      * = Company Confidential
+     *
+     * @return the original sensitivity
      */
     public int getOriginalSensitivity() {
         return this.getIntItem(0x002e);
@@ -291,6 +378,8 @@ public class PSTMessage extends PSTObject {
     /**
      * Sensitivity Integer 32-bit signed sender's opinion of the sensitivity of
      * an email 0 = None 1 = Personal 2 = Private 3 = Company Confidential
+     *
+     * @return the sensitivity
      */
     public int getSensitivity() {
         return this.getIntItem(0x0036);
@@ -302,6 +391,11 @@ public class PSTMessage extends PSTObject {
     // 0x0043 0x0102 PR_RCVD_REPRESENTING_ENTRYID Received representing entry
     // identifier Binary data Contains recipient/sender structure
 
+    /**
+     * Get pid tag sent representing search key byte [ ].
+     *
+     * @return the byte [ ]
+     */
     /*
      * Address book search key
      */
@@ -311,6 +405,8 @@ public class PSTMessage extends PSTObject {
 
     /**
      * Received representing name ASCII or Unicode string
+     *
+     * @return the rcvd representing name
      */
     public String getRcvdRepresentingName() {
         return this.getStringItem(0x0044);
@@ -318,14 +414,19 @@ public class PSTMessage extends PSTObject {
 
     /**
      * Original subject ASCII or Unicode string
+     *
+     * @return the original subject
      */
     public String getOriginalSubject() {
         return this.getStringItem(0x0049);
     }
 
     // 0x004e 0x0040 PR_ORIGINAL_SUBMIT_TIME Original submit time Filetime
+
     /**
      * Reply recipients names ASCII or Unicode string
+     *
+     * @return the reply recipient names
      */
     public String getReplyRecipientNames() {
         return this.getStringItem(0x0050);
@@ -333,6 +434,8 @@ public class PSTMessage extends PSTObject {
 
     /**
      * My address in To field Boolean
+     *
+     * @return the message to me
      */
     public boolean getMessageToMe() {
         return (this.getIntItem(0x0057) != 0);
@@ -340,6 +443,8 @@ public class PSTMessage extends PSTObject {
 
     /**
      * My address in CC field Boolean
+     *
+     * @return the message cc me
      */
     public boolean getMessageCcMe() {
         return (this.getIntItem(0x0058) != 0);
@@ -348,6 +453,8 @@ public class PSTMessage extends PSTObject {
     /**
      * Indicates that the receiving mailbox owner is a primary or a carbon copy
      * (Cc) recipient
+     *
+     * @return the message recip me
      */
     public boolean getMessageRecipMe() {
         return this.getIntItem(0x0059) != 0;
@@ -355,6 +462,8 @@ public class PSTMessage extends PSTObject {
 
     /**
      * Response requested Boolean
+     *
+     * @return the response requested
      */
     public boolean getResponseRequested() {
         return this.getBooleanItem(0x0063);
@@ -363,6 +472,8 @@ public class PSTMessage extends PSTObject {
     /**
      * Sent representing address type ASCII or Unicode string Known values are
      * SMTP, EX (Exchange) and UNKNOWN
+     *
+     * @return the sent representing addrtype
      */
     public String getSentRepresentingAddrtype() {
         return this.getStringItem(0x0064);
@@ -370,8 +481,11 @@ public class PSTMessage extends PSTObject {
 
     // 0x0071 0x0102 PR_CONVERSATION_INDEX (PidTagConversationInd ex)
     // Conversation index Binary data
+
     /**
      * Original display BCC ASCII or Unicode string
+     *
+     * @return the original display bcc
      */
     public String getOriginalDisplayBcc() {
         return this.getStringItem(0x0072);
@@ -379,6 +493,8 @@ public class PSTMessage extends PSTObject {
 
     /**
      * Original display CC ASCII or Unicode string
+     *
+     * @return the original display cc
      */
     public String getOriginalDisplayCc() {
         return this.getStringItem(0x0073);
@@ -386,6 +502,8 @@ public class PSTMessage extends PSTObject {
 
     /**
      * Original display TO ASCII or Unicode string
+     *
+     * @return the original display to
      */
     public String getOriginalDisplayTo() {
         return this.getStringItem(0x0074);
@@ -394,6 +512,8 @@ public class PSTMessage extends PSTObject {
     /**
      * Received representing address type.
      * Known values are SMTP, EX (Exchange) and UNKNOWN
+     *
+     * @return the rcvd representing addrtype
      */
     public String getRcvdRepresentingAddrtype() {
         return this.getStringItem(0x0077);
@@ -401,6 +521,8 @@ public class PSTMessage extends PSTObject {
 
     /**
      * Received representing e-mail address
+     *
+     * @return the rcvd representing email address
      */
     public String getRcvdRepresentingEmailAddress() {
         return this.getStringItem(0x0078);
@@ -412,6 +534,8 @@ public class PSTMessage extends PSTObject {
 
     /**
      * Non receipt notification requested
+     *
+     * @return the boolean
      */
     public boolean isNonReceiptNotificationRequested() {
         return (this.getIntItem(0x0c06) != 0);
@@ -419,16 +543,26 @@ public class PSTMessage extends PSTObject {
 
     /**
      * Originator non delivery report requested
+     *
+     * @return the boolean
      */
     public boolean isOriginatorNonDeliveryReportRequested() {
         return (this.getIntItem(0x0c08) != 0);
     }
 
+    /**
+     * The constant RECIPIENT_TYPE_TO.
+     */
     public static final int RECIPIENT_TYPE_TO = 1;
+    /**
+     * The constant RECIPIENT_TYPE_CC.
+     */
     public static final int RECIPIENT_TYPE_CC = 2;
 
     /**
-     * Recipient type Integer 32-bit signed 0x01 => To 0x02 =>CC
+     * Recipient type Integer 32-bit signed 0x01 =&gt; To 0x02 =&gt;CC
+     *
+     * @return the recipient type
      */
     public int getRecipientType() {
         return this.getIntItem(0x0c15);
@@ -436,11 +570,18 @@ public class PSTMessage extends PSTObject {
 
     /**
      * Reply requested
+     *
+     * @return the boolean
      */
     public boolean isReplyRequested() {
         return (this.getIntItem(0x0c17) != 0);
     }
 
+    /**
+     * Get sender entry id byte [ ].
+     *
+     * @return the byte [ ]
+     */
     /*
      * Sending mailbox owner's address book entry ID
      */
@@ -450,6 +591,8 @@ public class PSTMessage extends PSTObject {
 
     /**
      * Sender name
+     *
+     * @return the sender name
      */
     public String getSenderName() {
         return this.getStringItem(0x0c1a);
@@ -458,6 +601,8 @@ public class PSTMessage extends PSTObject {
     /**
      * Sender address type.
      * Known values are SMTP, EX (Exchange) and UNKNOWN
+     *
+     * @return the sender addrtype
      */
     public String getSenderAddrtype() {
         return this.getStringItem(0x0c1e);
@@ -465,6 +610,8 @@ public class PSTMessage extends PSTObject {
 
     /**
      * Sender e-mail address
+     *
+     * @return the sender email address
      */
     public String getSenderEmailAddress() {
         return this.getStringItem(0x0c1f);
@@ -476,6 +623,8 @@ public class PSTMessage extends PSTObject {
 
     /**
      * Message size
+     *
+     * @return the message size
      */
     public long getMessageSize() {
         return this.getLongItem(0x0e08);
@@ -483,11 +632,18 @@ public class PSTMessage extends PSTObject {
 
     /**
      * Internet article number
+     *
+     * @return the internet article number
      */
     public int getInternetArticleNumber() {
         return this.getIntItem(0x0e23);
     }
 
+    /**
+     * Gets primary send account.
+     *
+     * @return the primary send account
+     */
     /*
      * Server that the client should attempt to send the mail with
      */
@@ -495,6 +651,11 @@ public class PSTMessage extends PSTObject {
         return this.getStringItem(0x0e28);
     }
 
+    /**
+     * Gets next send acct.
+     *
+     * @return the next send acct
+     */
     /*
      * Server that the client is currently using to send mail
      */
@@ -504,6 +665,8 @@ public class PSTMessage extends PSTObject {
 
     /**
      * URL computer name postfix
+     *
+     * @return the url comp name postfix
      */
     public int getURLCompNamePostfix() {
         return this.getIntItem(0x0e61);
@@ -511,6 +674,8 @@ public class PSTMessage extends PSTObject {
 
     /**
      * Object type
+     *
+     * @return the object type
      */
     public int getObjectType() {
         return this.getIntItem(0x0ffe);
@@ -518,6 +683,8 @@ public class PSTMessage extends PSTObject {
 
     /**
      * Delete after submit
+     *
+     * @return the delete after submit
      */
     public boolean getDeleteAfterSubmit() {
         return ((this.getIntItem(0x0e01)) != 0);
@@ -525,6 +692,8 @@ public class PSTMessage extends PSTObject {
 
     /**
      * Responsibility
+     *
+     * @return the responsibility
      */
     public boolean getResponsibility() {
         return ((this.getIntItem(0x0e0f)) != 0);
@@ -532,6 +701,8 @@ public class PSTMessage extends PSTObject {
 
     /**
      * Compressed RTF in Sync Boolean
+     *
+     * @return the boolean
      */
     public boolean isRTFInSync() {
         return ((this.getIntItem(0x0e1f)) != 0);
@@ -539,6 +710,8 @@ public class PSTMessage extends PSTObject {
 
     /**
      * URL computer name set
+     *
+     * @return the boolean
      */
     public boolean isURLCompNameSet() {
         return ((this.getIntItem(0x0e62)) != 0);
@@ -546,6 +719,8 @@ public class PSTMessage extends PSTObject {
 
     /**
      * Display BCC
+     *
+     * @return the display bcc
      */
     public String getDisplayBCC() {
         return this.getStringItem(0x0e02);
@@ -553,6 +728,8 @@ public class PSTMessage extends PSTObject {
 
     /**
      * Display CC
+     *
+     * @return the display cc
      */
     public String getDisplayCC() {
         return this.getStringItem(0x0e03);
@@ -560,6 +737,8 @@ public class PSTMessage extends PSTObject {
 
     /**
      * Display To
+     *
+     * @return the display to
      */
     public String getDisplayTo() {
         return this.getStringItem(0x0e04);
@@ -567,6 +746,8 @@ public class PSTMessage extends PSTObject {
 
     /**
      * Message delivery time
+     *
+     * @return the message delivery time
      */
     public Date getMessageDeliveryTime() {
         return this.getDateItem(0x0e06);
@@ -640,6 +821,8 @@ public class PSTMessage extends PSTObject {
 
     /**
      * Message content properties
+     *
+     * @return the native body type
      */
     public int getNativeBodyType() {
         return this.getIntItem(0x1016);
@@ -647,6 +830,8 @@ public class PSTMessage extends PSTObject {
 
     /**
      * Plain text e-mail body
+     *
+     * @return the body
      */
     public String getBody() {
         String cp = null;
@@ -660,6 +845,11 @@ public class PSTMessage extends PSTObject {
         return this.getStringItem(0x1000, 0, cp);
     }
 
+    /**
+     * Gets body prefix.
+     *
+     * @return the body prefix
+     */
     /*
      * Plain text body prefix
      */
@@ -669,6 +859,8 @@ public class PSTMessage extends PSTObject {
 
     /**
      * RTF Sync Body CRC
+     *
+     * @return the rtf sync body crc
      */
     public int getRTFSyncBodyCRC() {
         return this.getIntItem(0x1006);
@@ -676,6 +868,8 @@ public class PSTMessage extends PSTObject {
 
     /**
      * RTF Sync Body character count
+     *
+     * @return the rtf sync body count
      */
     public int getRTFSyncBodyCount() {
         return this.getIntItem(0x1007);
@@ -683,6 +877,8 @@ public class PSTMessage extends PSTObject {
 
     /**
      * RTF Sync body tag
+     *
+     * @return the rtf sync body tag
      */
     public String getRTFSyncBodyTag() {
         return this.getStringItem(0x1008);
@@ -690,6 +886,8 @@ public class PSTMessage extends PSTObject {
 
     /**
      * RTF whitespace prefix count
+     *
+     * @return the rtf sync prefix count
      */
     public int getRTFSyncPrefixCount() {
         return this.getIntItem(0x1010);
@@ -697,6 +895,8 @@ public class PSTMessage extends PSTObject {
 
     /**
      * RTF whitespace tailing count
+     *
+     * @return the rtf sync trailing count
      */
     public int getRTFSyncTrailingCount() {
         return this.getIntItem(0x1011);
@@ -704,6 +904,8 @@ public class PSTMessage extends PSTObject {
 
     /**
      * HTML e-mail body
+     *
+     * @return the body html
      */
     public String getBodyHTML() {
         String cp = null;
@@ -719,6 +921,8 @@ public class PSTMessage extends PSTObject {
 
     /**
      * Message ID for this email as allocated per rfc2822
+     *
+     * @return the internet message id
      */
     public String getInternetMessageId() {
         return this.getStringItem(0x1035);
@@ -726,6 +930,8 @@ public class PSTMessage extends PSTObject {
 
     /**
      * In-Reply-To
+     *
+     * @return the in reply to id
      */
     public String getInReplyToId() {
         return this.getStringItem(0x1042);
@@ -733,6 +939,8 @@ public class PSTMessage extends PSTObject {
 
     /**
      * Return Path
+     *
+     * @return the return path
      */
     public String getReturnPath() {
         return this.getStringItem(0x1046);
@@ -740,6 +948,8 @@ public class PSTMessage extends PSTObject {
 
     /**
      * Icon index
+     *
+     * @return the icon index
      */
     public int getIconIndex() {
         return this.getIntItem(0x1080);
@@ -750,6 +960,8 @@ public class PSTMessage extends PSTObject {
      * This relates to the replying / forwarding of messages.
      * It is classified as "unknown" atm, so just provided here
      * in case someone works out what all the various flags mean.
+     *
+     * @return the action flag
      */
     public int getActionFlag() {
         return this.getIntItem(0x1081);
@@ -757,6 +969,8 @@ public class PSTMessage extends PSTObject {
 
     /**
      * is the action flag for this item "forward"?
+     *
+     * @return the boolean
      */
     public boolean hasForwarded() {
         final int actionFlag = this.getIntItem(0x1081);
@@ -765,6 +979,8 @@ public class PSTMessage extends PSTObject {
 
     /**
      * is the action flag for this item "replied"?
+     *
+     * @return the boolean
      */
     public boolean hasReplied() {
         final int actionFlag = this.getIntItem(0x1081);
@@ -774,6 +990,8 @@ public class PSTMessage extends PSTObject {
     /**
      * the date that this item had an action performed (eg. replied or
      * forwarded)
+     *
+     * @return the action date
      */
     public Date getActionDate() {
         return this.getDateItem(0x1082);
@@ -781,6 +999,8 @@ public class PSTMessage extends PSTObject {
 
     /**
      * Disable full fidelity
+     *
+     * @return the disable full fidelity
      */
     public boolean getDisableFullFidelity() {
         return (this.getIntItem(0x10f2) != 0);
@@ -789,6 +1009,8 @@ public class PSTMessage extends PSTObject {
     /**
      * URL computer name
      * Contains the .eml file name
+     *
+     * @return the url comp name
      */
     public String getURLCompName() {
         return this.getStringItem(0x10f3);
@@ -796,6 +1018,8 @@ public class PSTMessage extends PSTObject {
 
     /**
      * Attribute hidden
+     *
+     * @return the attr hidden
      */
     public boolean getAttrHidden() {
         return (this.getIntItem(0x10f4) != 0);
@@ -803,6 +1027,8 @@ public class PSTMessage extends PSTObject {
 
     /**
      * Attribute system
+     *
+     * @return the attr system
      */
     public boolean getAttrSystem() {
         return (this.getIntItem(0x10f5) != 0);
@@ -810,6 +1036,8 @@ public class PSTMessage extends PSTObject {
 
     /**
      * Attribute read only
+     *
+     * @return the attr readonly
      */
     public boolean getAttrReadonly() {
         return (this.getIntItem(0x10f6) != 0);
@@ -820,9 +1048,6 @@ public class PSTMessage extends PSTObject {
     /**
      * find, extract and load up all of the attachments in this email
      * necessary for the other operations.
-     * 
-     * @throws PSTException
-     * @throws IOException
      */
     private void processRecipients() {
         try {
@@ -844,9 +1069,10 @@ public class PSTMessage extends PSTObject {
 
     /**
      * get the number of recipients for this message
-     * 
-     * @throws PSTException
-     * @throws IOException
+     *
+     * @return the number of recipients
+     * @throws PSTException the pst exception
+     * @throws IOException  the io exception
      */
     public int getNumberOfRecipients() throws PSTException, IOException {
         this.processRecipients();
@@ -871,8 +1097,8 @@ public class PSTMessage extends PSTObject {
      * find, extract and load up all of the attachments in this email
      * necessary for the other operations.
      * 
-     * @throws PSTException
-     * @throws IOException
+     * @throws PSTException the pst exception
+     * @throws IOException the io exception
      */
     private void processAttachments() throws PSTException, IOException {
         final int attachmentTableKey = 0x0671;
@@ -889,6 +1115,8 @@ public class PSTMessage extends PSTObject {
 
     /**
      * Start date Filetime
+     *
+     * @return the task start date
      */
     public Date getTaskStartDate() {
         return this.getDateItem(this.pstFile.getNameToIdMapItem(0x00008104, PSTFile.PSETID_Task));
@@ -896,6 +1124,8 @@ public class PSTMessage extends PSTObject {
 
     /**
      * Due date Filetime
+     *
+     * @return the task due date
      */
     public Date getTaskDueDate() {
         return this.getDateItem(this.pstFile.getNameToIdMapItem(0x00008105, PSTFile.PSETID_Task));
@@ -922,6 +1152,8 @@ public class PSTMessage extends PSTObject {
     /**
      * "flagged" items are actually emails with a due date.
      * This convience method just checks to see if that is true.
+     *
+     * @return the boolean
      */
     public boolean isFlagged() {
         return this.getTaskDueDate() != null;
@@ -929,6 +1161,9 @@ public class PSTMessage extends PSTObject {
 
     /**
      * get the categories defined for this message
+     *
+     * @return the string [ ]
+     * @throws PSTException the pst exception
      */
     public String[] getColorCategories() throws PSTException {
         final int keywordCategory = this.pstFile.getPublicStringToIdMapItem("Keywords");
@@ -974,9 +1209,8 @@ public class PSTMessage extends PSTObject {
 
     /**
      * get the number of attachments for this message
-     * 
-     * @throws PSTException
-     * @throws IOException
+     *
+     * @return the number of attachments
      */
     public int getNumberOfAttachments() {
         try {
@@ -995,11 +1229,11 @@ public class PSTMessage extends PSTObject {
 
     /**
      * get a specific attachment from this email.
-     * 
-     * @param attachmentNumber
+     *
+     * @param attachmentNumber the attachment number
      * @return the attachment at the defined index
-     * @throws PSTException
-     * @throws IOException
+     * @throws PSTException the pst exception
+     * @throws IOException  the io exception
      */
     public PSTAttachment getAttachment(final int attachmentNumber) throws PSTException, IOException {
         this.processAttachments();
@@ -1051,11 +1285,11 @@ public class PSTMessage extends PSTObject {
 
     /**
      * get a specific recipient from this email.
-     * 
-     * @param recipientNumber
+     *
+     * @param recipientNumber the recipient number
      * @return the recipient at the defined index
-     * @throws PSTException
-     * @throws IOException
+     * @throws PSTException the pst exception
+     * @throws IOException  the io exception
      */
     public PSTRecipient getRecipient(final int recipientNumber) throws PSTException, IOException {
         if (recipientNumber >= this.getNumberOfRecipients()
@@ -1072,6 +1306,11 @@ public class PSTMessage extends PSTObject {
         return null;
     }
 
+    /**
+     * Gets recipients string.
+     *
+     * @return the recipients string
+     */
     public String getRecipientsString() {
         if (this.recipientTable != null) {
             return this.recipientTable.getItemsString();
@@ -1080,14 +1319,29 @@ public class PSTMessage extends PSTObject {
         return "No recipients table!";
     }
 
+    /**
+     * Get conversation id byte [ ].
+     *
+     * @return the byte [ ]
+     */
     public byte[] getConversationId() {
         return this.getBinaryItem(0x3013);
     }
 
+    /**
+     * Gets conversation index.
+     *
+     * @return the conversation index
+     */
     public PSTConversationIndex getConversationIndex() {
         return new PSTConversationIndex(this.getBinaryItem(0x0071));
     }
 
+    /**
+     * Is conversation index tracking boolean.
+     *
+     * @return the boolean
+     */
     public boolean isConversationIndexTracking() {
         return this.getBooleanItem(0x3016, false);
     }

@@ -9,8 +9,8 @@ import java.util.Date;
  * Class to represent a decoded PidLidGlobalObjectId or
  * PidLidCleanGlobalObjectId (for Meeting Exceptions)
  * See [MS-OXOCAL]
- * https://msdn.microsoft.com/en-us/library/cc425490(v=exchg.80).aspx, sections
- * 2.2.1.27(PidLidGlobalObjectId) & 2.2.1.28(PidLidCleanGlobalObjectId)
+ * "https://interoperability.blob.core.windows.net/files/MS-OXOCAL/%5bMS-OXOCAL%5d.pdf"
+ * sections 2.2.1.27(PidLidGlobalObjectId) &amp; 2.2.1.28(PidLidCleanGlobalObjectId)
  *
  * @author Nick Buller
  *         NOTE: Following MS Doc for variable names so are exactly the same as

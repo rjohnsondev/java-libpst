@@ -47,30 +47,57 @@ import java.util.Set;
  * which is the
  * detectAndLoadPSTObject call which allows extraction of a PST Item from the
  * file.
- * 
+ *
  * @author Richard Johnson
  */
 public class PSTObject {
 
+    /**
+     * The constant NID_TYPE_HID.
+     */
     public static final int NID_TYPE_HID = 0x00; // Heap node
+    /**
+     * The constant NID_TYPE_INTERNAL.
+     */
     public static final int NID_TYPE_INTERNAL = 0x01; // Internal node (section
-                                                      // 2.4.1)
+    /**
+     * The constant NID_TYPE_NORMAL_FOLDER.
+     */
+// 2.4.1)
     public static final int NID_TYPE_NORMAL_FOLDER = 0x02; // Normal Folder
-                                                           // object (PC)
+    /**
+     * The constant NID_TYPE_SEARCH_FOLDER.
+     */
+// object (PC)
     public static final int NID_TYPE_SEARCH_FOLDER = 0x03; // Search Folder
-                                                           // object (PC)
+    /**
+     * The constant NID_TYPE_NORMAL_MESSAGE.
+     */
+// object (PC)
     public static final int NID_TYPE_NORMAL_MESSAGE = 0x04; // Normal Message
-                                                            // object (PC)
+    /**
+     * The constant NID_TYPE_ATTACHMENT.
+     */
+// object (PC)
     public static final int NID_TYPE_ATTACHMENT = 0x05; // Attachment object
-                                                        // (PC)
+    /**
+     * The constant NID_TYPE_SEARCH_UPDATE_QUEUE.
+     */
+// (PC)
     public static final int NID_TYPE_SEARCH_UPDATE_QUEUE = 0x06; // Queue of
-                                                                 // changed
+    /**
+     * The constant NID_TYPE_SEARCH_CRITERIA_OBJECT.
+     */
+// changed
                                                                  // objects for
                                                                  // search
                                                                  // Folder
                                                                  // objects
     public static final int NID_TYPE_SEARCH_CRITERIA_OBJECT = 0x07; // Defines
-                                                                    // the
+    /**
+     * The constant NID_TYPE_ASSOC_MESSAGE.
+     */
+// the
                                                                     // search
                                                                     // criteria
                                                                     // for a
@@ -78,53 +105,117 @@ public class PSTObject {
                                                                     // Folder
                                                                     // object
     public static final int NID_TYPE_ASSOC_MESSAGE = 0x08; // Folder associated
-                                                           // information (FAI)
+    /**
+     * The constant NID_TYPE_CONTENTS_TABLE_INDEX.
+     */
+// information (FAI)
                                                            // Message object
                                                            // (PC)
     public static final int NID_TYPE_CONTENTS_TABLE_INDEX = 0x0A; // Internal,
-                                                                  // persisted
+    /**
+     * The constant NID_TYPE_RECEIVE_FOLDER_TABLE.
+     */
+// persisted
                                                                   // view-related
     public static final int NID_TYPE_RECEIVE_FOLDER_TABLE = 0X0B; // Receive
-                                                                  // Folder
+    /**
+     * The constant NID_TYPE_OUTGOING_QUEUE_TABLE.
+     */
+// Folder
                                                                   // object
                                                                   // (Inbox)
     public static final int NID_TYPE_OUTGOING_QUEUE_TABLE = 0x0C; // Outbound
-                                                                  // queue
+    /**
+     * The constant NID_TYPE_HIERARCHY_TABLE.
+     */
+// queue
                                                                   // (Outbox)
     public static final int NID_TYPE_HIERARCHY_TABLE = 0x0D; // Hierarchy table
-                                                             // (TC)
+    /**
+     * The constant NID_TYPE_CONTENTS_TABLE.
+     */
+// (TC)
     public static final int NID_TYPE_CONTENTS_TABLE = 0x0E; // Contents table
-                                                            // (TC)
+    /**
+     * The constant NID_TYPE_ASSOC_CONTENTS_TABLE.
+     */
+// (TC)
     public static final int NID_TYPE_ASSOC_CONTENTS_TABLE = 0x0F; // FAI
-                                                                  // contents
+    /**
+     * The constant NID_TYPE_SEARCH_CONTENTS_TABLE.
+     */
+// contents
                                                                   // table (TC)
     public static final int NID_TYPE_SEARCH_CONTENTS_TABLE = 0x10; // Contents
-                                                                   // table (TC)
+    /**
+     * The constant NID_TYPE_ATTACHMENT_TABLE.
+     */
+// table (TC)
                                                                    // of a
                                                                    // search
                                                                    // Folder
                                                                    // object
     public static final int NID_TYPE_ATTACHMENT_TABLE = 0x11; // Attachment
-                                                              // table (TC)
+    /**
+     * The constant NID_TYPE_RECIPIENT_TABLE.
+     */
+// table (TC)
     public static final int NID_TYPE_RECIPIENT_TABLE = 0x12; // Recipient table
-                                                             // (TC)
+    /**
+     * The constant NID_TYPE_SEARCH_TABLE_INDEX.
+     */
+// (TC)
     public static final int NID_TYPE_SEARCH_TABLE_INDEX = 0x13; // Internal,
-                                                                // persisted
+    /**
+     * The constant NID_TYPE_LTP.
+     */
+// persisted
                                                                 // view-related
     public static final int NID_TYPE_LTP = 0x1F; // LTP
 
+    /**
+     * Gets items string.
+     *
+     * @return the items string
+     */
     public String getItemsString() {
         return this.items.toString();
     }
 
+    /**
+     * The Pst file.
+     */
     protected PSTFile pstFile;
+    /**
+     * The Data.
+     */
     protected byte[] data;
+    /**
+     * The Descriptor index node.
+     */
     protected DescriptorIndexNode descriptorIndexNode;
+    /**
+     * The Items.
+     */
     protected HashMap<Integer, PSTTableBCItem> items;
+    /**
+     * The Local descriptor items.
+     */
     protected HashMap<Integer, PSTDescriptorItem> localDescriptorItems = null;
 
+    /**
+     * The Children.
+     */
     protected LinkedHashMap<String, HashMap<DescriptorIndexNode, PSTObject>> children;
 
+    /**
+     * Instantiates a new Pst object.
+     *
+     * @param theFile             the the file
+     * @param descriptorIndexNode the descriptor index node
+     * @throws PSTException the pst exception
+     * @throws IOException  the io exception
+     */
     protected PSTObject(final PSTFile theFile, final DescriptorIndexNode descriptorIndexNode)
         throws PSTException, IOException {
         this.pstFile = theFile;
@@ -150,9 +241,10 @@ public class PSTObject {
     /**
      * for pre-population
      *
-     * @param theFile
-     * @param folderIndexNode
-     * @param table
+     * @param theFile              the the file
+     * @param folderIndexNode      the folder index node
+     * @param table                the table
+     * @param localDescriptorItems the local descriptor items
      */
     protected PSTObject(final PSTFile theFile, final DescriptorIndexNode folderIndexNode, final PSTTableBC table,
         final HashMap<Integer, PSTDescriptorItem> localDescriptorItems) {
@@ -163,13 +255,16 @@ public class PSTObject {
         this.localDescriptorItems = localDescriptorItems;
     }
 
+    /**
+     * The Table.
+     */
     protected PSTTableBC table;
 
     /**
      * get the descriptor node for this item
      * this identifies the location of the node in the BTree and associated info
      *
-     * @return item's descriptor node
+     * @return item 's descriptor node
      */
     public DescriptorIndexNode getDescriptorNode() {
         return this.descriptorIndexNode;
@@ -180,7 +275,7 @@ public class PSTObject {
      * can be used for loading objects through detectAndLoadPSTObject(PSTFile
      * theFile, long descriptorIndex)
      *
-     * @return item's descriptor node identifier
+     * @return item 's descriptor node identifier
      */
     public long getDescriptorNodeId() {
         if (this.descriptorIndexNode != null) { // Prevent null pointer
@@ -191,18 +286,42 @@ public class PSTObject {
         return 0;
     }
 
+    /**
+     * Gets node type.
+     *
+     * @return the node type
+     */
     public int getNodeType() {
         return PSTObject.getNodeType(this.descriptorIndexNode.descriptorIdentifier);
     }
 
+    /**
+     * Gets node type.
+     *
+     * @param descriptorIdentifier the descriptor identifier
+     * @return the node type
+     */
     public static int getNodeType(final int descriptorIdentifier) {
         return descriptorIdentifier & 0x1F;
     }
 
+    /**
+     * Gets int item.
+     *
+     * @param identifier the identifier
+     * @return the int item
+     */
     protected int getIntItem(final int identifier) {
         return this.getIntItem(identifier, 0);
     }
 
+    /**
+     * Gets int item.
+     *
+     * @param identifier   the identifier
+     * @param defaultValue the default value
+     * @return the int item
+     */
     protected int getIntItem(final int identifier, final int defaultValue) {
         if (this.items.containsKey(identifier)) {
             final PSTTableBCItem item = this.items.get(identifier);
@@ -211,10 +330,23 @@ public class PSTObject {
         return defaultValue;
     }
 
+    /**
+     * Gets boolean item.
+     *
+     * @param identifier the identifier
+     * @return the boolean item
+     */
     protected boolean getBooleanItem(final int identifier) {
         return this.getBooleanItem(identifier, false);
     }
 
+    /**
+     * Gets boolean item.
+     *
+     * @param identifier   the identifier
+     * @param defaultValue the default value
+     * @return the boolean item
+     */
     protected boolean getBooleanItem(final int identifier, final boolean defaultValue) {
         if (this.items.containsKey(identifier)) {
             final PSTTableBCItem item = this.items.get(identifier);
@@ -223,10 +355,23 @@ public class PSTObject {
         return defaultValue;
     }
 
+    /**
+     * Gets double item.
+     *
+     * @param identifier the identifier
+     * @return the double item
+     */
     protected double getDoubleItem(final int identifier) {
         return this.getDoubleItem(identifier, 0);
     }
 
+    /**
+     * Gets double item.
+     *
+     * @param identifier   the identifier
+     * @param defaultValue the default value
+     * @return the double item
+     */
     protected double getDoubleItem(final int identifier, final double defaultValue) {
         if (this.items.containsKey(identifier)) {
             final PSTTableBCItem item = this.items.get(identifier);
@@ -236,10 +381,23 @@ public class PSTObject {
         return defaultValue;
     }
 
+    /**
+     * Gets long item.
+     *
+     * @param identifier the identifier
+     * @return the long item
+     */
     protected long getLongItem(final int identifier) {
         return this.getLongItem(identifier, 0);
     }
 
+    /**
+     * Gets long item.
+     *
+     * @param identifier   the identifier
+     * @param defaultValue the default value
+     * @return the long item
+     */
     protected long getLongItem(final int identifier, final long defaultValue) {
         if (this.items.containsKey(identifier)) {
             final PSTTableBCItem item = this.items.get(identifier);
@@ -259,14 +417,35 @@ public class PSTObject {
         return defaultValue;
     }
 
+    /**
+     * Gets string item.
+     *
+     * @param identifier the identifier
+     * @return the string item
+     */
     protected String getStringItem(final int identifier) {
         return this.getStringItem(identifier, 0);
     }
 
+    /**
+     * Gets string item.
+     *
+     * @param identifier the identifier
+     * @param stringType the string type
+     * @return the string item
+     */
     protected String getStringItem(final int identifier, final int stringType) {
         return this.getStringItem(identifier, stringType, null);
     }
 
+    /**
+     * Gets string item.
+     *
+     * @param identifier the identifier
+     * @param stringType the string type
+     * @param codepage   the codepage
+     * @return the string item
+     */
     protected String getStringItem(final int identifier, int stringType, String codepage) {
         final PSTTableBCItem item = this.items.get(identifier);
         if (item != null) {
@@ -313,6 +492,14 @@ public class PSTObject {
         return "";
     }
 
+    /**
+     * Create java string string.
+     *
+     * @param data       the data
+     * @param stringType the string type
+     * @param codepage   the codepage
+     * @return the string
+     */
     static String createJavaString(final byte[] data, final int stringType, String codepage) {
         try {
             if (data==null)
@@ -357,6 +544,11 @@ public class PSTObject {
 
     private String codepage=null;
 
+    /**
+     * Gets string codepage.
+     *
+     * @return the string codepage
+     */
     public String getStringCodepage() {
         if (codepage==null) {
             // try and get the codepage
@@ -375,6 +567,12 @@ public class PSTObject {
         return codepage;
     }
 
+    /**
+     * Gets date item.
+     *
+     * @param identifier the identifier
+     * @return the date item
+     */
     public Date getDateItem(final int identifier) {
         if (this.items.containsKey(identifier)) {
             final PSTTableBCItem item = this.items.get(identifier);
@@ -389,6 +587,12 @@ public class PSTObject {
         return null;
     }
 
+    /**
+     * Get binary item byte [ ].
+     *
+     * @param identifier the identifier
+     * @return the byte [ ]
+     */
     protected byte[] getBinaryItem(final int identifier) {
         if (this.items.containsKey(identifier)) {
             final PSTTableBCItem item = this.items.get(identifier);
@@ -416,6 +620,12 @@ public class PSTObject {
         return null;
     }
 
+    /**
+     * Gets time zone item.
+     *
+     * @param identifier the identifier
+     * @return the time zone item
+     */
     protected PSTTimeZone getTimeZoneItem(final int identifier) {
         final byte[] tzData = this.getBinaryItem(identifier);
         if (tzData != null && tzData.length != 0) {
@@ -424,6 +634,11 @@ public class PSTObject {
         return null;
     }
 
+    /**
+     * Gets message class.
+     *
+     * @return the message class
+     */
     public String getMessageClass() {
         return this.getStringItem(0x001a);
     }
@@ -440,6 +655,8 @@ public class PSTObject {
 
     /**
      * get the display name
+     *
+     * @return the display name
      */
     public String getDisplayName() {
         return this.getStringItem(0x3001);
@@ -448,6 +665,8 @@ public class PSTObject {
     /**
      * Address type
      * Known values are SMTP, EX (Exchange) and UNKNOWN
+     *
+     * @return the addr type
      */
     public String getAddrType() {
         return this.getStringItem(0x3002);
@@ -455,6 +674,8 @@ public class PSTObject {
 
     /**
      * E-mail address
+     *
+     * @return the email address
      */
     public String getEmailAddress() {
         return this.getStringItem(0x3003);
@@ -462,6 +683,8 @@ public class PSTObject {
 
     /**
      * Comment
+     *
+     * @return the comment
      */
     public String getComment() {
         return this.getStringItem(0x3004);
@@ -469,6 +692,8 @@ public class PSTObject {
 
     /**
      * Creation time
+     *
+     * @return the creation time
      */
     public Date getCreationTime() {
         return this.getDateItem(0x3007);
@@ -476,6 +701,8 @@ public class PSTObject {
 
     /**
      * Modification time
+     *
+     * @return the last modification time
      */
     public Date getLastModificationTime() {
         return this.getDateItem(0x3008);
@@ -485,8 +712,7 @@ public class PSTObject {
      * Static stuff below
      * ------------------
      */
-
-    // substitution table for the compressible encryption type.
+// substitution table for the compressible encryption type.
     static int[] compEnc = { 0x47, 0xf1, 0xb4, 0xe6, 0x0b, 0x6a, 0x72, 0x48, 0x85, 0x4e, 0x9e, 0xeb, 0xe2, 0xf8, 0x94,
         0x53, 0xe0, 0xbb, 0xa0, 0x02, 0xe8, 0x5a, 0x09, 0xab, 0xdb, 0xe3, 0xba, 0xc6, 0x7c, 0xc3, 0x10, 0xdd, 0x39,
         0x05, 0x96, 0x30, 0xf5, 0x37, 0x60, 0x82, 0x8c, 0xc9, 0x13, 0x4a, 0x6b, 0x1d, 0xf3, 0xfb, 0x8f, 0x26, 0x97,
@@ -514,6 +740,11 @@ public class PSTObject {
         printFormattedNumber(number);
     }
 
+    /**
+     * Print formatted number.
+     *
+     * @param number the number
+     */
     public static void printFormattedNumber(final long number) {
         System.out.print("dec: ");
         System.out.print(number);
@@ -526,13 +757,20 @@ public class PSTObject {
     /**
      * Output a dump of data in hex format in the order it was read in
      *
-     * @param data
-     * @param pretty
+     * @param data   the data
+     * @param pretty pretty flag
      */
     public static void printHexFormatted(final byte[] data, final boolean pretty) {
         printHexFormatted(data, pretty, new int[0]);
     }
 
+    /**
+     * Print hex formatted.
+     *
+     * @param data    the data
+     * @param pretty  the pretty
+     * @param indexes the indexes
+     */
     protected static void printHexFormatted(final byte[] data, final boolean pretty, final int[] indexes) {
         // groups of two
         if (pretty) {
@@ -590,7 +828,7 @@ public class PSTObject {
      * decode a lump of data that has been encrypted with the compressible
      * encryption
      *
-     * @param data
+     * @param data the data
      * @return decoded data
      */
     protected static byte[] decode(final byte[] data) {
@@ -603,6 +841,12 @@ public class PSTObject {
         return data;
     }
 
+    /**
+     * Encode byte [ ].
+     *
+     * @param data the data
+     * @return the byte [ ]
+     */
     protected static byte[] encode(final byte[] data) {
         // create the encoding array...
         final int[] enc = new int[compEnc.length];
@@ -624,7 +868,7 @@ public class PSTObject {
      * Utility function for converting little endian bytes into a usable java
      * long
      *
-     * @param data
+     * @param data the data
      * @return long version of the data
      */
     public static long convertLittleEndianBytesToLong(final byte[] data) {
@@ -635,9 +879,9 @@ public class PSTObject {
      * Utility function for converting little endian bytes into a usable java
      * long
      *
-     * @param data
-     * @param start
-     * @param end
+     * @param data  the data
+     * @param start the start
+     * @param end   the end
      * @return long version of the data
      */
     public static long convertLittleEndianBytesToLong(final byte[] data, final int start, final int end) {
@@ -656,9 +900,9 @@ public class PSTObject {
     /**
      * Utility function for converting big endian bytes into a usable java long
      *
-     * @param data
-     * @param start
-     * @param end
+     * @param data  the data
+     * @param start the start
+     * @param end   the end
      * @return long version of the data
      */
     public static long convertBigEndianBytesToLong(final byte[] data, final int start, final int end) {
@@ -719,11 +963,11 @@ public class PSTObject {
      * Detect and load a PST Object from a file with the specified descriptor
      * index
      *
-     * @param theFile
-     * @param descriptorIndex
+     * @param theFile         the the file
+     * @param descriptorIndex the descriptor index
      * @return PSTObject with that index
-     * @throws IOException
-     * @throws PSTException
+     * @throws IOException  the io exception
+     * @throws PSTException the pst exception
      */
     public static PSTObject detectAndLoadPSTObject(final PSTFile theFile, final long descriptorIndex)
         throws IOException, PSTException {
@@ -734,11 +978,11 @@ public class PSTObject {
      * Detect and load a PST Object from a file with the specified descriptor
      * index
      *
-     * @param theFile
-     * @param folderIndexNode
+     * @param theFile         the the file
+     * @param folderIndexNode the folder index node
      * @return PSTObject with that index
-     * @throws IOException
-     * @throws PSTException
+     * @throws IOException  the io exception
+     * @throws PSTException the pst exception
      */
     static PSTObject detectAndLoadPSTObject(final PSTFile theFile, final DescriptorIndexNode folderIndexNode)
             throws IOException, PSTException {
@@ -766,6 +1010,15 @@ public class PSTObject {
         }
     }
 
+    /**
+     * Create appropriate pst message object pst message.
+     *
+     * @param theFile              the the file
+     * @param folderIndexNode      the folder index node
+     * @param table                the table
+     * @param localDescriptorItems the local descriptor items
+     * @return the pst message
+     */
     static PSTMessage createAppropriatePSTMessageObject(final PSTFile theFile,
         final DescriptorIndexNode folderIndexNode, final PSTTableBC table,
         final HashMap<Integer, PSTDescriptorItem> localDescriptorItems) {
@@ -800,6 +1053,15 @@ public class PSTObject {
         return new PSTMessage(theFile, folderIndexNode, table, localDescriptorItems);
     }
 
+    /**
+     * Guess pst object type string.
+     *
+     * @param theFile         the the file
+     * @param folderIndexNode the folder index node
+     * @return the string
+     * @throws IOException  the io exception
+     * @throws PSTException the pst exception
+     */
     static String guessPSTObjectType(final PSTFile theFile, final DescriptorIndexNode folderIndexNode)
         throws IOException, PSTException {
 
@@ -861,10 +1123,8 @@ public class PSTObject {
      * words stored in the structure.
      * </p>
      *
-     * @param high
-     *            The higher double word of the FILETIME structure.
-     * @param low
-     *            The lower double word of the FILETIME structure.
+     * @param high The higher double word of the FILETIME structure.
+     * @param low  The lower double word of the FILETIME structure.
      * @return The Windows FILETIME as a {@link Date}.
      */
     protected static Date filetimeToDate(final int high, final int low) {
@@ -875,6 +1135,12 @@ public class PSTObject {
         return new Date(ms_since_19700101);
     }
 
+    /**
+     * Appt time to calendar calendar.
+     *
+     * @param minutes the minutes
+     * @return the calendar
+     */
     public static Calendar apptTimeToCalendar(final int minutes) {
         final long ms_since_16010101 = minutes * (60 * 1000L);
         final long ms_since_19700101 = ms_since_16010101 - EPOCH_DIFF;
@@ -883,6 +1149,13 @@ public class PSTObject {
         return c;
     }
 
+    /**
+     * Appt time to utc calendar.
+     *
+     * @param minutes the minutes
+     * @param tz      the tz
+     * @return the calendar
+     */
     public static Calendar apptTimeToUTC(final int minutes, final PSTTimeZone tz) {
         // Must convert minutes since 1/1/1601 in local time to UTC
         // There's got to be a better way of doing this...

@@ -39,16 +39,18 @@ import java.util.HashMap;
 
 /**
  * Object that represents Task items
- * 
+ *
  * @author Richard Johnson
  */
 public class PSTTask extends PSTMessage {
 
     /**
-     * @param theFile
-     * @param descriptorIndexNode
-     * @throws PSTException
-     * @throws IOException
+     * Instantiates a new Pst task.
+     *
+     * @param theFile             the the file
+     * @param descriptorIndexNode the descriptor index node
+     * @throws PSTException the pst exception
+     * @throws IOException  the io exception
      */
     public PSTTask(final PSTFile theFile, final DescriptorIndexNode descriptorIndexNode)
         throws PSTException, IOException {
@@ -56,10 +58,12 @@ public class PSTTask extends PSTMessage {
     }
 
     /**
-     * @param theFile
-     * @param folderIndexNode
-     * @param table
-     * @param localDescriptorItems
+     * Instantiates a new Pst task.
+     *
+     * @param theFile              the the file
+     * @param folderIndexNode      the folder index node
+     * @param table                the table
+     * @param localDescriptorItems the local descriptor items
      */
     public PSTTask(final PSTFile theFile, final DescriptorIndexNode folderIndexNode, final PSTTableBC table,
         final HashMap<Integer, PSTDescriptorItem> localDescriptorItems) {
@@ -67,7 +71,9 @@ public class PSTTask extends PSTMessage {
     }
 
     /**
-     * Status Integer 32-bit signed 0x0 => Not started
+     * Status Integer 32-bit signed 0x0 =&gt; Not started
+     *
+     * @return the task status
      */
     public int getTaskStatus() {
         return this.getIntItem(this.pstFile.getNameToIdMapItem(0x00008101, PSTFile.PSETID_Task));
@@ -75,6 +81,8 @@ public class PSTTask extends PSTMessage {
 
     /**
      * Percent Complete Floating point double precision (64-bit)
+     *
+     * @return the percent complete
      */
     public double getPercentComplete() {
         return this.getDoubleItem(this.pstFile.getNameToIdMapItem(0x00008102, PSTFile.PSETID_Task));
@@ -82,6 +90,8 @@ public class PSTTask extends PSTMessage {
 
     /**
      * Is team task Boolean
+     *
+     * @return the boolean
      */
     public boolean isTeamTask() {
         return this.getBooleanItem(this.pstFile.getNameToIdMapItem(0x00008103, PSTFile.PSETID_Task));
@@ -89,6 +99,8 @@ public class PSTTask extends PSTMessage {
 
     /**
      * Date completed Filetime
+     *
+     * @return the task date completed
      */
     public Date getTaskDateCompleted() {
         return this.getDateItem(this.pstFile.getNameToIdMapItem(0x0000810f, PSTFile.PSETID_Task));
@@ -96,6 +108,8 @@ public class PSTTask extends PSTMessage {
 
     /**
      * Actual effort in minutes Integer 32-bit signed
+     *
+     * @return the task actual effort
      */
     public int getTaskActualEffort() {
         return this.getIntItem(this.pstFile.getNameToIdMapItem(0x00008110, PSTFile.PSETID_Task));
@@ -103,6 +117,8 @@ public class PSTTask extends PSTMessage {
 
     /**
      * Total effort in minutes Integer 32-bit signed
+     *
+     * @return the task estimated effort
      */
     public int getTaskEstimatedEffort() {
         return this.getIntItem(this.pstFile.getNameToIdMapItem(0x00008111, PSTFile.PSETID_Task));
@@ -110,6 +126,8 @@ public class PSTTask extends PSTMessage {
 
     /**
      * Task version Integer 32-bit signed FTK: Access count
+     *
+     * @return the task version
      */
     public int getTaskVersion() {
         return this.getIntItem(this.pstFile.getNameToIdMapItem(0x00008112, PSTFile.PSETID_Task));
@@ -117,6 +135,8 @@ public class PSTTask extends PSTMessage {
 
     /**
      * Complete Boolean
+     *
+     * @return the boolean
      */
     public boolean isTaskComplete() {
         return this.getBooleanItem(this.pstFile.getNameToIdMapItem(0x0000811c, PSTFile.PSETID_Task));
@@ -124,6 +144,8 @@ public class PSTTask extends PSTMessage {
 
     /**
      * Owner ASCII or Unicode string
+     *
+     * @return the task owner
      */
     public String getTaskOwner() {
         return this.getStringItem(this.pstFile.getNameToIdMapItem(0x0000811f, PSTFile.PSETID_Task));
@@ -131,6 +153,8 @@ public class PSTTask extends PSTMessage {
 
     /**
      * Delegator ASCII or Unicode string
+     *
+     * @return the task assigner
      */
     public String getTaskAssigner() {
         return this.getStringItem(this.pstFile.getNameToIdMapItem(0x00008121, PSTFile.PSETID_Task));
@@ -138,6 +162,8 @@ public class PSTTask extends PSTMessage {
 
     /**
      * Unknown ASCII or Unicode string
+     *
+     * @return the task last user
      */
     public String getTaskLastUser() {
         return this.getStringItem(this.pstFile.getNameToIdMapItem(0x00008122, PSTFile.PSETID_Task));
@@ -145,6 +171,8 @@ public class PSTTask extends PSTMessage {
 
     /**
      * Ordinal Integer 32-bit signed
+     *
+     * @return the task ordinal
      */
     public int getTaskOrdinal() {
         return this.getIntItem(this.pstFile.getNameToIdMapItem(0x00008123, PSTFile.PSETID_Task));
@@ -152,6 +180,8 @@ public class PSTTask extends PSTMessage {
 
     /**
      * Is recurring Boolean
+     *
+     * @return the boolean
      */
     public boolean isTaskFRecurring() {
         return this.getBooleanItem(this.pstFile.getNameToIdMapItem(0x00008126, PSTFile.PSETID_Task));
@@ -159,6 +189,8 @@ public class PSTTask extends PSTMessage {
 
     /**
      * Role ASCII or Unicode string
+     *
+     * @return the task role
      */
     public String getTaskRole() {
         return this.getStringItem(this.pstFile.getNameToIdMapItem(0x00008127, PSTFile.PSETID_Task));
@@ -166,6 +198,8 @@ public class PSTTask extends PSTMessage {
 
     /**
      * Ownership Integer 32-bit signed
+     *
+     * @return the task ownership
      */
     public int getTaskOwnership() {
         return this.getIntItem(this.pstFile.getNameToIdMapItem(0x00008129, PSTFile.PSETID_Task));
@@ -173,6 +207,8 @@ public class PSTTask extends PSTMessage {
 
     /**
      * Delegation State
+     *
+     * @return the acceptance state
      */
     public int getAcceptanceState() {
         return this.getIntItem(this.pstFile.getNameToIdMapItem(0x0000812a, PSTFile.PSETID_Task));

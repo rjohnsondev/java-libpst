@@ -462,9 +462,11 @@ public class TestGui implements ActionListener {
     }
 
     /**
-     * @param args
-     * @throws IOException
-     * @throws PSTException
+     * Main.
+     *
+     * @param args the args
+     * @throws PSTException the pst exception
+     * @throws IOException  the io exception
      */
     public static void main(final String[] args) throws PSTException, IOException {
         new TestGui();

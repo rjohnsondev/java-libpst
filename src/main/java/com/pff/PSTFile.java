@@ -122,24 +122,48 @@ public class PSTFile {
 
     /**
      * constructor
-     * 
-     * @param fileName
-     * @throws FileNotFoundException
-     * @throws PSTException
-     * @throws IOException
+     *
+     * @param fileName the file name
+     * @throws FileNotFoundException the file not found exception
+     * @throws PSTException          the pst exception
+     * @throws IOException           the io exception
      */
     public PSTFile(final String fileName) throws FileNotFoundException, PSTException, IOException {
         this(new File(fileName));
     }
 
+    /**
+     * Instantiates a new Pst file.
+     *
+     * @param file the file
+     * @throws FileNotFoundException the file not found exception
+     * @throws PSTException          the pst exception
+     * @throws IOException           the io exception
+     */
     public PSTFile(final File file) throws FileNotFoundException, PSTException, IOException {
         this(new PSTRAFileContent(file));
     }
 
+    /**
+     * Instantiates a new Pst file.
+     *
+     * @param bytes the bytes
+     * @throws FileNotFoundException the file not found exception
+     * @throws PSTException          the pst exception
+     * @throws IOException           the io exception
+     */
     public PSTFile(final byte[] bytes) throws FileNotFoundException, PSTException, IOException {
         this(new PSTByteFileContent(bytes));
     }
 
+    /**
+     * Instantiates a new Pst file.
+     *
+     * @param content the content
+     * @throws FileNotFoundException the file not found exception
+     * @throws PSTException          the pst exception
+     * @throws IOException           the io exception
+     */
     public PSTFile(final PSTFileContent content) throws FileNotFoundException, PSTException, IOException {
         // attempt to open the file.
         this.in = content;
@@ -220,9 +244,9 @@ public class PSTFile {
     /**
      * read the name-to-id map from the file and load it in
      * 
-     * @param in
-     * @throws IOException
-     * @throws PSTException
+     * @param in the pst file content
+     * @throws IOException IOException
+     * @throws PSTException PSTException
      */
     private void processNameToIdMap(final PSTFileContent in) throws IOException, PSTException {
 
@@ -488,6 +512,8 @@ public class PSTFile {
     /**
      * get the handle to the RandomAccessFile we are currently accessing (if
      * any)
+     *
+     * @return the file handle
      */
     public RandomAccessFile getFileHandle() {
         if (this.in instanceof PSTRAFileContent) {
@@ -499,6 +525,8 @@ public class PSTFile {
 
     /**
      * get the handle to the file content we are currently accessing
+     *
+     * @return the content handle
      */
     public PSTFileContent getContentHandle() {
         return this.in;
@@ -508,9 +536,10 @@ public class PSTFile {
      * get the message store of the PST file.
      * Note that this doesn't really have much information, better to look under
      * the root folder
-     * 
-     * @throws PSTException
-     * @throws IOException
+     *
+     * @return the message store
+     * @throws PSTException the pst exception
+     * @throws IOException  the io exception
      */
     public PSTMessageStore getMessageStore() throws PSTException, IOException {
         final DescriptorIndexNode messageStoreDescriptor = this
@@ -521,9 +550,10 @@ public class PSTFile {
     /**
      * get the root folder for the PST file.
      * You should find all of your data under here...
-     * 
-     * @throws PSTException
-     * @throws IOException
+     *
+     * @return the root folder
+     * @throws PSTException the pst exception
+     * @throws IOException  the io exception
      */
     public PSTFolder getRootFolder() throws PSTException, IOException {
         final DescriptorIndexNode rootFolderDescriptor = this.getDescriptorIndexNode(ROOT_FOLDER_DESCRIPTOR_IDENTIFIER);
@@ -541,6 +571,14 @@ public class PSTFile {
 
     }
 
+    /**
+     * Gets leaf size.
+     *
+     * @param bid the bid
+     * @return the leaf size
+     * @throws IOException  the io exception
+     * @throws PSTException the pst exception
+     */
     public int getLeafSize(final long bid) throws IOException, PSTException {
         final OffsetIndexItem offsetItem = this.getOffsetIndexNode(bid);
 
@@ -564,11 +602,10 @@ public class PSTFile {
      * PST Files have this tendency to store file offsets (pointers) in 8 little
      * endian bytes.
      * Convert this to a long for seeking to.
-     * 
-     * @param startOffset
-     *            where to read the 8 bytes from
+     *
+     * @param startOffset where to read the 8 bytes from
      * @return long representing the read location
-     * @throws IOException
+     * @throws IOException the io exception
      */
     protected long extractLEFileOffset(final long startOffset) throws IOException {
         long offset = 0;
@@ -603,12 +640,12 @@ public class PSTFile {
      * Generic function used by getOffsetIndexNode and getDescriptorIndexNode
      * for navigating the PST B-Trees
      * 
-     * @param in
-     * @param index
-     * @param descTree
-     * @return
-     * @throws IOException
-     * @throws PSTException
+     * @param in the pst file content
+     * @param index the index
+     * @param descTree desc flag
+     * @return BTree item
+     * @throws IOException the io exception
+     * @throws PSTException the pst exception
      */
     private byte[] findBtreeItem(final PSTFileContent in, final long index, final boolean descTree)
         throws IOException, PSTException {
@@ -785,11 +822,11 @@ public class PSTFile {
 
     /**
      * navigate the internal descriptor B-Tree and find a specific item
-     * 
-     * @param identifier
+     *
+     * @param identifier the identifier
      * @return the descriptor node for the item
-     * @throws IOException
-     * @throws PSTException
+     * @throws IOException  the io exception
+     * @throws PSTException the pst exception
      */
     DescriptorIndexNode getDescriptorIndexNode(final long identifier) throws IOException, PSTException {
         return new DescriptorIndexNode(this.findBtreeItem(this.in, identifier, true), this.getPSTFileType());
@@ -797,11 +834,11 @@ public class PSTFile {
 
     /**
      * navigate the internal index B-Tree and find a specific item
-     * 
-     * @param identifier
+     *
+     * @param identifier the identifier
      * @return the offset index item
-     * @throws IOException
-     * @throws PSTException
+     * @throws IOException  the io exception
+     * @throws PSTException the pst exception
      */
     OffsetIndexItem getOffsetIndexNode(final long identifier) throws IOException, PSTException {
         return new OffsetIndexItem(this.findBtreeItem(this.in, identifier, false), this.getPSTFileType());
@@ -856,9 +893,10 @@ public class PSTFile {
      * childrenDescriptorTree.
      * This is used as fallback when the nodes that list file contents are
      * broken.
-     * 
-     * @throws IOException
-     * @throws PSTException
+     *
+     * @return the child descriptor tree
+     * @throws IOException  the io exception
+     * @throws PSTException the pst exception
      */
     LinkedHashMap<Integer, LinkedList<DescriptorIndexNode>> getChildDescriptorTree() throws IOException, PSTException {
         if (this.childrenDescriptorTree == null) {
@@ -878,9 +916,9 @@ public class PSTFile {
      * Recursive function for building the descriptor tree, used by
      * buildDescriptorTree
      * 
-     * @param btreeStartOffset
-     * @throws IOException
-     * @throws PSTException
+     * @param btreeStartOffset the BTree start offset
+     * @throws IOException the io exception
+     * @throws PSTException the pst exception
      */
     private void processDescriptorBTree(final long btreeStartOffset) throws IOException, PSTException {
         int fileTypeAdjustment;

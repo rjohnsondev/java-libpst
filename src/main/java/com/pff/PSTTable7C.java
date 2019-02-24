@@ -170,8 +170,10 @@ class PSTTable7C extends PSTTable {
 
     /**
      * get all the items parsed out of this table.
-     * 
-     * @return
+     *
+     * @return items
+     * @throws PSTException the pst exception
+     * @throws IOException  the io exception
      */
     List<HashMap<Integer, PSTTable7CItem>> getItems() throws PSTException, IOException {
         if (this.items == null) {

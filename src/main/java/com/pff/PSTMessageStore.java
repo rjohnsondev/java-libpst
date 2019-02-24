@@ -51,6 +51,8 @@ public class PSTMessageStore extends PSTObject {
 
     /**
      * Get the tag record key, unique to this pst
+     *
+     * @return the tag record key as uuid
      */
     public UUID getTagRecordKeyAsUUID() {
         // attempt to find in the table.

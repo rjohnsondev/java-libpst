@@ -42,16 +42,28 @@ import java.io.ByteArrayInputStream;
 
 /**
  * Class containing attachment information.
- * 
+ *
  * @author Richard Johnson
  */
 public class PSTAttachment extends PSTObject {
 
+    /**
+     * Instantiates a new Pst attachment.
+     *
+     * @param theFile              the the file
+     * @param table                the table
+     * @param localDescriptorItems the local descriptor items
+     */
     PSTAttachment(final PSTFile theFile, final PSTTableBC table,
         final HashMap<Integer, PSTDescriptorItem> localDescriptorItems) {
         super(theFile, null, table, localDescriptorItems);
     }
 
+    /**
+     * Gets size.
+     *
+     * @return the size
+     */
     public int getSize() {
         return this.getIntItem(0x0e20);
     }
@@ -61,10 +73,22 @@ public class PSTAttachment extends PSTObject {
         return this.getDateItem(0x3007);
     }
 
+    /**
+     * Gets modification time.
+     *
+     * @return the modification time
+     */
     public Date getModificationTime() {
         return this.getDateItem(0x3008);
     }
 
+    /**
+     * Gets embedded pst message.
+     *
+     * @return the embedded pst message
+     * @throws IOException  the io exception
+     * @throws PSTException the pst exception
+     */
     public PSTMessage getEmbeddedPSTMessage() throws IOException, PSTException {
         PSTNodeInputStream in = null;
         if (this.getIntItem(0x3705) == PSTAttachment.ATTACHMENT_METHOD_EMBEDDED) {
@@ -118,6 +142,13 @@ public class PSTAttachment extends PSTObject {
         return null;
     }
 
+    /**
+     * Gets file input stream.
+     *
+     * @return the file input stream
+     * @throws IOException  the io exception
+     * @throws PSTException the pst exception
+     */
     public InputStream getFileInputStream() throws IOException, PSTException {
 
         final PSTTableBCItem attachmentDataObject = this.items.get(0x3701);
@@ -135,6 +166,13 @@ public class PSTAttachment extends PSTObject {
 
     }
 
+    /**
+     * Gets filesize.
+     *
+     * @return the filesize
+     * @throws PSTException the pst exception
+     * @throws IOException  the io exception
+     */
     public int getFilesize() throws PSTException, IOException {
         final PSTTableBCItem attachmentDataObject = this.items.get(0x3701);
         if (attachmentDataObject.isExternalValueReference) {
@@ -156,23 +194,48 @@ public class PSTAttachment extends PSTObject {
 
     /**
      * Attachment (short) filename ASCII or Unicode string
+     *
+     * @return the filename
      */
     public String getFilename() {
         return this.getStringItem(0x3704);
     }
 
+    /**
+     * The constant ATTACHMENT_METHOD_NONE.
+     */
     public static final int ATTACHMENT_METHOD_NONE = 0;
+    /**
+     * The constant ATTACHMENT_METHOD_BY_VALUE.
+     */
     public static final int ATTACHMENT_METHOD_BY_VALUE = 1;
+    /**
+     * The constant ATTACHMENT_METHOD_BY_REFERENCE.
+     */
     public static final int ATTACHMENT_METHOD_BY_REFERENCE = 2;
+    /**
+     * The constant ATTACHMENT_METHOD_BY_REFERENCE_RESOLVE.
+     */
     public static final int ATTACHMENT_METHOD_BY_REFERENCE_RESOLVE = 3;
+    /**
+     * The constant ATTACHMENT_METHOD_BY_REFERENCE_ONLY.
+     */
     public static final int ATTACHMENT_METHOD_BY_REFERENCE_ONLY = 4;
+    /**
+     * The constant ATTACHMENT_METHOD_EMBEDDED.
+     */
     public static final int ATTACHMENT_METHOD_EMBEDDED = 5;
+    /**
+     * The constant ATTACHMENT_METHOD_OLE.
+     */
     public static final int ATTACHMENT_METHOD_OLE = 6;
 
     /**
-     * Attachment method Integer 32-bit signed 0 => None (No attachment) 1 => By
-     * value 2 => By reference 3 => By reference resolve 4 => By reference only
-     * 5 => Embedded message 6 => OLE
+     * Attachment method Integer 32-bit signed 0 =&gt; None (No attachment) 1 =&gt; By
+     * value 2 =&gt; By reference 3 =&gt; By reference resolve 4 =&gt; By reference only
+     * 5 =&gt; Embedded message 6 =&gt; OLE
+     *
+     * @return the attach method
      */
     public int getAttachMethod() {
         return this.getIntItem(0x3705);
@@ -180,6 +243,8 @@ public class PSTAttachment extends PSTObject {
 
     /**
      * Attachment size
+     *
+     * @return the attach size
      */
     public int getAttachSize() {
         return this.getIntItem(0x0e20);
@@ -187,6 +252,8 @@ public class PSTAttachment extends PSTObject {
 
     /**
      * Attachment number
+     *
+     * @return the attach num
      */
     public int getAttachNum() {
         return this.getIntItem(0x0e21);
@@ -194,6 +261,8 @@ public class PSTAttachment extends PSTObject {
 
     /**
      * Attachment long filename ASCII or Unicode string
+     *
+     * @return the long filename
      */
     public String getLongFilename() {
         return this.getStringItem(0x3707);
@@ -201,6 +270,8 @@ public class PSTAttachment extends PSTObject {
 
     /**
      * Attachment (short) pathname ASCII or Unicode string
+     *
+     * @return the pathname
      */
     public String getPathname() {
         return this.getStringItem(0x3708);
@@ -208,6 +279,8 @@ public class PSTAttachment extends PSTObject {
 
     /**
      * Attachment Position Integer 32-bit signed
+     *
+     * @return the rendering position
      */
     public int getRenderingPosition() {
         return this.getIntItem(0x370b);
@@ -215,6 +288,8 @@ public class PSTAttachment extends PSTObject {
 
     /**
      * Attachment long pathname ASCII or Unicode string
+     *
+     * @return the long pathname
      */
     public String getLongPathname() {
         return this.getStringItem(0x370d);
@@ -222,6 +297,8 @@ public class PSTAttachment extends PSTObject {
 
     /**
      * Attachment mime type ASCII or Unicode string
+     *
+     * @return the mime tag
      */
     public String getMimeTag() {
         return this.getStringItem(0x370e);
@@ -229,6 +306,8 @@ public class PSTAttachment extends PSTObject {
 
     /**
      * Attachment mime sequence
+     *
+     * @return the mime sequence
      */
     public int getMimeSequence() {
         return this.getIntItem(0x3710);
@@ -236,6 +315,8 @@ public class PSTAttachment extends PSTObject {
 
     /**
      * Attachment Content ID
+     *
+     * @return the content id
      */
     public String getContentId() {
         return this.getStringItem(0x3712);
@@ -243,6 +324,8 @@ public class PSTAttachment extends PSTObject {
 
     /**
      * Attachment not available in HTML
+     *
+     * @return the boolean
      */
     public boolean isAttachmentInvisibleInHtml() {
         final int actionFlag = this.getIntItem(0x3714);
@@ -251,6 +334,8 @@ public class PSTAttachment extends PSTObject {
 
     /**
      * Attachment not available in RTF
+     *
+     * @return the boolean
      */
     public boolean isAttachmentInvisibleInRTF() {
         final int actionFlag = this.getIntItem(0x3714);
@@ -259,6 +344,8 @@ public class PSTAttachment extends PSTObject {
 
     /**
      * Attachment is MHTML REF
+     *
+     * @return the boolean
      */
     public boolean isAttachmentMhtmlRef() {
         final int actionFlag = this.getIntItem(0x3714);
@@ -267,6 +354,8 @@ public class PSTAttachment extends PSTObject {
 
     /**
      * Attachment content disposition
+     *
+     * @return the attachment content disposition
      */
     public String getAttachmentContentDisposition() {
         return this.getStringItem(0x3716);

@@ -52,8 +52,9 @@ public class DescriptorIndexNode {
 
     /**
      * parse the data out into something meaningful
-     * 
-     * @param data
+     *
+     * @param data        the data
+     * @param pstFileType the pst file type
      */
     DescriptorIndexNode(final byte[] data, final int pstFileType) {
         // parse it out

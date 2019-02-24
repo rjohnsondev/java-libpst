@@ -903,13 +903,18 @@ public class PSTMessage extends PSTObject {
 
     /**
      * Is a reminder set on this object?
-     * 
-     * @return
+     *
+     * @return true if is a reminder set, false if not
      */
     public boolean getReminderSet() {
         return this.getBooleanItem(this.pstFile.getNameToIdMapItem(0x00008503, PSTFile.PSETID_Common));
     }
 
+    /**
+     * Gets reminder delta.
+     *
+     * @return the reminder delta
+     */
     public int getReminderDelta() {
         return this.getIntItem(this.pstFile.getNameToIdMapItem(0x00008501, PSTFile.PSETID_Common));
     }
@@ -1061,7 +1066,7 @@ public class PSTMessage extends PSTObject {
         final HashMap<Integer, PSTTable7CItem> recipientDetails = this.recipientTable.getItems().get(recipientNumber);
 
         if (recipientDetails != null) {
-            return new PSTRecipient(recipientDetails);
+            return new PSTRecipient(this,recipientDetails);
         }
 
         return null;

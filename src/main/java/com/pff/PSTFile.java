@@ -38,6 +38,7 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.RandomAccessFile;
+import java.nio.charset.Charset;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
@@ -180,10 +181,34 @@ public class PSTFile {
             // build out name to id map.
             this.processNameToIdMap(this.in);
 
+            // get the default codepage
+            globalCodepage=inferGlobalCodepage();
         } catch (final IOException err) {
             throw new PSTException("Unable to read PST Sig", err);
         }
 
+    }
+
+    private String globalCodepage;
+
+    private String inferGlobalCodepage(){
+        int codepageIdentifier;
+        try {
+            codepageIdentifier=this.getMessageStore().getIntItem(0x66C3); // PidTagCodepageId
+        } catch (PSTException | IOException e) {
+            return null;
+        }
+        if (codepageIdentifier!=0)
+            return getInternetCodePageCharset(codepageIdentifier);
+        return Charset.defaultCharset().name();
+    }
+
+    public void setGlobalCodepage(String codepage){
+        globalCodepage=codepage;
+    }
+
+    public String getGlobalCodepage(){
+        return globalCodepage;
     }
 
     private int pstFileType = 0;
@@ -540,8 +565,6 @@ public class PSTFile {
      * endian bytes.
      * Convert this to a long for seeking to.
      * 
-     * @param in
-     *            handle for PST file
      * @param startOffset
      *            where to read the 8 bytes from
      * @return long representing the read location
@@ -763,7 +786,6 @@ public class PSTFile {
     /**
      * navigate the internal descriptor B-Tree and find a specific item
      * 
-     * @param in
      * @param identifier
      * @return the descriptor node for the item
      * @throws IOException
@@ -776,7 +798,6 @@ public class PSTFile {
     /**
      * navigate the internal index B-Tree and find a specific item
      * 
-     * @param in
      * @param identifier
      * @return the offset index item
      * @throws IOException
@@ -836,7 +857,6 @@ public class PSTFile {
      * This is used as fallback when the nodes that list file contents are
      * broken.
      * 
-     * @param in
      * @throws IOException
      * @throws PSTException
      */
@@ -858,7 +878,6 @@ public class PSTFile {
      * Recursive function for building the descriptor tree, used by
      * buildDescriptorTree
      * 
-     * @param in
      * @param btreeStartOffset
      * @throws IOException
      * @throws PSTException

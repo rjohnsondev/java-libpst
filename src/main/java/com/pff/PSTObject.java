@@ -149,7 +149,7 @@ public class PSTObject {
 
     /**
      * for pre-population
-     * 
+     *
      * @param theFile
      * @param folderIndexNode
      * @param table
@@ -168,7 +168,7 @@ public class PSTObject {
     /**
      * get the descriptor node for this item
      * this identifies the location of the node in the BTree and associated info
-     * 
+     *
      * @return item's descriptor node
      */
     public DescriptorIndexNode getDescriptorNode() {
@@ -179,7 +179,7 @@ public class PSTObject {
      * get the descriptor identifier for this item
      * can be used for loading objects through detectAndLoadPSTObject(PSTFile
      * theFile, long descriptorIndex)
-     * 
+     *
      * @return item's descriptor node identifier
      */
     public long getDescriptorNodeId() {
@@ -315,6 +315,9 @@ public class PSTObject {
 
     static String createJavaString(final byte[] data, final int stringType, String codepage) {
         try {
+            if (data==null)
+                return "";
+
             if (stringType == 0x1F) {
                 return new String(data, "UTF-16LE");
             }
@@ -352,16 +355,24 @@ public class PSTObject {
         }
     }
 
-    private String getStringCodepage() {
-        // try and get the codepage
-        PSTTableBCItem cpItem = this.items.get(0x3FFD); // PidTagMessageCodepage
-        if (cpItem == null) {
-            cpItem = this.items.get(0x3FDE); // PidTagInternetCodepage
+    private String codepage=null;
+
+    public String getStringCodepage() {
+        if (codepage==null) {
+            // try and get the codepage
+            PSTTableBCItem cpItem = this.items.get(0x3FFD); // PidTagMessageCodepage
+            if (cpItem == null) {
+                cpItem = this.items.get(0x66C3); // PidTagCodepage
+                if (cpItem == null) {
+                    cpItem = this.items.get(0x3FDE); // PidTagInternetCodepage
+                }
+            }
+            if (cpItem != null)
+                codepage = PSTFile.getInternetCodePageCharset(cpItem.entryValueReference);
+            if (codepage==null)
+                codepage = pstFile.getGlobalCodepage();
         }
-        if (cpItem != null) {
-            return PSTFile.getInternetCodePageCharset(cpItem.entryValueReference);
-        }
-        return null;
+        return codepage;
     }
 
     public Date getDateItem(final int identifier) {
@@ -494,8 +505,9 @@ public class PSTObject {
 
     /**
      * Output a number in a variety of formats for easier consumption
-     * 
-     * @param data
+     *
+     * @param pref   the prefix string
+     * @param number the number
      */
     public static void printFormattedNumber(final String pref, final long number) {
         System.out.print(pref);
@@ -513,7 +525,7 @@ public class PSTObject {
 
     /**
      * Output a dump of data in hex format in the order it was read in
-     * 
+     *
      * @param data
      * @param pretty
      */
@@ -577,7 +589,7 @@ public class PSTObject {
     /**
      * decode a lump of data that has been encrypted with the compressible
      * encryption
-     * 
+     *
      * @param data
      * @return decoded data
      */
@@ -611,7 +623,7 @@ public class PSTObject {
     /**
      * Utility function for converting little endian bytes into a usable java
      * long
-     * 
+     *
      * @param data
      * @return long version of the data
      */
@@ -622,7 +634,7 @@ public class PSTObject {
     /**
      * Utility function for converting little endian bytes into a usable java
      * long
-     * 
+     *
      * @param data
      * @param start
      * @param end
@@ -643,7 +655,7 @@ public class PSTObject {
 
     /**
      * Utility function for converting big endian bytes into a usable java long
-     * 
+     *
      * @param data
      * @param start
      * @param end
@@ -675,7 +687,7 @@ public class PSTObject {
      * throw new
      * PSTException("Unable to process array, does not appear to be one!");
      * }
-     * 
+     *
      * // we are an array!
      * // get the array items and merge them together
      * int numberOfEntries = (int)PSTObject.convertLittleEndianBytesToLong(data,
@@ -696,7 +708,7 @@ public class PSTObject {
      * output[y] = blockOffset;
      * tableOffset += 8;
      * }
-     * 
+     *
      * // replace the item data with the stuff from the array...
      * return output;
      * }
@@ -706,7 +718,7 @@ public class PSTObject {
     /**
      * Detect and load a PST Object from a file with the specified descriptor
      * index
-     * 
+     *
      * @param theFile
      * @param descriptorIndex
      * @return PSTObject with that index
@@ -721,7 +733,7 @@ public class PSTObject {
     /**
      * Detect and load a PST Object from a file with the specified descriptor
      * index
-     * 
+     *
      * @param theFile
      * @param folderIndexNode
      * @return PSTObject with that index
@@ -729,28 +741,28 @@ public class PSTObject {
      * @throws PSTException
      */
     static PSTObject detectAndLoadPSTObject(final PSTFile theFile, final DescriptorIndexNode folderIndexNode)
-        throws IOException, PSTException {
+            throws IOException, PSTException {
         final int nidType = (folderIndexNode.descriptorIdentifier & 0x1F);
         if (nidType == 0x02 || nidType == 0x03 || nidType == 0x04) {
 
             final PSTTableBC table = new PSTTableBC(
-                new PSTNodeInputStream(theFile, theFile.getOffsetIndexNode(folderIndexNode.dataOffsetIndexIdentifier)));
+                    new PSTNodeInputStream(theFile, theFile.getOffsetIndexNode(folderIndexNode.dataOffsetIndexIdentifier)));
 
             HashMap<Integer, PSTDescriptorItem> localDescriptorItems = null;
             if (folderIndexNode.localDescriptorsOffsetIndexIdentifier != 0) {
                 localDescriptorItems = theFile
-                    .getPSTDescriptorItems(folderIndexNode.localDescriptorsOffsetIndexIdentifier);
+                        .getPSTDescriptorItems(folderIndexNode.localDescriptorsOffsetIndexIdentifier);
             }
 
             if (nidType == 0x02 || nidType == 0x03) {
                 return new PSTFolder(theFile, folderIndexNode, table, localDescriptorItems);
             } else {
                 return PSTObject.createAppropriatePSTMessageObject(theFile, folderIndexNode, table,
-                    localDescriptorItems);
+                        localDescriptorItems);
             }
         } else {
             throw new PSTException(
-                "Unknown child type with offset id: " + folderIndexNode.localDescriptorsOffsetIndexIdentifier);
+                    "Unknown child type with offset id: " + folderIndexNode.localDescriptorsOffsetIndexIdentifier);
         }
     }
 
@@ -761,7 +773,7 @@ public class PSTObject {
         final PSTTableBCItem item = table.getItems().get(0x001a);
         String messageClass = "";
         if (item != null) {
-            messageClass = item.getStringValue();
+            messageClass = item.getStringValue("US-ASCII");
         }
 
         if (messageClass.equals("IPM.Note")

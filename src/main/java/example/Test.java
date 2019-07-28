@@ -45,8 +45,10 @@ public class Test {
             this.depth++;
             PSTMessage email = (PSTMessage) folder.getNextChild();
             while (email != null) {
-                this.printDepth();
-                System.out.println("Email: " + email.getDescriptorNodeId() + " - " + email.getSubject());
+                if (!email.getMessageClass().equals("IPM.Note")) {
+                    this.printDepth();
+                    System.out.println("Email: [" + email.getMessageClass() + "]" + email.getDescriptorNodeId() + " - " + email.getSubject());
+                }
                 email = (PSTMessage) folder.getNextChild();
             }
             this.depth--;

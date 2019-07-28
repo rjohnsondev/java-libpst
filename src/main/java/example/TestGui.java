@@ -14,6 +14,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.Vector;
@@ -38,16 +39,7 @@ import javax.swing.table.AbstractTableModel;
 import javax.swing.tree.DefaultMutableTreeNode;
 import javax.swing.tree.DefaultTreeCellRenderer;
 
-import com.pff.PSTActivity;
-import com.pff.PSTAttachment;
-import com.pff.PSTContact;
-import com.pff.PSTException;
-import com.pff.PSTFile;
-import com.pff.PSTFolder;
-import com.pff.PSTMessage;
-import com.pff.PSTMessageStore;
-import com.pff.PSTRss;
-import com.pff.PSTTask;
+import com.pff.*;
 
 /**
  * @author toweruser
@@ -64,150 +56,15 @@ public class TestGui implements ActionListener {
     private PSTMessage selectedMessage;
     private JFrame f;
 
-    public TestGui() throws PSTException, IOException {
+    public TestGui(String filename) throws PSTException, IOException {
 
         // setup the basic window
         this.f = new JFrame("PST Browser");
 
         // attempt to open the pst file
         try {
-            /*
-             * JFileChooser chooser = new JFileChooser();
-             * if (chooser.showOpenDialog(f) == JFileChooser.APPROVE_OPTION) {
-             * } else {
-             * System.exit(0);
-             * }
-             * 
-             * String filename = chooser.getSelectedFile().getCanonicalPath();
-             */
-            String filename = "Outlook-new.pst";
-            filename = "G:\\From old Tower\\pff\\java\\Old Email.pst";
-            // filename = "RichardJohnson@sumac.uk.com - exchange.ost";
-            // String filename = "Outlook 32bit.pst";
-            // String russian = "Узеи́р Абду́л-Гусе́йн оглы́ Гаджибе́ков (азерб.
-            // Üzeyir bəy Əbdülhüseyn oğlu Hacıbəyov; 18 сентября 1885,
-            // Агджабеди, Шушинский уезд, Елизаветпольская губерния, Российская
-            // империя — 23 ноября 1948, Баку, Азербайджанская ССР, СССР) —
-            // азербайджанский композитор, дирижёр, публицист, фельетонист,
-            // драматург и педагог, народный артист СССР (1938), дважды лауреат
-            // Сталинских премий (1941, 1946). Действительный член АН
-            // Азербайджана (1945), профессор (1940), ректор Азербайджанской
-            // государственной ";
-
-            // System.out.println(java.nio.charset.Charset.availableCharsets());
-
-            // byte[] russianBytes = russian.getBytes("UTF-8");
-            // PSTObject.printHexFormatted(russianBytes, true);
-
-            // String filename = "Outlook 32bit.pst";
-            // filename = "RichardJohnson@sumac.uk.com - exchange.ost";
             this.pstFile = new PSTFile(filename);
-            // pstFile = new PSTFile("RichardJohnson@sumac.uk.com -
-            // exchange.ost");
-
-            // PSTFolder folder =
-            // (PSTFolder)PSTObject.detectAndLoadPSTObject(pstFile, 32898);
-            // System.out.println(folder.getEmailCount());
-            // System.exit(0);
-
-            // "г ь ы";
-            // System.out.println(java.nio.charset.Charset.availableCharsets().keySet());
-            // PSTMessage msg =
-            // (PSTMessage)PSTObject.detectAndLoadPSTObject(pstFile, 2097604);
-            // System.out.println(msg);
-
-            // PSTObject.printHexFormatted("г ь ы".getBytes("koi8-r"), true);
-            // System.exit(0);
-            // PSTMessage msg =
-            // (PSTMessage)PSTObject.detectAndLoadPSTObject(pstFile, 2097668);
-            // System.out.println(msg.getRTFBody());
-            // System.exit(0);
-
-            // PSTAppointment msg =
-            // (PSTAppointment)PSTObject.detectAndLoadPSTObject(pstFile,
-            // 2097252);
-            //// System.out.println(msg.getStartTime());
-            // System.exit(0);
-
-            // int[] emails = {
-            // 2098180
-            /*
-             * 2097348,
-             * 2097380,
-             * 2097412,
-             * 2097444,
-             * 2097476,
-             * 2097508,
-             * 2097540,
-             * 2097572
-             *
-             */
-            // };
-
-            /*
-             * 
-             * RandomAccessFile tmpIn = new
-             * RandomAccessFile("test - httpdocs.tar.gz", "r");
-             * PSTMessage msg =
-             * (PSTMessage)PSTObject.detectAndLoadPSTObject(pstFile, emails[0]);
-             * PSTAttachmentInputStream attachmentStream =
-             * msg.getAttachment(0).getFileInputStream();
-             * 
-             * byte[] tmp = new byte[1024];
-             * byte[] tmp2 = new byte[1024];
-             * 
-             * for (int y = 1; y < 2000; y++) {
-             * tmpIn.seek(760*y-50);
-             * tmpIn.read(tmp);
-             * 
-             * attachmentStream.seek(760*y-50);
-             * attachmentStream.read(tmp2);
-             * 
-             * for (int x = 0; x< tmp2.length; x++) {
-             * if (tmp[x] != tmp2[x]) {
-             * 
-             * 
-             * PSTObject.printHexFormatted(tmp, true);
-             * PSTObject.printHexFormatted(tmp2, true);
-             * 
-             * System.out.println(y);
-             * System.out.println("Error");
-             * System.exit(0);
-             * }
-             * }
-             * System.out.println("Worked");
-             * }
-             *
-             */
-
-            /*
-             * for (int x = 0; x < emails.length; x++) {
-             * PSTMessage msg =
-             * (PSTMessage)PSTObject.detectAndLoadPSTObject(pstFile, emails[x]);
-             * PSTAttachment attach = msg.getAttachment(0);
-             * //System.out.println(attach);
-             * InputStream attachmentStream =
-             * msg.getAttachment(0).getFileInputStream();
-             * FileOutputStream out = new
-             * FileOutputStream("test - "+attach.getLongFilename());
-             * 
-             * int bufferSize = 8176;
-             * 
-             * byte[] buffer = new byte[bufferSize];
-             * int count = attachmentStream.read(buffer, 0, 8176);
-             * while (count == bufferSize) {
-             * out.write(buffer);
-             * count = attachmentStream.read(buffer, 0, 8176);
-             * }
-             * byte[] endBuffer = new byte[count];
-             * System.arraycopy(buffer, 0, endBuffer, 0, count);
-             * out.write(endBuffer);
-             * out.close();
-             * }
-             *
-             */
-            // System.exit(0);
-
+            pstFile.setGlobalCodepage("windows-1252");
         } catch (final Exception err) {
             err.printStackTrace();
             System.exit(1);
@@ -267,15 +124,19 @@ public class TestGui implements ActionListener {
         try {
             this.emailTableModel = new EmailTableModel(this.pstFile.getRootFolder(), this.pstFile);
             final JTable emailTable = new JTable(this.emailTableModel);
+            emailTable.setAutoCreateRowSorter(true);
             emailTablePanel = new JScrollPane(emailTable);
             emailTable.setFillsViewportHeight(true);
             final ListSelectionModel selectionModel = emailTable.getSelectionModel();
             selectionModel.addListSelectionListener(e -> {
                 final JTable source = emailTable;
-                TestGui.this.selectedMessage = TestGui.this.emailTableModel.getMessageAtRow(source.getSelectedRow());
+                TestGui.this.selectedMessage = TestGui.this.emailTableModel.getMessageAtRow(source.convertRowIndexToModel(source.getSelectedRow()));
                 if (TestGui.this.selectedMessage instanceof PSTContact) {
                     final PSTContact contact = (PSTContact) TestGui.this.selectedMessage;
                     TestGui.this.emailText.setText(contact.toString());
+                } else if (TestGui.this.selectedMessage instanceof PSTAppointment) {
+                    final PSTAppointment task = (PSTAppointment) TestGui.this.selectedMessage;
+                    TestGui.this.emailText.setText(task.toString());
                 } else if (TestGui.this.selectedMessage instanceof PSTTask) {
                     final PSTTask task = (PSTTask) TestGui.this.selectedMessage;
                     TestGui.this.emailText.setText(task.toString());
@@ -469,7 +330,7 @@ public class TestGui implements ActionListener {
      * @throws IOException  the io exception
      */
     public static void main(final String[] args) throws PSTException, IOException {
-        new TestGui();
+        new TestGui(args[0]);
     }
 
 }
@@ -477,6 +338,7 @@ public class TestGui implements ActionListener {
 class EmailTableModel extends AbstractTableModel {
 
     PSTFolder theFolder = null;
+    ArrayList<PSTMessage> theFolderMessageList;
     PSTFile theFile = null;
 
     HashMap cache = new HashMap();
@@ -488,7 +350,7 @@ class EmailTableModel extends AbstractTableModel {
         this.theFile = theFile;
     }
 
-    String[] columnNames = { "Descriptor ID", "Subject", "From", "To", "Date", "Has Attachments" };
+    String[] columnNames = { "Descriptor ID", "MessageClass", "Subject", "From", "To", "Date", "Has Attachments" };
     String[][] rowData = { { "", "", "", "", "" } };
     int rowCount = 0;
 
@@ -517,12 +379,12 @@ class EmailTableModel extends AbstractTableModel {
     public PSTMessage getMessageAtRow(final int row) {
         PSTMessage next = null;
         try {
-            if (this.cache.containsKey(row)) {
-                next = (PSTMessage) this.cache.get(row);
+            if (this.cache.containsKey(((Object)theFolder)+toString()+" - "+row)) {
+                next = (PSTMessage) this.cache.get(((Object)theFolder)+toString()+" - "+row);
             } else {
                 this.theFolder.moveChildCursorTo(row);
                 next = (PSTMessage) this.theFolder.getNextChild();
-                this.cache.put(row, next);
+                this.cache.put(((Object)theFolder)+toString()+" - "+row, next);
             }
         } catch (final Exception e) {
             e.printStackTrace();
@@ -543,19 +405,21 @@ class EmailTableModel extends AbstractTableModel {
             switch (col) {
             case 0:
                 return next.getDescriptorNode().descriptorIdentifier + "";
-            case 1:
-                return next.getSubject();
-            case 2:
-                return next.getSentRepresentingName() + " <" + next.getSentRepresentingEmailAddress() + ">";
+                case 1:
+                    return next.getMessageClass();
+                case 2:
+                    return next.getSubject();
             case 3:
-                return next.getReceivedByName() + " <" + next.getReceivedByAddress() + ">" + next.getDisplayTo();
+                return next.getSentRepresentingName() + " <" + next.getSentRepresentingEmailAddress() + ">";
             case 4:
+                return next.getReceivedByName() + " <" + next.getReceivedByAddress() + ">" + next.getDisplayTo();
+            case 5:
                 return next.getClientSubmitTime();
             // return next.isFlagged();
             // return next.isDraft();
             // PSTTask task = next.toTask();
             // return task.toString();
-            case 5:
+            case 6:
                 return (next.hasAttachments() ? "Yes" : "No");
             }
         } catch (final Exception e) {
@@ -571,10 +435,14 @@ class EmailTableModel extends AbstractTableModel {
         return false;
     }
 
+    @Override
+    public Class<?> getColumnClass(int columnIndex) {
+        return String.class;
+    }
+
     public void setFolder(final PSTFolder theFolder) throws PSTException, IOException {
         theFolder.moveChildCursorTo(0);
         this.theFolder = theFolder;
-        this.cache = new HashMap();
         this.fireTableDataChanged();
     }
 

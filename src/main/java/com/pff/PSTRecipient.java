@@ -50,7 +50,10 @@ public class PSTRecipient {
     public static final int MAPI_CC = 2;
     public static final int MAPI_BCC = 3;
 
-    PSTRecipient(final HashMap<Integer, PSTTable7CItem> recipientDetails) {
+    private PSTMessage message;
+
+    PSTRecipient(PSTMessage message,final HashMap<Integer, PSTTable7CItem> recipientDetails) {
+        this.message=message;
         this.details = recipientDetails;
     }
 
@@ -96,7 +99,7 @@ public class PSTRecipient {
     private String getString(final int id) {
         if (this.details.containsKey(id)) {
             final PSTTable7CItem item = this.details.get(id);
-            return item.getStringValue();
+            return item.getStringValue(message.getStringCodepage());
         }
 
         return "";

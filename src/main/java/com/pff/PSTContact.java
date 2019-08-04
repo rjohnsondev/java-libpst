@@ -39,16 +39,18 @@ import java.util.HashMap;
 
 /**
  * Class for Contacts
- * 
+ *
  * @author Richard Johnson
  */
 public class PSTContact extends PSTMessage {
 
     /**
-     * @param theFile
-     * @param descriptorIndexNode
-     * @throws PSTException
-     * @throws IOException
+     * Instantiates a new Pst contact.
+     *
+     * @param theFile             the the file
+     * @param descriptorIndexNode the descriptor index node
+     * @throws PSTException the pst exception
+     * @throws IOException  the io exception
      */
     public PSTContact(final PSTFile theFile, final DescriptorIndexNode descriptorIndexNode)
         throws PSTException, IOException {
@@ -56,10 +58,12 @@ public class PSTContact extends PSTMessage {
     }
 
     /**
-     * @param theFile
-     * @param folderIndexNode
-     * @param table
-     * @param localDescriptorItems
+     * Instantiates a new Pst contact.
+     *
+     * @param theFile              the the file
+     * @param folderIndexNode      the folder index node
+     * @param table                the table
+     * @param localDescriptorItems the local descriptor items
      */
     public PSTContact(final PSTFile theFile, final DescriptorIndexNode folderIndexNode, final PSTTableBC table,
         final HashMap<Integer, PSTDescriptorItem> localDescriptorItems) {
@@ -68,6 +72,8 @@ public class PSTContact extends PSTMessage {
 
     /**
      * Contact's Account name
+     *
+     * @return the account
      */
     public String getAccount() {
         return this.getStringItem(0x3a00);
@@ -75,6 +81,8 @@ public class PSTContact extends PSTMessage {
 
     /**
      * Callback telephone number
+     *
+     * @return the callback telephone number
      */
     public String getCallbackTelephoneNumber() {
         return this.getStringItem(0x3a02);
@@ -82,6 +90,8 @@ public class PSTContact extends PSTMessage {
 
     /**
      * Contact's generational abbreviation FTK: Name suffix
+     *
+     * @return the generation
      */
     public String getGeneration() {
         return this.getStringItem(0x3a05);
@@ -89,6 +99,8 @@ public class PSTContact extends PSTMessage {
 
     /**
      * Contacts given name
+     *
+     * @return the given name
      */
     public String getGivenName() {
         return this.getStringItem(0x3a06);
@@ -96,6 +108,8 @@ public class PSTContact extends PSTMessage {
 
     /**
      * Contacts Government ID Number
+     *
+     * @return the government id number
      */
     public String getGovernmentIdNumber() {
         return this.getStringItem(0x3a07);
@@ -103,6 +117,8 @@ public class PSTContact extends PSTMessage {
 
     /**
      * Business/Office Telephone Number
+     *
+     * @return the business telephone number
      */
     public String getBusinessTelephoneNumber() {
         return this.getStringItem(0x3a08);
@@ -110,6 +126,8 @@ public class PSTContact extends PSTMessage {
 
     /**
      * Home Telephone Number
+     *
+     * @return the home telephone number
      */
     public String getHomeTelephoneNumber() {
         return this.getStringItem(0x3a09);
@@ -117,6 +135,8 @@ public class PSTContact extends PSTMessage {
 
     /**
      * Contacts initials
+     *
+     * @return the initials
      */
     public String getInitials() {
         return this.getStringItem(0x3a0a);
@@ -124,6 +144,8 @@ public class PSTContact extends PSTMessage {
 
     /**
      * Keyword
+     *
+     * @return the keyword
      */
     public String getKeyword() {
         return this.getStringItem(0x3a0b);
@@ -131,6 +153,8 @@ public class PSTContact extends PSTMessage {
 
     /**
      * Contact's language
+     *
+     * @return the language
      */
     public String getLanguage() {
         return this.getStringItem(0x3a0c);
@@ -138,6 +162,8 @@ public class PSTContact extends PSTMessage {
 
     /**
      * Contact's location
+     *
+     * @return the location
      */
     public String getLocation() {
         return this.getStringItem(0x3a0d);
@@ -145,6 +171,8 @@ public class PSTContact extends PSTMessage {
 
     /**
      * MHS Common Name
+     *
+     * @return the mhs common name
      */
     public String getMhsCommonName() {
         return this.getStringItem(0x3a0f);
@@ -152,6 +180,8 @@ public class PSTContact extends PSTMessage {
 
     /**
      * Organizational identification number
+     *
+     * @return the organizational id number
      */
     public String getOrganizationalIdNumber() {
         return this.getStringItem(0x3a10);
@@ -159,6 +189,8 @@ public class PSTContact extends PSTMessage {
 
     /**
      * Contact's surname FTK: Last name
+     *
+     * @return the surname
      */
     public String getSurname() {
         return this.getStringItem(0x3a11);
@@ -166,6 +198,8 @@ public class PSTContact extends PSTMessage {
 
     /**
      * Original display name
+     *
+     * @return the original display name
      */
     public String getOriginalDisplayName() {
         return this.getStringItem(0x3a13);
@@ -173,6 +207,8 @@ public class PSTContact extends PSTMessage {
 
     /**
      * Default Postal Address
+     *
+     * @return the postal address
      */
     public String getPostalAddress() {
         return this.getStringItem(0x3a15);
@@ -180,6 +216,8 @@ public class PSTContact extends PSTMessage {
 
     /**
      * Contact's company name
+     *
+     * @return the company name
      */
     public String getCompanyName() {
         return this.getStringItem(0x3a16);
@@ -187,6 +225,8 @@ public class PSTContact extends PSTMessage {
 
     /**
      * Contact's job title FTK: Profession
+     *
+     * @return the title
      */
     public String getTitle() {
         return this.getStringItem(0x3a17);
@@ -194,6 +234,8 @@ public class PSTContact extends PSTMessage {
 
     /**
      * Contact's department name Used in contact item
+     *
+     * @return the department name
      */
     public String getDepartmentName() {
         return this.getStringItem(0x3a18);
@@ -201,6 +243,8 @@ public class PSTContact extends PSTMessage {
 
     /**
      * Contact's office location
+     *
+     * @return the office location
      */
     public String getOfficeLocation() {
         return this.getStringItem(0x3a19);
@@ -208,6 +252,8 @@ public class PSTContact extends PSTMessage {
 
     /**
      * Primary Telephone
+     *
+     * @return the primary telephone number
      */
     public String getPrimaryTelephoneNumber() {
         return this.getStringItem(0x3a1a);
@@ -215,6 +261,8 @@ public class PSTContact extends PSTMessage {
 
     /**
      * Contact's secondary office (business) phone number
+     *
+     * @return the business 2 telephone number
      */
     public String getBusiness2TelephoneNumber() {
         return this.getStringItem(0x3a1b);
@@ -222,6 +270,8 @@ public class PSTContact extends PSTMessage {
 
     /**
      * Mobile Phone Number
+     *
+     * @return the mobile telephone number
      */
     public String getMobileTelephoneNumber() {
         return this.getStringItem(0x3a1c);
@@ -229,6 +279,8 @@ public class PSTContact extends PSTMessage {
 
     /**
      * Radio Phone Number
+     *
+     * @return the radio telephone number
      */
     public String getRadioTelephoneNumber() {
         return this.getStringItem(0x3a1d);
@@ -236,6 +288,8 @@ public class PSTContact extends PSTMessage {
 
     /**
      * Car Phone Number
+     *
+     * @return the car telephone number
      */
     public String getCarTelephoneNumber() {
         return this.getStringItem(0x3a1e);
@@ -243,6 +297,8 @@ public class PSTContact extends PSTMessage {
 
     /**
      * Other Phone Number
+     *
+     * @return the other telephone number
      */
     public String getOtherTelephoneNumber() {
         return this.getStringItem(0x3a1f);
@@ -250,6 +306,8 @@ public class PSTContact extends PSTMessage {
 
     /**
      * Transmittable display name
+     *
+     * @return the transmittable display name
      */
     public String getTransmittableDisplayName() {
         return this.getStringItem(0x3a20);
@@ -257,6 +315,8 @@ public class PSTContact extends PSTMessage {
 
     /**
      * Pager Phone Number
+     *
+     * @return the pager telephone number
      */
     public String getPagerTelephoneNumber() {
         return this.getStringItem(0x3a21);
@@ -264,6 +324,8 @@ public class PSTContact extends PSTMessage {
 
     /**
      * Primary Fax Number
+     *
+     * @return the primary fax number
      */
     public String getPrimaryFaxNumber() {
         return this.getStringItem(0x3a23);
@@ -271,6 +333,8 @@ public class PSTContact extends PSTMessage {
 
     /**
      * Contact's office (business) fax number
+     *
+     * @return the business fax number
      */
     public String getBusinessFaxNumber() {
         return this.getStringItem(0x3a24);
@@ -278,6 +342,8 @@ public class PSTContact extends PSTMessage {
 
     /**
      * Contact's home fax number
+     *
+     * @return the home fax number
      */
     public String getHomeFaxNumber() {
         return this.getStringItem(0x3a25);
@@ -285,6 +351,8 @@ public class PSTContact extends PSTMessage {
 
     /**
      * Business Address Country
+     *
+     * @return the business address country
      */
     public String getBusinessAddressCountry() {
         return this.getStringItem(0x3a26);
@@ -292,6 +360,8 @@ public class PSTContact extends PSTMessage {
 
     /**
      * Business Address City
+     *
+     * @return the business address city
      */
     public String getBusinessAddressCity() {
         return this.getStringItem(0x3a27);
@@ -299,6 +369,8 @@ public class PSTContact extends PSTMessage {
 
     /**
      * Business Address State
+     *
+     * @return the business address state or province
      */
     public String getBusinessAddressStateOrProvince() {
         return this.getStringItem(0x3a28);
@@ -306,6 +378,8 @@ public class PSTContact extends PSTMessage {
 
     /**
      * Business Address Street
+     *
+     * @return the business address street
      */
     public String getBusinessAddressStreet() {
         return this.getStringItem(0x3a29);
@@ -313,6 +387,8 @@ public class PSTContact extends PSTMessage {
 
     /**
      * Business Postal Code
+     *
+     * @return the business postal code
      */
     public String getBusinessPostalCode() {
         return this.getStringItem(0x3a2a);
@@ -320,6 +396,8 @@ public class PSTContact extends PSTMessage {
 
     /**
      * Business PO Box
+     *
+     * @return the business po box
      */
     public String getBusinessPoBox() {
         return this.getStringItem(0x3a2b);
@@ -327,6 +405,8 @@ public class PSTContact extends PSTMessage {
 
     /**
      * Telex Number
+     *
+     * @return the telex number
      */
     public String getTelexNumber() {
         return this.getStringItem(0x3a2c);
@@ -334,6 +414,8 @@ public class PSTContact extends PSTMessage {
 
     /**
      * ISDN Number
+     *
+     * @return the isdn number
      */
     public String getIsdnNumber() {
         return this.getStringItem(0x3a2d);
@@ -341,6 +423,8 @@ public class PSTContact extends PSTMessage {
 
     /**
      * Assistant Phone Number
+     *
+     * @return the assistant telephone number
      */
     public String getAssistantTelephoneNumber() {
         return this.getStringItem(0x3a2e);
@@ -348,6 +432,8 @@ public class PSTContact extends PSTMessage {
 
     /**
      * Home Phone 2
+     *
+     * @return the home 2 telephone number
      */
     public String getHome2TelephoneNumber() {
         return this.getStringItem(0x3a2f);
@@ -355,6 +441,8 @@ public class PSTContact extends PSTMessage {
 
     /**
      * Assistant�s Name
+     *
+     * @return the assistant
      */
     public String getAssistant() {
         return this.getStringItem(0x3a30);
@@ -362,6 +450,8 @@ public class PSTContact extends PSTMessage {
 
     /**
      * Hobbies
+     *
+     * @return the hobbies
      */
     public String getHobbies() {
         return this.getStringItem(0x3a43);
@@ -369,6 +459,8 @@ public class PSTContact extends PSTMessage {
 
     /**
      * Middle Name
+     *
+     * @return the middle name
      */
     public String getMiddleName() {
         return this.getStringItem(0x3a44);
@@ -376,6 +468,8 @@ public class PSTContact extends PSTMessage {
 
     /**
      * Display Name Prefix (Contact Title)
+     *
+     * @return the display name prefix
      */
     public String getDisplayNamePrefix() {
         return this.getStringItem(0x3a45);
@@ -383,6 +477,8 @@ public class PSTContact extends PSTMessage {
 
     /**
      * Profession
+     *
+     * @return the profession
      */
     public String getProfession() {
         return this.getStringItem(0x3a46);
@@ -390,6 +486,8 @@ public class PSTContact extends PSTMessage {
 
     /**
      * Preferred By Name
+     *
+     * @return the preferred by name
      */
     public String getPreferredByName() {
         return this.getStringItem(0x3a47);
@@ -397,6 +495,8 @@ public class PSTContact extends PSTMessage {
 
     /**
      * Spouse�s Name
+     *
+     * @return the spouse name
      */
     public String getSpouseName() {
         return this.getStringItem(0x3a48);
@@ -404,6 +504,8 @@ public class PSTContact extends PSTMessage {
 
     /**
      * Computer Network Name
+     *
+     * @return the computer network name
      */
     public String getComputerNetworkName() {
         return this.getStringItem(0x3a49);
@@ -411,6 +513,8 @@ public class PSTContact extends PSTMessage {
 
     /**
      * Customer ID
+     *
+     * @return the customer id
      */
     public String getCustomerId() {
         return this.getStringItem(0x3a4a);
@@ -418,6 +522,8 @@ public class PSTContact extends PSTMessage {
 
     /**
      * TTY/TDD Phone
+     *
+     * @return the ttytdd phone number
      */
     public String getTtytddPhoneNumber() {
         return this.getStringItem(0x3a4b);
@@ -425,6 +531,8 @@ public class PSTContact extends PSTMessage {
 
     /**
      * Ftp Site
+     *
+     * @return the ftp site
      */
     public String getFtpSite() {
         return this.getStringItem(0x3a4c);
@@ -432,6 +540,8 @@ public class PSTContact extends PSTMessage {
 
     /**
      * Manager�s Name
+     *
+     * @return the manager name
      */
     public String getManagerName() {
         return this.getStringItem(0x3a4e);
@@ -439,6 +549,8 @@ public class PSTContact extends PSTMessage {
 
     /**
      * Nickname
+     *
+     * @return the nickname
      */
     public String getNickname() {
         return this.getStringItem(0x3a4f);
@@ -446,6 +558,8 @@ public class PSTContact extends PSTMessage {
 
     /**
      * Personal Home Page
+     *
+     * @return the personal home page
      */
     public String getPersonalHomePage() {
         return this.getStringItem(0x3a50);
@@ -453,6 +567,8 @@ public class PSTContact extends PSTMessage {
 
     /**
      * Business Home Page
+     *
+     * @return the business home page
      */
     public String getBusinessHomePage() {
         return this.getStringItem(0x3a51);
@@ -460,11 +576,19 @@ public class PSTContact extends PSTMessage {
 
     /**
      * Note
+     *
+     * @return the note
      */
     public String getNote() {
         return this.getStringItem(0x6619);
     }
 
+    /**
+     * Gets named string item.
+     *
+     * @param key the key
+     * @return the named string item
+     */
     String getNamedStringItem(final int key) {
         final int id = this.pstFile.getNameToIdMapItem(key, PSTFile.PSETID_Address);
         if (id != -1) {
@@ -473,12 +597,19 @@ public class PSTContact extends PSTMessage {
         return "";
     }
 
+    /**
+     * Gets smtp address.
+     *
+     * @return the smtp address
+     */
     public String getSMTPAddress() {
         return this.getNamedStringItem(0x00008084);
     }
 
     /**
      * Company Main Phone
+     *
+     * @return the company main phone number
      */
     public String getCompanyMainPhoneNumber() {
         return this.getStringItem(0x3a57);
@@ -486,6 +617,8 @@ public class PSTContact extends PSTMessage {
 
     /**
      * Children's names
+     *
+     * @return the childrens names
      */
     public String getChildrensNames() {
         return this.getStringItem(0x3a58);
@@ -493,6 +626,8 @@ public class PSTContact extends PSTMessage {
 
     /**
      * Home Address City
+     *
+     * @return the home address city
      */
     public String getHomeAddressCity() {
         return this.getStringItem(0x3a59);
@@ -500,6 +635,8 @@ public class PSTContact extends PSTMessage {
 
     /**
      * Home Address Country
+     *
+     * @return the home address country
      */
     public String getHomeAddressCountry() {
         return this.getStringItem(0x3a5a);
@@ -507,6 +644,8 @@ public class PSTContact extends PSTMessage {
 
     /**
      * Home Address Postal Code
+     *
+     * @return the home address postal code
      */
     public String getHomeAddressPostalCode() {
         return this.getStringItem(0x3a5b);
@@ -514,6 +653,8 @@ public class PSTContact extends PSTMessage {
 
     /**
      * Home Address State or Province
+     *
+     * @return the home address state or province
      */
     public String getHomeAddressStateOrProvince() {
         return this.getStringItem(0x3a5c);
@@ -521,6 +662,8 @@ public class PSTContact extends PSTMessage {
 
     /**
      * Home Address Street
+     *
+     * @return the home address street
      */
     public String getHomeAddressStreet() {
         return this.getStringItem(0x3a5d);
@@ -528,6 +671,8 @@ public class PSTContact extends PSTMessage {
 
     /**
      * Home Address Post Office Box
+     *
+     * @return the home address post office box
      */
     public String getHomeAddressPostOfficeBox() {
         return this.getStringItem(0x3a5e);
@@ -535,6 +680,8 @@ public class PSTContact extends PSTMessage {
 
     /**
      * Other Address City
+     *
+     * @return the other address city
      */
     public String getOtherAddressCity() {
         return this.getStringItem(0x3a5f);
@@ -542,6 +689,8 @@ public class PSTContact extends PSTMessage {
 
     /**
      * Other Address Country
+     *
+     * @return the other address country
      */
     public String getOtherAddressCountry() {
         return this.getStringItem(0x3a60);
@@ -549,6 +698,8 @@ public class PSTContact extends PSTMessage {
 
     /**
      * Other Address Postal Code
+     *
+     * @return the other address postal code
      */
     public String getOtherAddressPostalCode() {
         return this.getStringItem(0x3a61);
@@ -556,6 +707,8 @@ public class PSTContact extends PSTMessage {
 
     /**
      * Other Address State
+     *
+     * @return the other address state or province
      */
     public String getOtherAddressStateOrProvince() {
         return this.getStringItem(0x3a62);
@@ -563,6 +716,8 @@ public class PSTContact extends PSTMessage {
 
     /**
      * Other Address Street
+     *
+     * @return the other address street
      */
     public String getOtherAddressStreet() {
         return this.getStringItem(0x3a63);
@@ -570,6 +725,8 @@ public class PSTContact extends PSTMessage {
 
     /**
      * Other Address Post Office box
+     *
+     * @return the other address post office box
      */
     public String getOtherAddressPostOfficeBox() {
         return this.getStringItem(0x3a64);
@@ -581,6 +738,8 @@ public class PSTContact extends PSTMessage {
 
     /**
      * File under FTK: File as
+     *
+     * @return the file under
      */
     public String getFileUnder() {
         return this.getNamedStringItem(0x00008005);
@@ -588,6 +747,8 @@ public class PSTContact extends PSTMessage {
 
     /**
      * Home Address
+     *
+     * @return the home address
      */
     public String getHomeAddress() {
         return this.getNamedStringItem(0x0000801a);
@@ -595,6 +756,8 @@ public class PSTContact extends PSTMessage {
 
     /**
      * Business Address
+     *
+     * @return the work address
      */
     public String getWorkAddress() {
         return this.getNamedStringItem(0x0000801b);
@@ -602,6 +765,8 @@ public class PSTContact extends PSTMessage {
 
     /**
      * Other Address
+     *
+     * @return the other address
      */
     public String getOtherAddress() {
         return this.getNamedStringItem(0x0000801c);
@@ -609,6 +774,8 @@ public class PSTContact extends PSTMessage {
 
     /**
      * Selected Mailing Address
+     *
+     * @return the postal address id
      */
     public int getPostalAddressId() {
         return this.getIntItem(this.pstFile.getNameToIdMapItem(0x00008022, PSTFile.PSETID_Address));
@@ -616,6 +783,8 @@ public class PSTContact extends PSTMessage {
 
     /**
      * Webpage
+     *
+     * @return the html
      */
     public String getHtml() {
         return this.getNamedStringItem(0x0000802b);
@@ -623,6 +792,8 @@ public class PSTContact extends PSTMessage {
 
     /**
      * Business Address City
+     *
+     * @return the work address street
      */
     public String getWorkAddressStreet() {
         return this.getNamedStringItem(0x00008045);
@@ -630,6 +801,8 @@ public class PSTContact extends PSTMessage {
 
     /**
      * Business Address Street
+     *
+     * @return the work address city
      */
     public String getWorkAddressCity() {
         return this.getNamedStringItem(0x00008046);
@@ -637,6 +810,8 @@ public class PSTContact extends PSTMessage {
 
     /**
      * Business Address State
+     *
+     * @return the work address state
      */
     public String getWorkAddressState() {
         return this.getNamedStringItem(0x00008047);
@@ -644,6 +819,8 @@ public class PSTContact extends PSTMessage {
 
     /**
      * Business Address Postal Code
+     *
+     * @return the work address postal code
      */
     public String getWorkAddressPostalCode() {
         return this.getNamedStringItem(0x00008048);
@@ -651,6 +828,8 @@ public class PSTContact extends PSTMessage {
 
     /**
      * Business Address Country
+     *
+     * @return the work address country
      */
     public String getWorkAddressCountry() {
         return this.getNamedStringItem(0x00008049);
@@ -658,6 +837,8 @@ public class PSTContact extends PSTMessage {
 
     /**
      * Business Address Country
+     *
+     * @return the work address post office box
      */
     public String getWorkAddressPostOfficeBox() {
         return this.getNamedStringItem(0x0000804A);
@@ -665,6 +846,8 @@ public class PSTContact extends PSTMessage {
 
     /**
      * IM Address
+     *
+     * @return the instant messaging address
      */
     public String getInstantMessagingAddress() {
         return this.getNamedStringItem(0x00008062);
@@ -672,6 +855,8 @@ public class PSTContact extends PSTMessage {
 
     /**
      * E-mail1 Display Name
+     *
+     * @return the email 1 display name
      */
     public String getEmail1DisplayName() {
         return this.getNamedStringItem(0x00008080);
@@ -679,6 +864,8 @@ public class PSTContact extends PSTMessage {
 
     /**
      * E-mail1 Address Type
+     *
+     * @return the email 1 address type
      */
     public String getEmail1AddressType() {
         return this.getNamedStringItem(0x00008082);
@@ -686,6 +873,8 @@ public class PSTContact extends PSTMessage {
 
     /**
      * E-mail1 Address
+     *
+     * @return the email 1 email address
      */
     public String getEmail1EmailAddress() {
         return this.getNamedStringItem(0x00008083);
@@ -693,6 +882,8 @@ public class PSTContact extends PSTMessage {
 
     /**
      * E-mail1 Display Name
+     *
+     * @return the email 1 original display name
      */
     public String getEmail1OriginalDisplayName() {
         return this.getNamedStringItem(0x00008084);
@@ -700,6 +891,8 @@ public class PSTContact extends PSTMessage {
 
     /**
      * E-mail1 type
+     *
+     * @return the email 1 email type
      */
     public String getEmail1EmailType() {
         return this.getNamedStringItem(0x00008087);
@@ -707,6 +900,8 @@ public class PSTContact extends PSTMessage {
 
     /**
      * E-mail2 display name
+     *
+     * @return the email 2 display name
      */
     public String getEmail2DisplayName() {
         return this.getNamedStringItem(0x00008090);
@@ -714,6 +909,8 @@ public class PSTContact extends PSTMessage {
 
     /**
      * E-mail2 address type
+     *
+     * @return the email 2 address type
      */
     public String getEmail2AddressType() {
         return this.getNamedStringItem(0x00008092);
@@ -721,6 +918,8 @@ public class PSTContact extends PSTMessage {
 
     /**
      * E-mail2 e-mail address
+     *
+     * @return the email 2 email address
      */
     public String getEmail2EmailAddress() {
         return this.getNamedStringItem(0x00008093);
@@ -728,6 +927,8 @@ public class PSTContact extends PSTMessage {
 
     /**
      * E-mail2 original display name
+     *
+     * @return the email 2 original display name
      */
     public String getEmail2OriginalDisplayName() {
         return this.getNamedStringItem(0x00008094);
@@ -735,6 +936,8 @@ public class PSTContact extends PSTMessage {
 
     /**
      * E-mail3 display name
+     *
+     * @return the email 3 display name
      */
     public String getEmail3DisplayName() {
         return this.getNamedStringItem(0x000080a0);
@@ -742,6 +945,8 @@ public class PSTContact extends PSTMessage {
 
     /**
      * E-mail3 address type
+     *
+     * @return the email 3 address type
      */
     public String getEmail3AddressType() {
         return this.getNamedStringItem(0x000080a2);
@@ -749,6 +954,8 @@ public class PSTContact extends PSTMessage {
 
     /**
      * E-mail3 e-mail address
+     *
+     * @return the email 3 email address
      */
     public String getEmail3EmailAddress() {
         return this.getNamedStringItem(0x000080a3);
@@ -756,6 +963,8 @@ public class PSTContact extends PSTMessage {
 
     /**
      * E-mail3 original display name
+     *
+     * @return the email 3 original display name
      */
     public String getEmail3OriginalDisplayName() {
         return this.getNamedStringItem(0x000080a4);
@@ -763,6 +972,8 @@ public class PSTContact extends PSTMessage {
 
     /**
      * Fax1 Address Type
+     *
+     * @return the fax 1 address type
      */
     public String getFax1AddressType() {
         return this.getNamedStringItem(0x000080b2);
@@ -770,6 +981,8 @@ public class PSTContact extends PSTMessage {
 
     /**
      * Fax1 Email Address
+     *
+     * @return the fax 1 email address
      */
     public String getFax1EmailAddress() {
         return this.getNamedStringItem(0x000080b3);
@@ -777,6 +990,8 @@ public class PSTContact extends PSTMessage {
 
     /**
      * Fax1 Original Display Name
+     *
+     * @return the fax 1 original display name
      */
     public String getFax1OriginalDisplayName() {
         return this.getNamedStringItem(0x000080b4);
@@ -784,6 +999,8 @@ public class PSTContact extends PSTMessage {
 
     /**
      * Fax2 Address Type
+     *
+     * @return the fax 2 address type
      */
     public String getFax2AddressType() {
         return this.getNamedStringItem(0x000080c2);
@@ -791,6 +1008,8 @@ public class PSTContact extends PSTMessage {
 
     /**
      * Fax2 Email Address
+     *
+     * @return the fax 2 email address
      */
     public String getFax2EmailAddress() {
         return this.getNamedStringItem(0x000080c3);
@@ -798,6 +1017,8 @@ public class PSTContact extends PSTMessage {
 
     /**
      * Fax2 Original Display Name
+     *
+     * @return the fax 2 original display name
      */
     public String getFax2OriginalDisplayName() {
         return this.getNamedStringItem(0x000080c4);
@@ -805,6 +1026,8 @@ public class PSTContact extends PSTMessage {
 
     /**
      * Fax3 Address Type
+     *
+     * @return the fax 3 address type
      */
     public String getFax3AddressType() {
         return this.getNamedStringItem(0x000080d2);
@@ -812,6 +1035,8 @@ public class PSTContact extends PSTMessage {
 
     /**
      * Fax3 Email Address
+     *
+     * @return the fax 3 email address
      */
     public String getFax3EmailAddress() {
         return this.getNamedStringItem(0x000080d3);
@@ -819,6 +1044,8 @@ public class PSTContact extends PSTMessage {
 
     /**
      * Fax3 Original Display Name
+     *
+     * @return the fax 3 original display name
      */
     public String getFax3OriginalDisplayName() {
         return this.getNamedStringItem(0x000080d4);
@@ -826,6 +1053,8 @@ public class PSTContact extends PSTMessage {
 
     /**
      * Free/Busy Location (URL)
+     *
+     * @return the free busy location
      */
     public String getFreeBusyLocation() {
         return this.getNamedStringItem(0x000080d8);
@@ -833,6 +1062,8 @@ public class PSTContact extends PSTMessage {
 
     /**
      * Birthday
+     *
+     * @return the birthday
      */
     public Date getBirthday() {
         return this.getDateItem(0x3a42);
@@ -840,6 +1071,8 @@ public class PSTContact extends PSTMessage {
 
     /**
      * (Wedding) Anniversary
+     *
+     * @return the anniversary
      */
     public Date getAnniversary() {
         return this.getDateItem(0x3a41);

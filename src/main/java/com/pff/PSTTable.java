@@ -170,8 +170,8 @@ class PSTTable {
 
     /**
      * get the number of items stored in this table.
-     * 
-     * @return
+     *
+     * @return row count
      */
     public int getRowCount() {
         return this.numberOfKeys;

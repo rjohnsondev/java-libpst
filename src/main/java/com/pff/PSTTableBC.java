@@ -185,8 +185,8 @@ class PSTTableBC extends PSTTable {
 
     /**
      * get the items parsed out of this table.
-     * 
-     * @return
+     *
+     * @return items
      */
     public HashMap<Integer, PSTTableBCItem> getItems() {
         return this.items;

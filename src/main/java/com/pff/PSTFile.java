@@ -1,55 +1,47 @@
 /**
  * Copyright 2010 Richard Johnson & Orin Eman
- *
+ * <p>
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
- *
+ * <p>
  * http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
  * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- *
+ * <p>
  * ---
- *
+ * <p>
  * This file is part of java-libpst.
- *
+ * <p>
  * java-libpst is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as published by
  * the Free Software Foundation, either version 3 of the License, or
  * (at your option) any later version.
- *
+ * <p>
  * java-libpst is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the
  * GNU Lesser General Public License for more details.
- *
+ * <p>
  * You should have received a copy of the GNU Lesser General Public License
  * along with java-libpst. If not, see <http://www.gnu.org/licenses/>.
- *
  */
 package com.pff;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.RandomAccessFile;
-import java.util.HashMap;
-import java.util.LinkedHashMap;
-import java.util.LinkedList;
-import java.util.Properties;
-import java.util.UUID;
+import java.io.*;
+import java.nio.charset.Charset;
+import java.util.*;
 
 /**
  * PSTFile is the containing class that allows you to access items within a .pst
  * file.
  * Start here, get the root of the folders and work your way down through your
  * items.
- * 
+ *
  * @author Richard Johnson
  */
 public class PSTFile {
@@ -85,21 +77,21 @@ public class PSTFile {
 
     // Now the string guids
     private static final String guidStrings[] = {
-        "00020329-0000-0000-C000-000000000046",
-        "00062008-0000-0000-C000-000000000046",
-        "00062004-0000-0000-C000-000000000046",
-        "00020386-0000-0000-C000-000000000046",
-        "00062002-0000-0000-C000-000000000046",
-        "6ED8DA90-450B-101B-98DA-00AA003F1305",
-        "0006200A-0000-0000-C000-000000000046",
-        "41F28F13-83F4-4114-A584-EEDB5A6B0BFF",
-        "0006200E-0000-0000-C000-000000000046",
-        "00062041-0000-0000-C000-000000000046",
-        "00062003-0000-0000-C000-000000000046",
-        "4442858E-A9E3-4E80-B900-317A210CC15B",
-        "00020328-0000-0000-C000-000000000046",
-        "71035549-0739-4DCB-9163-00F0580DBBDF",
-        "00062040-0000-0000-C000-000000000046"};
+            "00020329-0000-0000-C000-000000000046",
+            "00062008-0000-0000-C000-000000000046",
+            "00062004-0000-0000-C000-000000000046",
+            "00020386-0000-0000-C000-000000000046",
+            "00062002-0000-0000-C000-000000000046",
+            "6ED8DA90-450B-101B-98DA-00AA003F1305",
+            "0006200A-0000-0000-C000-000000000046",
+            "41F28F13-83F4-4114-A584-EEDB5A6B0BFF",
+            "0006200E-0000-0000-C000-000000000046",
+            "00062041-0000-0000-C000-000000000046",
+            "00062003-0000-0000-C000-000000000046",
+            "4442858E-A9E3-4E80-B900-317A210CC15B",
+            "00020328-0000-0000-C000-000000000046",
+            "71035549-0739-4DCB-9163-00F0580DBBDF",
+            "00062040-0000-0000-C000-000000000046"};
 
     private final HashMap<UUID, Integer> guidMap = new HashMap<>();
 
@@ -121,24 +113,48 @@ public class PSTFile {
 
     /**
      * constructor
-     * 
-     * @param fileName
-     * @throws FileNotFoundException
-     * @throws PSTException
-     * @throws IOException
+     *
+     * @param fileName the file name
+     * @throws FileNotFoundException the file not found exception
+     * @throws PSTException          the pst exception
+     * @throws IOException           the io exception
      */
     public PSTFile(final String fileName) throws FileNotFoundException, PSTException, IOException {
         this(new File(fileName));
     }
 
+    /**
+     * Instantiates a new Pst file.
+     *
+     * @param file the file
+     * @throws FileNotFoundException the file not found exception
+     * @throws PSTException          the pst exception
+     * @throws IOException           the io exception
+     */
     public PSTFile(final File file) throws FileNotFoundException, PSTException, IOException {
         this(new PSTRAFileContent(file));
     }
 
+    /**
+     * Instantiates a new Pst file.
+     *
+     * @param bytes the bytes
+     * @throws FileNotFoundException the file not found exception
+     * @throws PSTException          the pst exception
+     * @throws IOException           the io exception
+     */
     public PSTFile(final byte[] bytes) throws FileNotFoundException, PSTException, IOException {
         this(new PSTByteFileContent(bytes));
     }
 
+    /**
+     * Instantiates a new Pst file.
+     *
+     * @param content the content
+     * @throws FileNotFoundException the file not found exception
+     * @throws PSTException          the pst exception
+     * @throws IOException           the io exception
+     */
     public PSTFile(final PSTFileContent content) throws FileNotFoundException, PSTException, IOException {
         // attempt to open the file.
         this.in = content;
@@ -161,7 +177,7 @@ public class PSTFile {
                 fileTypeBytes[0] = PSTFile.PST_TYPE_ANSI;
             }
             if (fileTypeBytes[0] != PSTFile.PST_TYPE_ANSI && fileTypeBytes[0] != PSTFile.PST_TYPE_UNICODE
-                && fileTypeBytes[0] != PSTFile.PST_TYPE_2013_UNICODE) {
+                    && fileTypeBytes[0] != PSTFile.PST_TYPE_2013_UNICODE) {
                 throw new PSTException("Unrecognised PST File version: " + fileTypeBytes[0]);
             }
             this.pstFileType = fileTypeBytes[0];
@@ -180,10 +196,34 @@ public class PSTFile {
             // build out name to id map.
             this.processNameToIdMap(this.in);
 
+            // get the default codepage
+            globalCodepage = inferGlobalCodepage();
         } catch (final IOException err) {
             throw new PSTException("Unable to read PST Sig", err);
         }
 
+    }
+
+    private String globalCodepage;
+
+    private String inferGlobalCodepage() {
+        int codepageIdentifier;
+        try {
+            codepageIdentifier = this.getMessageStore().getIntItem(0x66C3); // PidTagCodepageId
+        } catch (PSTException | IOException e) {
+            return null;
+        }
+        if (codepageIdentifier != 0)
+            return getInternetCodePageCharset(codepageIdentifier);
+        return Charset.defaultCharset().name();
+    }
+
+    public void setGlobalCodepage(String codepage) {
+        globalCodepage = codepage;
+    }
+
+    public String getGlobalCodepage() {
+        return globalCodepage;
     }
 
     private int pstFileType = 0;
@@ -194,10 +234,10 @@ public class PSTFile {
 
     /**
      * read the name-to-id map from the file and load it in
-     * 
-     * @param in
-     * @throws IOException
-     * @throws PSTException
+     *
+     * @param in the pst file content
+     * @throws IOException IOException
+     * @throws PSTException PSTException
      */
     private void processNameToIdMap(final PSTFileContent in) throws IOException, PSTException {
 
@@ -222,7 +262,7 @@ public class PSTFile {
             // nameToIdMapDescriptorNode.localDescriptorsOffsetIndexIdentifier);
             // localDescriptorItems = descriptor.getChildren();
             localDescriptorItems = this
-                .getPSTDescriptorItems(nameToIdMapDescriptorNode.localDescriptorsOffsetIndexIdentifier);
+                    .getPSTDescriptorItems(nameToIdMapDescriptorNode.localDescriptorsOffsetIndexIdentifier);
         }
 
         // process the map
@@ -245,8 +285,8 @@ public class PSTFile {
         int offset = 0;
         for (int i = 0; i < nGuids; ++i) {
             final long mostSigBits = (PSTObject.convertLittleEndianBytesToLong(this.guids, offset, offset + 4) << 32)
-                | (PSTObject.convertLittleEndianBytesToLong(this.guids, offset + 4, offset + 6) << 16)
-                | PSTObject.convertLittleEndianBytesToLong(this.guids, offset + 6, offset + 8);
+                    | (PSTObject.convertLittleEndianBytesToLong(this.guids, offset + 4, offset + 6) << 16)
+                    | PSTObject.convertLittleEndianBytesToLong(this.guids, offset + 6, offset + 8);
             final long leastSigBits = PSTObject.convertBigEndianBytesToLong(this.guids, offset + 8, offset + 16);
             uuidArray[i] = new UUID(mostSigBits, leastSigBits);
             if (this.guidMap.containsKey(uuidArray[i])) {
@@ -298,7 +338,7 @@ public class PSTFile {
                 // dwPropertyId becomes thHke byte offset into the String stream
                 // in which the string name of the property is stored.
                 final int len = (int) PSTObject.convertLittleEndianBytesToLong(stringNameToIdByte, dwPropertyId,
-                    dwPropertyId + 4);
+                        dwPropertyId + 4);
                 final byte[] keyByteValue = new byte[len];
                 System.arraycopy(stringNameToIdByte, dwPropertyId + 4, keyByteValue, 0, keyByteValue.length);
                 wPropIdx += 0x8000;
@@ -310,7 +350,7 @@ public class PSTFile {
     }
 
     private byte[] getData(final PSTTableItem item, final HashMap<Integer, PSTDescriptorItem> localDescriptorItems)
-        throws IOException, PSTException {
+            throws IOException, PSTException {
         if (item.data.length != 0) {
             return item.data;
         }
@@ -420,22 +460,27 @@ public class PSTFile {
     static String getPropertyDescription(final int entryType, final int entryValueType) {
         String ret = "";
         if (entryType < 0x8000) {
-            final String name = PSTFile.getPropertyName(entryType, false);
+            String name = PSTFile.getPropertyName(entryType, false);
             if (name != null) {
-                ret = String.format("%s:%04X: ", name, entryValueType);
+                ret = String.format("%s(code %04X):%04X: ", name, entryType, entryValueType);
             } else {
-                ret = String.format("0x%04X:%04X: ", entryType, entryValueType);
+                ret = String.format("unknown property 0x%04X:%04X: ", entryType, entryValueType);
             }
         } else {
-            final long type = PSTFile.getNameToIdMapKey(entryType);
-            if (type == -1) {
-                ret = String.format("0xFFFF(%04X):%04X: ", entryType, entryValueType);
+            String name = PSTFile.getPropertyName(entryType, false);
+            if (name != null) {
+                ret = String.format("%s(code %04X):%04X: ", name, entryType, entryValueType);
             } else {
-                final String name = PSTFile.getPropertyName((int) type, true);
-                if (name != null) {
-                    ret = String.format("%s(%04X):%04X: ", name, entryType, entryValueType);
+                final long type = PSTFile.getNameToIdMapKey(entryType);
+                if (type == -1) {
+                    ret = String.format("0xFFFF(%04X):%04X: ", entryType, entryValueType);
                 } else {
-                    ret = String.format("0x%04X(%04X):%04X: ", type, entryType, entryValueType);
+                    name = PSTFile.getPropertyName((int) type, true);
+                    if (name != null) {
+                        ret = String.format("%s(mapcode %04X):%04X: ", name, entryType, entryValueType);
+                    } else {
+                        ret = String.format("not mapped property 0x%04X(%04X):%04X: ", type, entryType, entryValueType);
+                    }
                 }
             }
         }
@@ -453,7 +498,7 @@ public class PSTFile {
 
     /**
      * get the type of encryption the file uses
-     * 
+     *
      * @return encryption type used in the PST File
      */
     public int getEncryptionType() {
@@ -463,6 +508,8 @@ public class PSTFile {
     /**
      * get the handle to the RandomAccessFile we are currently accessing (if
      * any)
+     *
+     * @return the file handle
      */
     public RandomAccessFile getFileHandle() {
         if (this.in instanceof PSTRAFileContent) {
@@ -474,6 +521,8 @@ public class PSTFile {
 
     /**
      * get the handle to the file content we are currently accessing
+     *
+     * @return the content handle
      */
     public PSTFileContent getContentHandle() {
         return this.in;
@@ -483,22 +532,24 @@ public class PSTFile {
      * get the message store of the PST file.
      * Note that this doesn't really have much information, better to look under
      * the root folder
-     * 
-     * @throws PSTException
-     * @throws IOException
+     *
+     * @return the message store
+     * @throws PSTException the pst exception
+     * @throws IOException  the io exception
      */
     public PSTMessageStore getMessageStore() throws PSTException, IOException {
         final DescriptorIndexNode messageStoreDescriptor = this
-            .getDescriptorIndexNode(MESSAGE_STORE_DESCRIPTOR_IDENTIFIER);
+                .getDescriptorIndexNode(MESSAGE_STORE_DESCRIPTOR_IDENTIFIER);
         return new PSTMessageStore(this, messageStoreDescriptor);
     }
 
     /**
      * get the root folder for the PST file.
      * You should find all of your data under here...
-     * 
-     * @throws PSTException
-     * @throws IOException
+     *
+     * @return the root folder
+     * @throws PSTException the pst exception
+     * @throws IOException  the io exception
      */
     public PSTFolder getRootFolder() throws PSTException, IOException {
         final DescriptorIndexNode rootFolderDescriptor = this.getDescriptorIndexNode(ROOT_FOLDER_DESCRIPTOR_IDENTIFIER);
@@ -516,6 +567,14 @@ public class PSTFile {
 
     }
 
+    /**
+     * Gets leaf size.
+     *
+     * @param bid the bid
+     * @return the leaf size
+     * @throws IOException  the io exception
+     * @throws PSTException the pst exception
+     */
     public int getLeafSize(final long bid) throws IOException, PSTException {
         final OffsetIndexItem offsetItem = this.getOffsetIndexNode(bid);
 
@@ -539,13 +598,10 @@ public class PSTFile {
      * PST Files have this tendency to store file offsets (pointers) in 8 little
      * endian bytes.
      * Convert this to a long for seeking to.
-     * 
-     * @param in
-     *            handle for PST file
-     * @param startOffset
-     *            where to read the 8 bytes from
+     *
+     * @param startOffset where to read the 8 bytes from
      * @return long representing the read location
-     * @throws IOException
+     * @throws IOException the io exception
      */
     protected long extractLEFileOffset(final long startOffset) throws IOException {
         long offset = 0;
@@ -579,16 +635,16 @@ public class PSTFile {
     /**
      * Generic function used by getOffsetIndexNode and getDescriptorIndexNode
      * for navigating the PST B-Trees
-     * 
-     * @param in
-     * @param index
-     * @param descTree
-     * @return
-     * @throws IOException
-     * @throws PSTException
+     *
+     * @param in the pst file content
+     * @param index the index
+     * @param descTree desc flag
+     * @return BTree item
+     * @throws IOException the io exception
+     * @throws PSTException the pst exception
      */
     private byte[] findBtreeItem(final PSTFileContent in, final long index, final boolean descTree)
-        throws IOException, PSTException {
+            throws IOException, PSTException {
 
         long btreeStartOffset;
         int fileTypeAdjustment;
@@ -620,7 +676,7 @@ public class PSTFile {
         in.readCompletely(temp);
 
         while ((temp[0] == 0xffffff80 && temp[1] == 0xffffff80 && !descTree)
-            || (temp[0] == 0xffffff81 && temp[1] == 0xffffff81 && descTree)) {
+                || (temp[0] == 0xffffff81 && temp[1] == 0xffffff81 && descTree)) {
             // get the rest of the data....
             byte[] branchNodeItems;
             if (this.getPSTFileType() == PST_TYPE_ANSI) {
@@ -762,12 +818,11 @@ public class PSTFile {
 
     /**
      * navigate the internal descriptor B-Tree and find a specific item
-     * 
-     * @param in
-     * @param identifier
+     *
+     * @param identifier the identifier
      * @return the descriptor node for the item
-     * @throws IOException
-     * @throws PSTException
+     * @throws IOException  the io exception
+     * @throws PSTException the pst exception
      */
     DescriptorIndexNode getDescriptorIndexNode(final long identifier) throws IOException, PSTException {
         return new DescriptorIndexNode(this.findBtreeItem(this.in, identifier, true), this.getPSTFileType());
@@ -775,12 +830,11 @@ public class PSTFile {
 
     /**
      * navigate the internal index B-Tree and find a specific item
-     * 
-     * @param in
-     * @param identifier
+     *
+     * @param identifier the identifier
      * @return the offset index item
-     * @throws IOException
-     * @throws PSTException
+     * @throws IOException  the io exception
+     * @throws PSTException the pst exception
      */
     OffsetIndexItem getOffsetIndexNode(final long identifier) throws IOException, PSTException {
         return new OffsetIndexItem(this.findBtreeItem(this.in, identifier, false), this.getPSTFileType());
@@ -790,19 +844,26 @@ public class PSTFile {
      * parse a PSTDescriptor and get all of its items
      */
     HashMap<Integer, PSTDescriptorItem> getPSTDescriptorItems(final long localDescriptorsOffsetIndexIdentifier)
-        throws PSTException, IOException {
+            throws PSTException, IOException {
         return this.getPSTDescriptorItems(this.readLeaf(localDescriptorsOffsetIndexIdentifier));
     }
 
+    static final int SLBLOCK_ENTRY = 0;
+    static final int SIBLOCK_ENTRY = 1;
+
     HashMap<Integer, PSTDescriptorItem> getPSTDescriptorItems(final PSTNodeInputStream in)
-        throws PSTException, IOException {
+            throws PSTException, IOException {
         // make sure the signature is correct
         in.seek(0);
         final int sig = in.read();
         if (sig != 0x2) {
             throw new PSTException("Unable to process descriptor node, bad signature: " + sig);
         }
-
+        // NID nodes defines in subnode can be either SLBLOCK (0) or SIBLOCK_ENTRY (1)
+        int blockType = in.read();
+        if ((blockType != SLBLOCK_ENTRY) && (blockType != SIBLOCK_ENTRY)) {
+            throw new PSTException("Unable to process descriptor node, unknown BLOCK type: " + blockType);
+        }
         final HashMap<Integer, PSTDescriptorItem> output = new HashMap<>();
         final int numberOfItems = (int) in.seekAndReadLong(2, 2);
         int offset;
@@ -817,15 +878,23 @@ public class PSTFile {
         in.readCompletely(data);
 
         for (int x = 0; x < numberOfItems; x++) {
-            final PSTDescriptorItem item = new PSTDescriptorItem(data, offset, this);
-            output.put(item.descriptorIdentifier, item);
+            final PSTDescriptorItem item = new PSTDescriptorItem(data, offset, this, blockType);
+            if (blockType == SLBLOCK_ENTRY)
+                output.put(item.descriptorIdentifier, item);
+            else
+                output.putAll(getPSTDescriptorItems(item.offsetIndexIdentifier));
             if (this.getPSTFileType() == PSTFile.PST_TYPE_ANSI) {
-                offset += 12;
+                if (blockType == SLBLOCK_ENTRY)
+                    offset += 12;
+                else
+                    offset += 8;
             } else {
-                offset += 24;
+                if (blockType == SLBLOCK_ENTRY)
+                    offset += 24;
+                else
+                    offset += 16;
             }
         }
-
         return output;
     }
 
@@ -835,10 +904,10 @@ public class PSTFile {
      * childrenDescriptorTree.
      * This is used as fallback when the nodes that list file contents are
      * broken.
-     * 
-     * @param in
-     * @throws IOException
-     * @throws PSTException
+     *
+     * @return the child descriptor tree
+     * @throws IOException  the io exception
+     * @throws PSTException the pst exception
      */
     LinkedHashMap<Integer, LinkedList<DescriptorIndexNode>> getChildDescriptorTree() throws IOException, PSTException {
         if (this.childrenDescriptorTree == null) {
@@ -857,11 +926,10 @@ public class PSTFile {
     /**
      * Recursive function for building the descriptor tree, used by
      * buildDescriptorTree
-     * 
-     * @param in
-     * @param btreeStartOffset
-     * @throws IOException
-     * @throws PSTException
+     *
+     * @param btreeStartOffset the BTree start offset
+     * @throws IOException the io exception
+     * @throws PSTException the pst exception
      */
     private void processDescriptorBTree(final long btreeStartOffset) throws IOException, PSTException {
         int fileTypeAdjustment;
@@ -935,7 +1003,7 @@ public class PSTFile {
                     } else if (this.childrenDescriptorTree.containsKey(tempNode.parentDescriptorIndexIdentifier)) {
                         // add this entry to the existing list of children
                         final LinkedList<DescriptorIndexNode> children = this.childrenDescriptorTree
-                            .get(tempNode.parentDescriptorIndexIdentifier);
+                                .get(tempNode.parentDescriptorIndexIdentifier);
                         children.add(tempNode);
                     } else {
                         // create a new entry and add this one to that

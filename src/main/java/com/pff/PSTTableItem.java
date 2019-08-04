@@ -42,7 +42,7 @@ import java.util.SimpleTimeZone;
 /**
  * Generic table item.
  * Provides some basic string functions
- * 
+ *
  * @author Richard Johnson
  */
 class PSTTableItem {
@@ -65,18 +65,24 @@ class PSTTableItem {
         return -1;
     }
 
-    public String getStringValue() {
-        return this.getStringValue(this.entryValueType);
+    /**
+     * Gets a string value of the data for a given codepage (charset name)
+     *
+     * @param codepage the codepage
+     * @return the string value
+     */
+    public String getStringValue(String codepage) {
+        return this.getStringValue(this.entryValueType,codepage);
     }
 
     /**
-     * get a string value of the data
-     * 
-     * @param forceString
-     *            if true, you won't get the hex representation of the data
-     * @return
+     * Gets a string value of the data
+     *
+     * @param stringType the string type
+     * @param codepage   the codepage
+     * @return string value
      */
-    public String getStringValue(final int stringType) {
+    public String getStringValue(final int stringType,String codepage) {
 
         if (stringType == VALUE_TYPE_PT_UNICODE) {
             // we are a nice little-endian unicode string.
@@ -95,7 +101,7 @@ class PSTTableItem {
         if (stringType == VALUE_TYPE_PT_STRING8) {
             // System.out.println("Warning! decoding string8 without charset:
             // "+this.entryType + " - "+ Integer.toHexString(this.entryType));
-            return new String(this.data, Charset.forName("UTF-8")).trim();
+            return new String(this.data, Charset.forName(codepage)).trim();
         }
 
         final StringBuffer outputBuffer = new StringBuffer();
@@ -191,7 +197,7 @@ class PSTTableItem {
             return ret + s;
         }
 
-        return ret + this.getStringValue();
+        return ret + this.getStringValue("UTF-8");
     }
 
     private final SimpleDateFormat dateFormatter = new SimpleDateFormat("yyyyMMdd'T'HHmmss'Z'");

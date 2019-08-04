@@ -39,16 +39,18 @@ import java.util.HashMap;
 
 /**
  * PSTActivity represents Journal entries
- * 
+ *
  * @author Richard Johnson
  */
 public class PSTActivity extends PSTMessage {
 
     /**
-     * @param theFile
-     * @param descriptorIndexNode
-     * @throws PSTException
-     * @throws IOException
+     * Instantiates a new Pst activity.
+     *
+     * @param theFile             the the file
+     * @param descriptorIndexNode the descriptor index node
+     * @throws PSTException the pst exception
+     * @throws IOException  the io exception
      */
     public PSTActivity(final PSTFile theFile, final DescriptorIndexNode descriptorIndexNode)
         throws PSTException, IOException {
@@ -56,10 +58,12 @@ public class PSTActivity extends PSTMessage {
     }
 
     /**
-     * @param theFile
-     * @param folderIndexNode
-     * @param table
-     * @param localDescriptorItems
+     * Instantiates a new Pst activity.
+     *
+     * @param theFile              the the file
+     * @param folderIndexNode      the folder index node
+     * @param table                the table
+     * @param localDescriptorItems the local descriptor items
      */
     public PSTActivity(final PSTFile theFile, final DescriptorIndexNode folderIndexNode, final PSTTableBC table,
         final HashMap<Integer, PSTDescriptorItem> localDescriptorItems) {
@@ -68,6 +72,8 @@ public class PSTActivity extends PSTMessage {
 
     /**
      * Type
+     *
+     * @return the log type
      */
     public String getLogType() {
         return this.getStringItem(this.pstFile.getNameToIdMapItem(0x00008700, PSTFile.PSETID_Log));
@@ -75,6 +81,8 @@ public class PSTActivity extends PSTMessage {
 
     /**
      * Start
+     *
+     * @return the log start
      */
     public Date getLogStart() {
         return this.getDateItem(this.pstFile.getNameToIdMapItem(0x00008706, PSTFile.PSETID_Log));
@@ -82,6 +90,8 @@ public class PSTActivity extends PSTMessage {
 
     /**
      * Duration
+     *
+     * @return the log duration
      */
     public int getLogDuration() {
         return this.getIntItem(this.pstFile.getNameToIdMapItem(0x00008707, PSTFile.PSETID_Log));
@@ -89,6 +99,8 @@ public class PSTActivity extends PSTMessage {
 
     /**
      * End
+     *
+     * @return the log end
      */
     public Date getLogEnd() {
         return this.getDateItem(this.pstFile.getNameToIdMapItem(0x00008708, PSTFile.PSETID_Log));
@@ -96,6 +108,8 @@ public class PSTActivity extends PSTMessage {
 
     /**
      * LogFlags
+     *
+     * @return the log flags
      */
     public int getLogFlags() {
         return this.getIntItem(this.pstFile.getNameToIdMapItem(0x0000870c, PSTFile.PSETID_Log));
@@ -103,6 +117,8 @@ public class PSTActivity extends PSTMessage {
 
     /**
      * DocPrinted
+     *
+     * @return the boolean
      */
     public boolean isDocumentPrinted() {
         return (this.getBooleanItem(this.pstFile.getNameToIdMapItem(0x0000870e, PSTFile.PSETID_Log)));
@@ -110,6 +126,8 @@ public class PSTActivity extends PSTMessage {
 
     /**
      * DocSaved
+     *
+     * @return the boolean
      */
     public boolean isDocumentSaved() {
         return (this.getBooleanItem(this.pstFile.getNameToIdMapItem(0x0000870f, PSTFile.PSETID_Log)));
@@ -117,6 +135,8 @@ public class PSTActivity extends PSTMessage {
 
     /**
      * DocRouted
+     *
+     * @return the boolean
      */
     public boolean isDocumentRouted() {
         return (this.getBooleanItem(this.pstFile.getNameToIdMapItem(0x00008710, PSTFile.PSETID_Log)));
@@ -124,6 +144,8 @@ public class PSTActivity extends PSTMessage {
 
     /**
      * DocPosted
+     *
+     * @return the boolean
      */
     public boolean isDocumentPosted() {
         return (this.getBooleanItem(this.pstFile.getNameToIdMapItem(0x00008711, PSTFile.PSETID_Log)));
@@ -131,6 +153,8 @@ public class PSTActivity extends PSTMessage {
 
     /**
      * Type Description
+     *
+     * @return the log type desc
      */
     public String getLogTypeDesc() {
         return this.getStringItem(this.pstFile.getNameToIdMapItem(0x00008712, PSTFile.PSETID_Log));

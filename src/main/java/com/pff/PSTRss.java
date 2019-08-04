@@ -44,10 +44,12 @@ import java.util.HashMap;
 public class PSTRss extends PSTMessage {
 
     /**
-     * @param theFile
-     * @param descriptorIndexNode
-     * @throws PSTException
-     * @throws IOException
+     * Instantiates a new Pst rss.
+     *
+     * @param theFile             the the file
+     * @param descriptorIndexNode the descriptor index node
+     * @throws PSTException the pst exception
+     * @throws IOException  the io exception
      */
     public PSTRss(final PSTFile theFile, final DescriptorIndexNode descriptorIndexNode)
         throws PSTException, IOException {
@@ -55,10 +57,12 @@ public class PSTRss extends PSTMessage {
     }
 
     /**
-     * @param theFile
-     * @param folderIndexNode
-     * @param table
-     * @param localDescriptorItems
+     * Instantiates a new Pst rss.
+     *
+     * @param theFile              the the file
+     * @param folderIndexNode      the folder index node
+     * @param table                the table
+     * @param localDescriptorItems the local descriptor items
      */
     public PSTRss(final PSTFile theFile, final DescriptorIndexNode folderIndexNode, final PSTTableBC table,
         final HashMap<Integer, PSTDescriptorItem> localDescriptorItems) {
@@ -67,6 +71,8 @@ public class PSTRss extends PSTMessage {
 
     /**
      * Channel
+     *
+     * @return the post rss channel link
      */
     public String getPostRssChannelLink() {
         return this.getStringItem(this.pstFile.getNameToIdMapItem(0x00008900, PSTFile.PSETID_PostRss));
@@ -74,6 +80,8 @@ public class PSTRss extends PSTMessage {
 
     /**
      * Item link
+     *
+     * @return the post rss item link
      */
     public String getPostRssItemLink() {
         return this.getStringItem(this.pstFile.getNameToIdMapItem(0x00008901, PSTFile.PSETID_PostRss));
@@ -81,6 +89,8 @@ public class PSTRss extends PSTMessage {
 
     /**
      * Item hash Integer 32-bit signed
+     *
+     * @return the post rss item hash
      */
     public int getPostRssItemHash() {
         return this.getIntItem(this.pstFile.getNameToIdMapItem(0x00008902, PSTFile.PSETID_PostRss));
@@ -88,6 +98,8 @@ public class PSTRss extends PSTMessage {
 
     /**
      * Item GUID
+     *
+     * @return the post rss item guid
      */
     public String getPostRssItemGuid() {
         return this.getStringItem(this.pstFile.getNameToIdMapItem(0x00008903, PSTFile.PSETID_PostRss));
@@ -95,6 +107,8 @@ public class PSTRss extends PSTMessage {
 
     /**
      * Channel GUID
+     *
+     * @return the post rss channel
      */
     public String getPostRssChannel() {
         return this.getStringItem(this.pstFile.getNameToIdMapItem(0x00008904, PSTFile.PSETID_PostRss));
@@ -102,6 +116,8 @@ public class PSTRss extends PSTMessage {
 
     /**
      * Item XML
+     *
+     * @return the post rss item xml
      */
     public String getPostRssItemXml() {
         return this.getStringItem(this.pstFile.getNameToIdMapItem(0x00008905, PSTFile.PSETID_PostRss));
@@ -109,6 +125,8 @@ public class PSTRss extends PSTMessage {
 
     /**
      * Subscription
+     *
+     * @return the post rss subscription
      */
     public String getPostRssSubscription() {
         return this.getStringItem(this.pstFile.getNameToIdMapItem(0x00008906, PSTFile.PSETID_PostRss));

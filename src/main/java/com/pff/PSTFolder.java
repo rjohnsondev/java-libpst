@@ -48,18 +48,18 @@ import java.util.Vector;
  * sort of cursor arrangement.
  * This allows for incremental reading of a folder which may have _lots_ of
  * emails.
- * 
+ *
  * @author Richard Johnson
  */
 public class PSTFolder extends PSTObject {
 
     /**
      * a constructor for the rest of us...
-     * 
-     * @param theFile
-     * @param descriptorIndexNode
-     * @throws PSTException
-     * @throws IOException
+     *
+     * @param theFile             the the file
+     * @param descriptorIndexNode the descriptor index node
+     * @throws PSTException the pst exception
+     * @throws IOException  the io exception
      */
     PSTFolder(final PSTFile theFile, final DescriptorIndexNode descriptorIndexNode) throws PSTException, IOException {
         super(theFile, descriptorIndexNode);
@@ -68,10 +68,11 @@ public class PSTFolder extends PSTObject {
     /**
      * For pre-populating a folder object with values.
      * Not recommended for use outside this library
-     * 
-     * @param theFile
-     * @param folderIndexNode
-     * @param table
+     *
+     * @param theFile              the the file
+     * @param folderIndexNode      the folder index node
+     * @param table                the table
+     * @param localDescriptorItems the local descriptor items
      */
     PSTFolder(final PSTFile theFile, final DescriptorIndexNode folderIndexNode, final PSTTableBC table,
         final HashMap<Integer, PSTDescriptorItem> localDescriptorItems) {
@@ -81,10 +82,10 @@ public class PSTFolder extends PSTObject {
     /**
      * get all of the sub folders...
      * there are not usually thousands, so we just do it in one big operation.
-     * 
+     *
      * @return all of the subfolders
-     * @throws PSTException
-     * @throws IOException
+     * @throws PSTException the pst exception
+     * @throws IOException  the io exception
      */
     public Vector<PSTFolder> getSubFolders() throws PSTException, IOException {
         final Vector<PSTFolder> output = new Vector<>();
@@ -152,8 +153,8 @@ public class PSTFolder extends PSTObject {
      * this method goes through all of the children and sorts them into one of
      * the three hash sets.
      * 
-     * @throws PSTException
-     * @throws IOException
+     * @throws PSTException the pst exception
+     * @throws IOException the io exception
      */
     private void initEmailsTable() throws PSTException, IOException {
         if (this.emailsTable != null || this.fallbackEmailsTable != null) {
@@ -212,11 +213,11 @@ public class PSTFolder extends PSTObject {
      * get some children from the folder
      * This is implemented as a cursor of sorts, as there could be thousands
      * and that is just too many to process at once.
-     * 
-     * @param numberToReturn
+     *
+     * @param numberToReturn the number to return
      * @return bunch of children in this folder
-     * @throws PSTException
-     * @throws IOException
+     * @throws PSTException the pst exception
+     * @throws IOException  the io exception
      */
     public Vector<PSTObject> getChildren(final int numberToReturn) throws PSTException, IOException {
         this.initEmailsTable();
@@ -258,6 +259,13 @@ public class PSTFolder extends PSTObject {
         return output;
     }
 
+    /**
+     * Gets child descriptor nodes.
+     *
+     * @return the child descriptor nodes
+     * @throws PSTException the pst exception
+     * @throws IOException  the io exception
+     */
     public LinkedList<Integer> getChildDescriptorNodes() throws PSTException, IOException {
         this.initEmailsTable();
         if (this.emailsTable == null) {
@@ -284,10 +292,10 @@ public class PSTFolder extends PSTObject {
      * Get the next child of this folder
      * As there could be thousands of emails, we have these kind of cursor
      * operations
-     * 
+     *
      * @return the next email in the folder or null if at the end of the folder
-     * @throws PSTException
-     * @throws IOException
+     * @throws PSTException the pst exception
+     * @throws IOException  the io exception
      */
     public PSTObject getNextChild() throws PSTException, IOException {
         this.initEmailsTable();
@@ -299,12 +307,12 @@ public class PSTFolder extends PSTObject {
                 // no more!
                 return null;
             }
+            this.currentEmailIndex++;
             // get the emails from the rows
             final PSTTable7CItem emailRow = rows.get(0).get(0x67F2);
             final DescriptorIndexNode childDescriptor = this.pstFile
                 .getDescriptorIndexNode(emailRow.entryValueReference);
             final PSTObject child = PSTObject.detectAndLoadPSTObject(this.pstFile, childDescriptor);
-            this.currentEmailIndex++;
 
             return child;
         } else if (this.fallbackEmailsTable != null) {
@@ -313,10 +321,10 @@ public class PSTFolder extends PSTObject {
                 // no more!
                 return null;
             }
+            this.currentEmailIndex++;
             // get the emails from the rows
             final DescriptorIndexNode childDescriptor = this.fallbackEmailsTable.get(this.currentEmailIndex);
             final PSTObject child = PSTObject.detectAndLoadPSTObject(this.pstFile, childDescriptor);
-            this.currentEmailIndex++;
             return child;
         }
         return null;
@@ -325,8 +333,10 @@ public class PSTFolder extends PSTObject {
     /**
      * move the internal folder cursor to the desired position
      * position 0 is before the first record.
-     * 
-     * @param newIndex
+     *
+     * @param newIndex the new index
+     * @throws IOException  the io exception
+     * @throws PSTException the pst exception
      */
     public void moveChildCursorTo(int newIndex) throws IOException, PSTException {
         this.initEmailsTable();
@@ -343,10 +353,10 @@ public class PSTFolder extends PSTObject {
 
     /**
      * the number of child folders in this folder
-     * 
+     *
      * @return number of subfolders as counted
-     * @throws IOException
-     * @throws PSTException
+     * @throws IOException  the io exception
+     * @throws PSTException the pst exception
      */
     public int getSubFolderCount() throws IOException, PSTException {
         this.initSubfoldersTable();
@@ -361,10 +371,10 @@ public class PSTFolder extends PSTObject {
      * the number of emails in this folder
      * this is the count of emails made by the library and will therefore should
      * be more accurate than getContentCount
-     * 
+     *
      * @return number of emails in this folder (as counted)
-     * @throws IOException
-     * @throws PSTException
+     * @throws IOException  the io exception
+     * @throws PSTException the pst exception
      */
     public int getEmailCount() throws IOException, PSTException {
         this.initEmailsTable();
@@ -374,6 +384,11 @@ public class PSTFolder extends PSTObject {
         return this.emailsTable.getRowCount();
     }
 
+    /**
+     * Gets folder type.
+     *
+     * @return the folder type
+     */
     public int getFolderType() {
         return this.getIntItem(0x3601);
     }
@@ -382,7 +397,7 @@ public class PSTFolder extends PSTObject {
      * the number of emails in this folder
      * this is as reported by the PST file, for a number calculated by the
      * library use getEmailCount
-     * 
+     *
      * @return number of items as reported by PST File
      */
     public int getContentCount() {
@@ -391,6 +406,8 @@ public class PSTFolder extends PSTObject {
 
     /**
      * Amount of unread content items Integer 32-bit signed
+     *
+     * @return the unread count
      */
     public int getUnreadCount() {
         return this.getIntItem(0x3603);
@@ -400,23 +417,35 @@ public class PSTFolder extends PSTObject {
      * does this folder have subfolders
      * once again, read from the PST, use getSubFolderCount if you want to know
      * what the library makes of it all
-     * 
+     *
      * @return has subfolders as reported by the PST File
      */
     public boolean hasSubfolders() {
         return (this.getIntItem(0x360a) != 0);
     }
 
+    /**
+     * Gets container class.
+     *
+     * @return the container class
+     */
     public String getContainerClass() {
         return this.getStringItem(0x3613);
     }
 
+    /**
+     * Gets associate content count.
+     *
+     * @return the associate content count
+     */
     public int getAssociateContentCount() {
         return this.getIntItem(0x3617);
     }
 
     /**
      * Container flags Integer 32-bit signed
+     *
+     * @return the container flags
      */
     public int getContainerFlags() {
         return this.getIntItem(0x3600);

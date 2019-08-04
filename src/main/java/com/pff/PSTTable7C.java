@@ -42,6 +42,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import static com.pff.PSTFile.PST_TYPE_ANSI;
+
 /**
  * Specific functions for the 7c table type ("Table Context").
  * This is used for attachments.
@@ -50,7 +52,7 @@ import java.util.List;
  */
 class PSTTable7C extends PSTTable {
 
-    private final int BLOCK_SIZE = 8176;
+    private int BLOCK_SIZE = 8176;
 
     private List<HashMap<Integer, PSTTable7CItem>> items = null;
     private int numberOfDataSets = 0;
@@ -152,6 +154,11 @@ class PSTTable7C extends PSTTable {
             this.keyMap.put(Context, RowIndex);
         }
 
+        if (in.getPSTFile().getPSTFileType()==PST_TYPE_ANSI)
+            BLOCK_SIZE=8180;
+        else
+            BLOCK_SIZE=8176;
+
         // Read the Row Matrix
         this.rowNodeInfo = this.getNodeInfo(hnidRows);
         // numberOfDataSets = (rowNodeInfo.endOffset - rowNodeInfo.startOffset)
@@ -170,8 +177,10 @@ class PSTTable7C extends PSTTable {
 
     /**
      * get all the items parsed out of this table.
-     * 
-     * @return
+     *
+     * @return items
+     * @throws PSTException the pst exception
+     * @throws IOException  the io exception
      */
     List<HashMap<Integer, PSTTable7CItem>> getItems() throws PSTException, IOException {
         if (this.items == null) {
@@ -209,38 +218,18 @@ class PSTTable7C extends PSTTable {
         // rowNodeInfo.length())
         for (int rowCounter = 0; rowCounter < numberOfRecordsToReturn; rowCounter++) {
             final HashMap<Integer, PSTTable7CItem> currentItem = new HashMap<>();
-            // add on some padding for block boundries?
-            if (this.rowNodeInfo.in.getPSTFile().getPSTFileType() == PSTFile.PST_TYPE_ANSI) {
-                if (currentValueArrayStart >= this.BLOCK_SIZE) {
-                    currentValueArrayStart = currentValueArrayStart + (4) * (currentValueArrayStart / this.BLOCK_SIZE);
-                }
-                if (this.rowNodeInfo.startOffset + currentValueArrayStart + this.TCI_1b > this.rowNodeInfo.in
-                    .length()) {
-                    continue;
-                }
-            } else {
-                if ((currentValueArrayStart % this.BLOCK_SIZE) > this.BLOCK_SIZE - this.TCI_bm) {
-                    // adjust!
-                    // currentValueArrayStart += 8176 - (currentValueArrayStart
-                    // % 8176);
-                    currentValueArrayStart += blockPadding;
-                    if (currentValueArrayStart + this.TCI_bm > this.rowNodeInfo.length()) {
-                        continue;
-                    }
-                }
-            }
+            // to respect block boundaries
+            currentValueArrayStart = (((startAtRecord+rowCounter) / numberOfRowsPerBlock) * this.BLOCK_SIZE)
+                    + (((startAtRecord+rowCounter) % numberOfRowsPerBlock) * this.TCI_bm);
+
             final byte[] bitmap = new byte[(this.cCols + 7) / 8];
-            // System.arraycopy(rowNodeInfo, currentValueArrayStart+TCI_1b,
-            // bitmap, 0, bitmap.length);
+
             this.rowNodeInfo.in.seek(this.rowNodeInfo.startOffset + currentValueArrayStart + this.TCI_1b);
             this.rowNodeInfo.in.readCompletely(bitmap);
 
-            // int id =
-            // (int)PSTObject.convertLittleEndianBytesToLong(rowNodeInfo,
-            // currentValueArrayStart, currentValueArrayStart+4);
             final int id = (int) this.rowNodeInfo.seekAndReadLong(currentValueArrayStart, 4);
 
-            // Put into the item map as PidTagLtpRowId (0x67F2)
+           // Put into the item map as PidTagLtpRowId (0x67F2)
             PSTTable7CItem item = new PSTTable7CItem();
             item.itemIndex = -1;
             item.entryValueType = 3;
@@ -411,7 +400,6 @@ class PSTTable7C extends PSTTable {
             }
             itemList.add(dataSetNumber, currentItem);
             dataSetNumber++;
-            currentValueArrayStart += this.TCI_bm;
         }
 
         // System.out.println(description);

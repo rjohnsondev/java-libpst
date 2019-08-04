@@ -40,6 +40,8 @@ import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Set;
+import java.util.Locale;
+import java.io.UnsupportedEncodingException;
 
 /**
  * PST Object is the root class of all PST Items.
@@ -512,8 +514,15 @@ public class PSTObject {
             if (codepage == null) {
                 return new String(data);
             } else {
-                codepage = codepage.toUpperCase();
-                return new String(data, codepage);
+                codepage = codepage.toUpperCase(Locale.US);
+                if (codepage.contentEquals("ISO-8859-8-I")) {   //  Outlook hebrew encoding is not supported by Java
+                    codepage = "ISO-8859-8";      // next best thing is hebrew characters with wrong order
+                }
+                try {
+                    return new String(data, codepage);
+                } catch (UnsupportedEncodingException e) {
+                    return new String(data, "UTF-8");
+                }
             }
             /*
              * if (codepage == null || codepage.toUpperCase().equals("UTF-8") ||

@@ -339,12 +339,14 @@ public class PSTFile {
                 // in which the string name of the property is stored.
                 final int len = (int) PSTObject.convertLittleEndianBytesToLong(stringNameToIdByte, dwPropertyId,
                         dwPropertyId + 4);
-                final byte[] keyByteValue = new byte[len];
-                System.arraycopy(stringNameToIdByte, dwPropertyId + 4, keyByteValue, 0, keyByteValue.length);
-                wPropIdx += 0x8000;
-                final String key = new String(keyByteValue, "UTF-16LE");
-                this.stringToId.put(key, wPropIdx);
-                this.idToString.put(wPropIdx, key);
+                if (len > 0 && len < stringNameToIdByte.length) {
+                    final byte[] keyByteValue = new byte[len];
+                    System.arraycopy(stringNameToIdByte, dwPropertyId + 4, keyByteValue, 0, keyByteValue.length);
+                    wPropIdx += 0x8000;
+                    final String key = new String(keyByteValue, "UTF-16LE");
+                    this.stringToId.put(key, wPropIdx);
+                    this.idToString.put(wPropIdx, key);
+                }
             }
         }
     }

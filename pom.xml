@@ -121,7 +121,6 @@
             </plugins>
         </pluginManagement>
 
-<resources> <resource> <directory>${project.build.sourceDirectory}</directory> </resource> <resource> <directory>${basedir}/src/main/resources</directory> </resource> </resources>
     </build>
 
 </project>

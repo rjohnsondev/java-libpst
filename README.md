@@ -1,6 +1,6 @@
 The PST File format is used by Outlook for the storage of emails.  Over the years many people have accumulated a large amount of important email and other information into these files, this project aims to allow people to access and extract this information so that it may be migrated to other messaging systems.
 
-This project was originally based off the documentation created through the fantastic reverse engineering effort made by the [libpff](https://sourceforge.net/projects/libpff) project.  The library has been improved with information provided by the release of the official PST specs by Microsoft.
+This project was originally based off the documentation created through the fantastic reverse engineering effort made by the [libpff](https://github.com/libyal/libpff) project.  The library has been improved with information provided by the release of the official PST specs by Microsoft.
 
 The functional goals are:
 

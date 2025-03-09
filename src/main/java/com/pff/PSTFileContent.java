@@ -25,8 +25,9 @@ public abstract class PSTFileContent {
             if (read <= 0) {
                 break;
             }
-            System.arraycopy(buffer, 0, target, offset, read);
-            offset += read;
+            int length = Math.min(read, target.length - offset);
+            System.arraycopy(buffer, 0, target, offset, length);
+            offset += length;
         }
     }
 
